@@ -10,15 +10,6 @@ export interface DarajaConfig {
   environment: 'sandbox' | 'production';
 }
 
-export const DEFAULT_DARAJA_CONFIG: DarajaConfig = {
-  consumerKey: 'd7a6e19b840f4ac480a8b9f71c',
-  consumerSecret: '4a1b92cd3ef81a029c',
-  businessShortCode: '174379',
-  passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
-  callbackUrl: 'https://shantisdesigns.co.ke/api/mpesa/callback',
-  environment: 'production'
-};
-
 export class MpesaDarajaService {
   /**
    * Sanitizes Kenyan phone numbers to the Daraja standard format: 2547XXXXXXXX or 2541XXXXXXXX
@@ -41,12 +32,11 @@ export class MpesaDarajaService {
   }
 
   /**
-   * Generates a realistic Safaricom M-Pesa receipt code
-   * Example: QK891Z99P2
+   * Generates a reference code when recording an M-Pesa transaction
    */
   static generateMpesaReceipt(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = 'QK';
+    let code = 'SH';
     for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -54,25 +44,28 @@ export class MpesaDarajaService {
   }
 
   /**
-   * Builds the pre-filled WhatsApp Checkout URL and logs the lead
+   * Builds the pre-filled WhatsApp Checkout URL and logs the lead to SQLite
    */
   static createWhatsAppCheckout(
-    items: CartItem[], 
+    items: CartItem[],
     customer: { name: string; phone: string; location: string; notes?: string },
-    companyPhone: string = '254722000000'
+    companyPhone: string = '254115521631'
   ): { url: string; lead: WhatsAppLead } {
     const total = items.reduce((sum, item) => {
       const price = item.product.sale_price || item.product.price;
       return sum + price * item.quantity;
     }, 0);
 
-    const itemsText = items.map((item, idx) => {
-      const price = item.product.sale_price || item.product.price;
-      return `${idx + 1}. *${item.product.name}* (x${item.quantity}) - KES ${(price * item.quantity).toLocaleString()}`;
-    }).join('\n');
+    const itemsText = items
+      .map((item, idx) => {
+        const price = item.product.sale_price || item.product.price;
+        return `${idx + 1}. *${item.product.name}* (x${item.quantity}) - KES ${(
+          price * item.quantity
+        ).toLocaleString()}`;
+      })
+      .join('\n');
 
-    const message = 
-`☀️ *SHANTIS DESIGNS SOLAR - ORDER INQUIRY*
+    const message = `☀️ *SHANTIS DESIGNS SOLAR - ORDER INQUIRY*
 ━━━━━━━━━━━━━━━━━━━━
 *Customer Name:* ${customer.name}
 *Customer Phone:* ${customer.phone}
@@ -83,43 +76,41 @@ ${itemsText}
 
 💰 *TOTAL AMOUNT:* KES ${total.toLocaleString()}
 ━━━━━━━━━━━━━━━━━━━━
-Hello Shantis Designs, I would like to confirm my order and arrange delivery / site assessment.`;
+Hello Shantis Designs Solar Solutions, I would like to confirm my order and arrange delivery / site assessment.`;
 
     const encoded = encodeURIComponent(message);
     const cleanCompanyPhone = companyPhone.replace(/\D/g, '');
     const url = `https://wa.me/${cleanCompanyPhone}?text=${encoded}`;
 
-    // Log WhatsApp lead to persistent storage
     const lead = StorageService.addLead({
-      product_name: items.map(i => `${i.product.name} (x${i.quantity})`).join(', '),
+      product_name: items.map((i) => `${i.product.name} (x${i.quantity})`).join(', '),
       phone_number: customer.phone,
       total_value: total,
       status: 'new',
       source: 'cart',
-      notes: `Location: ${customer.location}. User initiated WhatsApp direct order.`
+      notes: `Location: ${customer.location}. WhatsApp direct order.`,
     });
 
     return { url, lead };
   }
 
   /**
-   * Builds WhatsApp installation quote inquiry
+   * Builds WhatsApp installation quote inquiry to official Shantis Designs number (0115 521 631)
    */
   static createWhatsAppQuoteInquiry(
     productName: string,
     customerPhone: string,
     customerLocation: string = 'Nairobi',
-    companyPhone: string = '254722000000'
+    companyPhone: string = '254115521631'
   ): string {
-    const message = 
-`☀️ *SHANTIS DESIGNS - SOLAR INSTALLATION QUOTE*
+    const message = `☀️ *SHANTIS DESIGNS - SOLAR INSTALLATION QUOTE*
 ━━━━━━━━━━━━━━━━━━━━
 *Product/System:* ${productName}
 *Client Phone:* ${customerPhone}
 *Site Location:* ${customerLocation}
 
 Hello Shantis Designs Engineering Team,
-I am requesting a formal quotation and site survey for the ${productName}. Please advise on sizing, EPRA certification, and labor costs.`;
+I am requesting a formal quotation and site survey for ${productName}. Please advise on sizing, EPRA certification, and installation.`;
 
     const cleanCompanyPhone = companyPhone.replace(/\D/g, '');
     return `https://wa.me/${cleanCompanyPhone}?text=${encodeURIComponent(message)}`;

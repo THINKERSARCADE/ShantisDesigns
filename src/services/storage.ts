@@ -84,30 +84,7 @@ export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
   updated_at: '2026-11-13 09:00',
 };
 
-export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: 'aud-101',
-    user_id: 'USR-EPRA-01',
-    user_name: 'Eng. Patrick Mwangi',
-    user_role: 'admin',
-    action: '2FA_AUTHENTICATED',
-    resource_type: 'security',
-    details: 'Verified SQL TOTP token and established encrypted session',
-    ip_address: '197.232.61.104',
-    timestamp: '2026-11-13 08:15:22',
-  },
-  {
-    id: 'aud-102',
-    user_id: 'USR-EPRA-01',
-    user_name: 'Eng. Patrick Mwangi',
-    user_role: 'admin',
-    action: 'SQLITE_DB_SYNC',
-    resource_type: 'woocommerce',
-    details: 'Synchronized 157 products, 35 categories, and 80+ project images in SQLite WAL database',
-    ip_address: '197.232.61.104',
-    timestamp: '2026-11-13 08:20:10',
-  },
-];
+export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [];
 
 // Live in-memory state hydrated from the Node.js SQLite server (/api/bootstrap)
 interface LiveSqlCache {
@@ -288,6 +265,91 @@ export class StorageService {
     }
   }
 
+  static async getUsers(): Promise<any[]> {
+    try {
+      const res = await apiFetch('/api/auth/users');
+      if (res && res.ok) {
+        const data = await res.json();
+        return Array.isArray(data.users) ? data.users : [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
+
+  static async changeAdminPassword(params: {
+    email: string;
+    newPassword: string;
+    newTotpCode?: string;
+  }): Promise<{ success?: boolean; updated?: any; users?: any[]; error?: string }> {
+    try {
+      const res = await apiFetch('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify(params),
+      });
+      if (!res) return { error: 'Failed to reach server' };
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Failed to update password hash' };
+      this.addAuditLog({
+        userId: 'USR-SHANTIS-01',
+        userName: 'Shantis Designs Admin',
+        userRole: 'admin',
+        action: 'PASSWORD_HASH_UPDATED',
+        resourceType: 'security',
+        details: `Updated salted scrypt password hash for ${params.email} in SQLite`,
+      });
+      return data;
+    } catch {
+      return { error: 'Network error while updating password hash' };
+    }
+  }
+
+  // --- M-PESA DARAJA API CREDENTIALS (HASHED IN SQLITE) ---
+  static async getMpesaConfig(): Promise<any> {
+    try {
+      const res = await apiFetch('/api/payments/mpesa/config');
+      if (res && res.ok) {
+        const data = await res.json();
+        return data.config;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
+  static async saveMpesaConfig(params: {
+    shortcode?: string;
+    environment?: string;
+    callbackUrl?: string;
+    consumerKey?: string;
+    consumerSecret?: string;
+    passkey?: string;
+    initiatorPassword?: string;
+  }): Promise<{ success?: boolean; config?: any; error?: string }> {
+    try {
+      const res = await apiFetch('/api/payments/mpesa/config', {
+        method: 'POST',
+        body: JSON.stringify(params),
+      });
+      if (!res) return { error: 'Failed to reach server' };
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Failed to save M-Pesa config' };
+      this.addAuditLog({
+        userId: 'USR-SHANTIS-01',
+        userName: 'Shantis Designs Admin',
+        userRole: 'admin',
+        action: 'MPESA_API_KEYS_HASHED',
+        resourceType: 'payment',
+        details: `Saved hashed M-Pesa API custom keys & secret key for shortcode ${data.config?.shortcode || ''} in SQLite`,
+      });
+      return data;
+    } catch {
+      return { error: 'Network error while saving M-Pesa API keys' };
+    }
+  }
+
   // --- HOMEPAGE CONFIG & TEMPLATES ---
   static getHomepageConfig(): { published: HomepageConfig; draft: HomepageConfig } {
     return {
@@ -313,7 +375,7 @@ export class StorageService {
     });
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'PUBLISHED_HOMEPAGE',
       resourceType: 'homepage',
@@ -372,7 +434,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'ADD_PRODUCT',
       resourceType: 'product',
@@ -391,7 +453,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'UPDATE_PRODUCT',
       resourceType: 'product',
@@ -407,7 +469,7 @@ export class StorageService {
     if (prod) {
       this.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: 'admin',
         action: 'DELETE_PRODUCT',
         resourceType: 'product',
@@ -463,7 +525,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'ADD_PROJECT',
       resourceType: 'project',
@@ -482,7 +544,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'UPDATE_PROJECT',
       resourceType: 'project',
@@ -498,7 +560,7 @@ export class StorageService {
     if (proj) {
       this.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: 'admin',
         action: 'DELETE_PROJECT',
         resourceType: 'project',
@@ -594,7 +656,7 @@ export class StorageService {
 
       this.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: 'admin',
         action: 'UPDATE_PAYMENT_STATUS',
         resourceType: 'payment',
@@ -726,7 +788,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'PUBLISH_BLOG',
       resourceType: 'blog',
@@ -745,7 +807,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'UPDATE_BLOG',
       resourceType: 'blog',
@@ -761,7 +823,7 @@ export class StorageService {
     if (art) {
       this.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: 'admin',
         action: 'DELETE_BLOG',
         resourceType: 'blog',
@@ -796,7 +858,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'ADD_PARTNER',
       resourceType: 'partner',
@@ -815,7 +877,7 @@ export class StorageService {
 
     this.addAuditLog({
       userId: 'USR-EPRA-01',
-      userName: 'Eng. Patrick Mwangi',
+      userName: 'Shantis Designs Admin',
       userRole: 'admin',
       action: 'UPDATE_PARTNER',
       resourceType: 'partner',
@@ -831,7 +893,7 @@ export class StorageService {
     if (part) {
       this.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: 'admin',
         action: 'DELETE_PARTNER',
         resourceType: 'partner',

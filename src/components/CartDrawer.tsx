@@ -9,7 +9,6 @@ import {
   MessageCircle,
   Home,
   Heart,
-  LayoutGrid,
   User,
   Menu,
 } from 'lucide-react';
@@ -266,8 +265,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             }}
             className="flex flex-col items-center gap-0.5 hover:text-[#238B3D] transition-colors cursor-pointer"
           >
-            <LayoutGrid className="w-4 h-4" />
-            <span className="text-[10px] font-medium">Category</span>
+            <ShoppingBag className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Shop</span>
           </button>
           <button
             onClick={() => {

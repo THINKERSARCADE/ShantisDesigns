@@ -3,10 +3,19 @@ import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
+import * as dotenv from 'dotenv';
 import { db, initializeDatabase, SqlRepository } from './src/db/sqlite';
+import { ensurePostgresInitialized, isPostgresConfigured } from './src/db/postgres.ts';
 
-// Initialize SQLite schema & seed authentic Shantis data
+dotenv.config();
+
+// Initialize local SQLite database & seed authentic Shantis data
 initializeDatabase();
+
+// Initialize PostgreSQL schema & seed when PostgreSQL environment variables are configured
+if (isPostgresConfigured()) {
+  ensurePostgresInitialized().catch(() => {});
+}
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -328,8 +337,8 @@ app.post('/api/auth/verify-2fa', rateLimit(15, 15 * 60 * 1000), (req: Request, r
     return res.status(401).json({ error: 'Session expired. Please sign in again.' });
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(session.user_id) as any;
-  if (!user || String(code).trim() !== String(user.totp_code)) {
+  const isTotpValid = SqlRepository.verifyUserTotp(session.user_id, String(code));
+  if (!isTotpValid) {
     logAudit(session.email, '2FA_FAILED', 'Invalid 2FA verification code', req);
     return res.status(401).json({ error: 'Invalid 2FA Security Code.' });
   }
@@ -377,6 +386,33 @@ app.post('/api/auth/logout', (req: Request, res: Response) => {
     db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
   }
   res.json({ success: true });
+});
+
+app.get('/api/auth/users', (_req: Request, res: Response) => {
+  res.json({ users: SqlRepository.getUsersSummary() });
+});
+
+app.post('/api/auth/change-password', rateLimit(15, 15 * 60 * 1000), (req: Request, res: Response) => {
+  const { email, newPassword, newTotpCode } = req.body || {};
+  if (!email || !newPassword || String(newPassword).trim().length < 6) {
+    return res.status(400).json({
+      error: 'Valid email and a password of at least 6 characters are required.',
+    });
+  }
+  const updated = SqlRepository.updateUserPassword(
+    String(email).trim(),
+    String(newPassword).trim(),
+    newTotpCode ? String(newTotpCode).trim() : undefined
+  );
+  if (!updated) {
+    return res.status(404).json({ error: 'User account not found in SQLite database.' });
+  }
+  logAudit(String(email), 'PASSWORD_HASH_UPDATED', 'Updated salted scrypt password hash in SQLite', req);
+  res.json({
+    success: true,
+    updated,
+    users: SqlRepository.getUsersSummary(),
+  });
 });
 
 // ============================================================================
@@ -535,11 +571,58 @@ app.patch('/api/leads/:id', (req: Request, res: Response) => {
   res.json({ success: true, leads: SqlRepository.getLeads() });
 });
 
+// Get M-Pesa Daraja API Configuration (Hashed Keys & Shortcode in SQLite)
+app.get('/api/payments/mpesa/config', (_req: Request, res: Response) => {
+  res.json({ config: SqlRepository.getMpesaCredentials() });
+});
+
+// Save Custom M-Pesa API Keys & Secret Key to SQLite Database (Salted & Hashed)
+app.post('/api/payments/mpesa/config', rateLimit(20, 10 * 60 * 1000), (req: Request, res: Response) => {
+  try {
+    const {
+      shortcode,
+      environment,
+      callbackUrl,
+      consumerKey,
+      consumerSecret,
+      passkey,
+      initiatorPassword,
+    } = req.body || {};
+
+    const saved = SqlRepository.saveMpesaCredentials({
+      shortcode,
+      environment,
+      callbackUrl,
+      consumerKey,
+      consumerSecret,
+      passkey,
+      initiatorPassword,
+    });
+
+    logAudit(
+      'admin',
+      'MPESA_API_KEYS_HASHED',
+      `Saved hashed M-Pesa Daraja API keys & secret for shortcode ${saved.shortcode} (${saved.environment}) in SQLite`,
+      req
+    );
+
+    res.json({
+      success: true,
+      config: saved,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to save M-Pesa configuration' });
+  }
+});
+
 // M-Pesa Daraja STK Push Endpoint + Webhook Verification
 app.post('/api/payments/mpesa/stkpush', rateLimit(20, 10 * 60 * 1000), (req: Request, res: Response) => {
   const { phone, amount, orderNumber } = req.body || {};
+  const mpesaCfg = SqlRepository.getMpesaCredentials();
   const receipt = `SJK${Math.floor(100000 + Math.random() * 900000)}M`;
   const payload = {
+    BusinessShortCode: mpesaCfg.shortcode,
+    Environment: mpesaCfg.environment,
     MerchantRequestID: `SHANTIS-${Date.now()}`,
     CheckoutRequestID: `ws_CO_${Date.now()}`,
     ResponseCode: '0',
@@ -915,8 +998,7 @@ app.delete('/api/partners/:id', (req: Request, res: Response) => {
 // GOOGLE BUSINESS PROFILE REVIEWS (SQLITE CRUD + LIVE GOOGLE API SYNC)
 // ============================================================================
 
-const SHANTIS_GBP_URL =
-  'https://www.google.com/search?q=shantis+designs&client=ms-android-transsion&hs=OJKW&sca_esv=f822089436cb05c6&sxsrf=AKL5yDi4kXNJ7m0tfYIKTo2Us_YAAZWhOA%3A1794566463617&ei=P-n2apmfJfOfhbIPhoXYiQY&biw=411&bih=763&oq=shantis+designs&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg9zaGFudGlzIGRlc2lnbnMyBRAAGIAEMgQQABgeMgYQABgeGAoyBRAAGO8FMgUQABjvBTIFEAAY7wUyCBAAGIkFGKIEMggQABiJBRiiBEi-J1CVJFiVJHAAeACQAQCYAZMDoAG0BaoBBzItMS4wLjG4AQPIAQD4AQGYAgKgAuAFwgIJEAAYHhgNGLADwgILEAAYCBgeGA0YsAPCAg4QABiABBiKBRiGAxiwA8ICCBAAGO8FGLADwgILEAAYiQUYogQYsAOYAwDiAwUSATEgQIgGAZAGC5IHBTMtMS4xoAfbCrIHBTMtMS4xuAfgBcIHBTMtMS4xyAcrgAgB&sclient=mobile-gws-wiz-serp#ebo=0&mpd=~13542450485038602063/customers/reviews';
+const SHANTIS_GBP_URL = 'https://g.page/r/CVAYv1cTmiLaEAE/review';
 
 function getStoredGoogleApiConfig(): {
   accessToken?: string;
@@ -976,12 +1058,7 @@ app.post('/api/reviews', (req: Request, res: Response) => {
   ).run(
     id,
     String(r.author_name || 'Verified Google Customer'),
-    String(
-      r.author_photo ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          r.author_name || 'Customer'
-        )}&background=238B3D&color=fff&bold=true`
-    ),
+    String(r.author_photo || ''),
     Number(r.rating || 5),
     String(r.time_ago || 'Just now'),
     String(r.text || ''),
@@ -1136,9 +1213,7 @@ app.post('/api/reviews/sync-google', async (req: Request, res: Response) => {
 
             liveFetchedReviews.push({
               author_name: author,
-              author_photo:
-                item.reviewer?.profilePhotoUrl ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=238B3D&color=fff&bold=true`,
+              author_photo: item.reviewer?.profilePhotoUrl || '',
               rating: starMap[item.starRating || 'FIVE'] || 5,
               time_ago: item.updateTime ? item.updateTime.split('T')[0] : 'Recently',
               text,
@@ -1210,9 +1285,7 @@ app.post('/api/reviews/sync-google', async (req: Request, res: Response) => {
 
           liveFetchedReviews.push({
             author_name: author,
-            author_photo:
-              rev.authorAttribution?.photoUri ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=238B3D&color=fff&bold=true`,
+            author_photo: rev.authorAttribution?.photoUri || '',
             rating: rev.rating || 5,
             time_ago: rev.relativePublishTimeDescription || 'Recently',
             text,
@@ -1236,7 +1309,7 @@ app.post('/api/reviews/sync-google', async (req: Request, res: Response) => {
     }
   }
 
-  // Verified Google Business Profile reviews from Shantis Designs Solar Solutions (mpd=~13542450485038602063)
+  // Verified Google Business Profile reviews from Shantis Designs Solar Solutions (https://g.page/r/CVAYv1cTmiLaEAE/review)
   const verifiedGbpReviews =
     liveFetchedReviews.length > 0
       ? liveFetchedReviews
@@ -1260,8 +1333,7 @@ app.post('/api/reviews/sync-google', async (req: Request, res: Response) => {
           },
           {
             author_name: 'Gerishon Ngugi',
-            author_photo:
-              'https://ui-avatars.com/api/?name=Gerishon+Ngugi&background=238B3D&color=fff&bold=true',
+            author_photo: '',
             rating: 5,
             time_ago: 'a month ago',
             text: 'Great team of experts for your solar installations who you can trust 👍',

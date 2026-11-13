@@ -33,9 +33,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'mpesa_daraja' | 'whatsapp'>('mpesa_daraja');
 
-  // STK Push Interactive Simulation States
-  const [stkStatus, setStkStatus] = useState<'idle' | 'prompting' | 'pin_dialog' | 'processing' | 'success' | 'failed'>('idle');
-  const [simulatedPin, setSimulatedPin] = useState('');
+  // STK Push Dispatch States
+  const [stkStatus, setStkStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
@@ -110,28 +109,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     window.open(url, '_blank');
   };
 
-  // 2. M-Pesa Daraja STK Push Flow
-  const handleInitiateMpesa = () => {
+  // 2. Live M-Pesa Daraja STK Push Flow
+  const handleInitiateMpesa = async () => {
     if (!validateForm()) return;
-    setStkStatus('prompting');
-    setErrorMessage('');
-
-    // Simulate STK push prompt appearing on client's phone after 1.2s
-    setTimeout(() => {
-      setStkStatus('pin_dialog');
-    }, 1200);
-  };
-
-  const handleConfirmPin = async () => {
-    if (simulatedPin.length !== 4) {
-      setErrorMessage('Please enter a 4-digit M-Pesa PIN');
-      return;
-    }
     setStkStatus('processing');
     setErrorMessage('');
 
     const cleanPhone = MpesaDarajaService.formatKenyanPhone(phone);
-    let receiptCode = MpesaDarajaService.generateMpesaReceipt();
+    const orderRef = `SHN-${Date.now()}`;
+    let receiptCode = '';
+    let checkoutRequestId = `ws_CO_${Date.now()}`;
+    let orderStatus: Order['status'] = 'pending';
 
     try {
       const stkRes = await fetch('/api/payments/mpesa/stkpush', {
@@ -140,15 +128,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         body: JSON.stringify({
           phone: cleanPhone,
           amount: total,
-          orderNumber: `SHN-${Date.now()}`
+          orderNumber: orderRef
         })
       });
       if (stkRes.ok) {
         const data = await stkRes.json();
-        if (data.receipt) receiptCode = data.receipt;
+        if (data.checkoutRequestId) checkoutRequestId = data.checkoutRequestId;
+        if (data.receipt) {
+          receiptCode = data.receipt;
+          orderStatus = 'paid';
+        }
       }
     } catch {
-      // Fallback receipt if offline during unit test
+      // Order is still recorded in SQLite pending M-Pesa callback verification
     }
 
     const newOrder = StorageService.addOrder({
@@ -158,10 +150,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       customer_location: location,
       customer_notes: notes,
       total: total,
-      status: 'paid',
+      status: orderStatus,
       payment_method: 'mpesa_daraja',
-      mpesa_receipt: receiptCode,
-      checkout_request_id: `ws_CO_${Date.now()}`,
+      mpesa_receipt: receiptCode || undefined,
+      checkout_request_id: checkoutRequestId,
       items: items.map((i, idx) => ({
         id: idx + 1,
         order_id: 0,
@@ -217,7 +209,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
               <div>
                 <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                  {completedOrder.status === 'paid' ? 'Payment Confirmed' : 'Order Received'}
+                  {completedOrder.status === 'paid' ? 'Payment Confirmed' : 'STK Push Dispatched'}
                 </span>
                 <h3 className="text-xl font-extrabold text-slate-900 mt-2">
                   Asante! Your Solar Order is Confirmed
@@ -249,7 +241,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
 
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Our EPRA T3 engineering team has received your order and will contact you on <strong className="text-slate-800">{completedOrder.customer_phone}</strong> to coordinate shipping and optional site installation.
+                Our engineering team has received your order and will contact you on <strong className="text-slate-800">{completedOrder.customer_phone}</strong> to coordinate shipping and optional site installation.
               </p>
 
               <div className="pt-2">
@@ -300,7 +292,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Patrick Mwangi"
+                      placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
@@ -314,7 +306,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </label>
                     <input
                       type="tel"
-                      placeholder="e.g. 0712 345 678 or 254..."
+                      placeholder="07XX XXX XXX or 254..."
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
@@ -330,7 +322,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Nairobi - Karen / Nakuru / Eldoret"
+                      placeholder="Nairobi / Mombasa / Kisumu / Meru / Nakuru"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
@@ -344,7 +336,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Rooftop installation survey needed"
+                      placeholder="Delivery instructions or site details"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
@@ -383,7 +375,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <span className="text-xs font-bold text-slate-900">Lipa na M-Pesa (Daraja)</span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Instant STK Push prompt to your phone. Enter PIN to complete.
+                        Instant STK Push prompt to your phone (Paybill 522533 / Account 7865521 or Till 4108955).
                       </p>
                     </div>
                   </label>
@@ -418,55 +410,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </div>
               </div>
 
-              {/* STK Push Active Simulator Interactive Box */}
-              {stkStatus === 'prompting' && (
+              {stkStatus === 'processing' && (
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
                   <Loader2 className="w-6 h-6 animate-spin text-[#238B3D] mx-auto" />
                   <p className="text-xs font-bold text-emerald-900">
-                    Sending Lipa na M-Pesa STK Push to {phone}...
+                    Dispatching Lipa na M-Pesa Daraja STK Push to {phone}...
                   </p>
                   <p className="text-[11px] text-emerald-700">
-                    Please check your phone screen for the Safaricom authorization prompt.
-                  </p>
-                </div>
-              )}
-
-              {stkStatus === 'pin_dialog' && (
-                <div className="p-4 bg-slate-900 text-white rounded-xl space-y-3 border-2 border-emerald-500 shadow-xl">
-                  <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-                    <span className="text-xs font-bold text-emerald-400">Safaricom M-Pesa Prompt</span>
-                    <span className="text-[10px] text-slate-400">USSD Simulator</span>
-                  </div>
-                  <p className="text-xs text-slate-200">
-                    Do you want to pay <strong className="text-emerald-400">KES {total.toLocaleString()}</strong> to <strong className="text-white">SHANTIS DESIGNS SOLAR</strong> (Paybill 174379) for Order Equipment?
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="password"
-                      maxLength={4}
-                      placeholder="Enter M-Pesa PIN (e.g. 1234)"
-                      value={simulatedPin}
-                      onChange={(e) => setSimulatedPin(e.target.value)}
-                      className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white tracking-widest placeholder:text-slate-500 focus:outline-hidden focus:border-emerald-400 flex-1 font-mono"
-                    />
-                    <button
-                      onClick={handleConfirmPin}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-4 rounded-lg cursor-pointer"
-                    >
-                      Authorize
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {stkStatus === 'processing' && (
-                <div className="p-4 bg-slate-100 border border-slate-300 rounded-xl text-center space-y-2">
-                  <Loader2 className="w-6 h-6 animate-spin text-[#238B3D] mx-auto" />
-                  <p className="text-xs font-bold text-slate-800">
-                    Reconciling M-Pesa Daraja Callback...
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    Verifying transaction signature and updating order ledger.
+                    Please enter your M-Pesa PIN on your phone when prompted.
                   </p>
                 </div>
               )}
@@ -476,7 +427,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 {paymentMethod === 'mpesa_daraja' ? (
                   <button
                     onClick={handleInitiateMpesa}
-                    disabled={stkStatus === 'prompting' || stkStatus === 'processing'}
+                    disabled={stkStatus === 'processing'}
                     className="w-full bg-[#238B3D] hover:bg-[#1b7030] disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Smartphone className="w-4 h-4" />

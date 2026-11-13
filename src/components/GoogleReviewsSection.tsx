@@ -106,7 +106,7 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                 Reviews about Shantis Designs Solar Solutions
               </h2>
               <p className="text-xs sm:text-sm text-slate-400">
-                Live customer reviews from Google Business Profile • Royal King Building, Luthuli Avenue, Nairobi
+                5.0 ★ (5) • Solar energy equipment supplier • Luthuli avenue, Munyu Lane, Nairobi
               </p>
             </div>
 
@@ -121,7 +121,7 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-xs text-slate-400 font-semibold">({reviews.length})</p>
+                <p className="text-xs text-slate-400 font-semibold">(5)</p>
               </div>
 
               {/* Histogram Bars matching Google Reviews screenshot */}
@@ -189,7 +189,7 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                 }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>All ({reviews.length})</span>
+                <span>Filters</span>
               </button>
 
               <button
@@ -212,17 +212,6 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                 }`}
               >
                 batteries {keywordCounts.batteries || 2}
-              </button>
-
-              <button
-                onClick={() => setSelectedKeyword(selectedKeyword === 'panel' ? 'all' : 'panel')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
-                  selectedKeyword === 'panel'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50'
-                    : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800'
-                }`}
-              >
-                panels {keywordCounts.panels || 2}
               </button>
             </div>
 
@@ -258,6 +247,8 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
           {filteredReviews.map((rev) => {
             const isLiked = likedIds.includes(rev.id);
             const displayLikes = (rev.likes_count ?? 1) + (isLiked ? 1 : 0);
+            const hasOriginalPhoto =
+              Boolean(rev.author_photo) && !rev.author_photo.includes('ui-avatars.com');
 
             return (
               <article
@@ -268,11 +259,17 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                   {/* Reviewer Header */}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <img
-                        src={rev.author_photo}
-                        alt={rev.author_name}
-                        className="w-11 h-11 rounded-full object-cover border border-slate-700 shrink-0 bg-slate-800"
-                      />
+                      {hasOriginalPhoto ? (
+                        <img
+                          src={rev.author_photo}
+                          alt={rev.author_name}
+                          className="w-11 h-11 rounded-full object-cover border border-slate-700 shrink-0 bg-slate-800"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-[#238B3D] text-white font-black text-base flex items-center justify-center border border-emerald-600 shrink-0">
+                          {(rev.author_name || 'G').trim().charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div className="min-w-0">
                         <h3 className="text-sm font-bold text-white truncate">
                           {rev.author_name}

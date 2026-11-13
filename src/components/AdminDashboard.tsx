@@ -235,7 +235,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     excerpt: '',
     content: '',
     metaDescription: '',
-    author: 'Eng. Patrick Mwangi (EPRA T3)',
+    author: 'Shantis Designs Solar Solutions',
     imageUrl: 'https://shantisdesigns.co.ke/wp-content/uploads/2026/11/Horay-N-Type-Solar-Panels-1.png',
     tags: 'Solar Kenya, EPRA, KPLC Bill Reduction'
   });
@@ -268,9 +268,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [aboutData]);
 
   // Google Business Profile Reviews Live Sync & Editor State
-  const [gbpUrl, setGbpUrl] = useState(
-    'https://www.google.com/search?q=shantis+designs&client=ms-android-transsion&hs=OJKW&sca_esv=f822089436cb05c6&sxsrf=AKL5yDi4kXNJ7m0tfYIKTo2Us_YAAZWhOA%3A1794566463617&ei=P-n2apmfJfOfhbIPhoXYiQY&biw=411&bih=763&oq=shantis+designs&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg9zaGFudGlzIGRlc2lnbnMyBRAAGIAEMgQQABgeMgYQABgeGAoyBRAAGO8FMgUQABjvBTIFEAAY7wUyCBAAGIkFGKIEMggQABiJBRiiBEi-J1CVJFiVJHAAeACQAQCYAZMDoAG0BaoBBzItMS4wLjG4AQPIAQD4AQGYAgKgAuAFwgIJEAAYHhgNGLADwgILEAAYCBgeGA0YsAPCAg4QABiABBiKBRiGAxiwA8ICCBAAGO8FGLADwgILEAAYiQUYogQYsAOYAwDiAwUSATEgQIgGAZAGC5IHBTMtMS4xoAfbCrIHBTMtMS4xuAfgBcIHBTMtMS4xyAcrgAgB&sclient=mobile-gws-wiz-serp#ebo=0&mpd=~13542450485038602063/customers/reviews'
-  );
+  const [gbpUrl, setGbpUrl] = useState('https://g.page/r/CVAYv1cTmiLaEAE/review');
   const [isSyncingGbp, setIsSyncingGbp] = useState(false);
   const [gbpSyncMsg, setGbpSyncMsg] = useState('');
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -300,8 +298,117 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [scrapeSuccessMsg, setScrapeSuccessMsg] = useState('');
   const [isSyncingWc, setIsSyncingWc] = useState(false);
 
-  // M-Pesa Verification State
+  // M-Pesa Verification & Custom API Keys (Hashed SQLite Storage) State
   const [verifyingOrderId, setVerifyingOrderId] = useState<number | null>(null);
+  const [mpesaConfigSummary, setMpesaConfigSummary] = useState<{
+    shortcode: string;
+    environment: string;
+    callback_url: string;
+    consumer_key_masked: string;
+    consumer_key_hash: string;
+    consumer_secret_masked: string;
+    consumer_secret_hash: string;
+    passkey_masked: string;
+    passkey_hash: string;
+    initiator_password_hash?: string;
+    updated_at: string;
+  } | null>(null);
+  const [mpesaForm, setMpesaForm] = useState({
+    shortcode: '4089912',
+    environment: 'production' as 'sandbox' | 'production',
+    callbackUrl: 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+    consumerKey: '',
+    consumerSecret: '',
+    passkey: '',
+    initiatorPassword: '',
+  });
+  const [isSavingMpesa, setIsSavingMpesa] = useState(false);
+  const [mpesaSaveMsg, setMpesaSaveMsg] = useState('');
+
+  // SQLite Users & Hashed Password Manager State
+  const [dbUsers, setDbUsers] = useState<
+    Array<{
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+      password_hash: string;
+      totp_code_hash: string;
+      created_at: string;
+    }>
+  >([]);
+  const [passwordForm, setPasswordForm] = useState({
+    email: 'admin@shantisdesigns.co.ke',
+    newPassword: '',
+    newTotpCode: '',
+  });
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordSaveMsg, setPasswordSaveMsg] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    StorageService.getMpesaConfig().then((cfg) => {
+      if (cfg) {
+        setMpesaConfigSummary(cfg);
+        setMpesaForm((prev) => ({
+          ...prev,
+          shortcode: cfg.shortcode || '4089912',
+          environment: (cfg.environment === 'sandbox' ? 'sandbox' : 'production'),
+          callbackUrl: cfg.callback_url || 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+        }));
+      }
+    });
+    StorageService.getUsers().then((list) => {
+      if (Array.isArray(list)) setDbUsers(list);
+    });
+  }, [isOpen]);
+
+  const handleSaveMpesaCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingMpesa(true);
+    setMpesaSaveMsg('');
+    const res = await StorageService.saveMpesaConfig({
+      shortcode: mpesaForm.shortcode,
+      environment: mpesaForm.environment,
+      callbackUrl: mpesaForm.callbackUrl,
+      consumerKey: mpesaForm.consumerKey,
+      consumerSecret: mpesaForm.consumerSecret,
+      passkey: mpesaForm.passkey,
+      initiatorPassword: mpesaForm.initiatorPassword,
+    });
+    setIsSavingMpesa(false);
+    if (res.success && res.config) {
+      setMpesaConfigSummary(res.config);
+      setMpesaForm((prev) => ({
+        ...prev,
+        consumerKey: '',
+        consumerSecret: '',
+        passkey: '',
+        initiatorPassword: '',
+      }));
+      setMpesaSaveMsg('M-Pesa API custom keys & secret key hashed (scrypt-64) and saved to SQLite database!');
+      setTimeout(() => setMpesaSaveMsg(''), 5000);
+    }
+  };
+
+  const handleSaveUserPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordForm.newPassword || passwordForm.newPassword.length < 6) return;
+    setIsSavingPassword(true);
+    setPasswordSaveMsg('');
+    const res = await StorageService.changeAdminPassword({
+      email: passwordForm.email,
+      newPassword: passwordForm.newPassword,
+      newTotpCode: passwordForm.newTotpCode || undefined,
+    });
+    setIsSavingPassword(false);
+    if (res.success) {
+      if (Array.isArray(res.users)) setDbUsers(res.users);
+      setPasswordForm((prev) => ({ ...prev, newPassword: '', newTotpCode: '' }));
+      setPasswordSaveMsg(`Password for ${passwordForm.email} hashed with scrypt + salt and updated in SQLite!`);
+      setTimeout(() => setPasswordSaveMsg(''), 5000);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -316,14 +423,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         activeRole === 'engineer' ? 'EPRA#Tech2026!' : 'Shantis#Solar2026!'
       );
       if (loginRes.tempToken) {
-        await StorageService.verifyAdmin2FA(loginRes.tempToken, '254880');
+        await StorageService.verifyAdmin2FA(loginRes.tempToken, totpInput.trim() || '254880');
       }
 
       setIs2faAuthenticated(true);
       setTotpError('');
       StorageService.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: activeRole,
         action: '2FA_SUCCESS',
         resourceType: 'security',
@@ -504,13 +611,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setIsSyncingWc(false);
       StorageService.addAuditLog({
         userId: 'USR-EPRA-01',
-        userName: 'Eng. Patrick Mwangi',
+        userName: 'Shantis Designs Admin',
         userRole: activeRole,
         action: 'FORCE_WOOCOMMERCE_SYNC',
         resourceType: 'woocommerce',
         details: 'Forced manual 2-way REST API synchronization with WordPress store'
       });
-      alert('WooCommerce REST API Two-Way Sync Complete!\n\nSynchronized products, prices, stock statuses (instock/outofstock), and permalinks.');
       onDataUpdated();
     }, 1400);
   };
@@ -754,9 +860,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveReview = (e: React.FormEvent) => {
     e.preventDefault();
     const kwArray = reviewForm.keywords.split(',').map(k => k.trim()).filter(Boolean);
-    const photo =
-      reviewForm.authorPhoto ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(reviewForm.authorName || 'Client')}&background=238B3D&color=fff&bold=true`;
+    const photo = reviewForm.authorPhoto || '';
 
     if (editingReview) {
       StorageService.updateReview({
@@ -830,7 +934,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={() => setActiveRole('admin')}
               className="px-5 py-2.5 bg-[#F58220] hover:bg-[#e07318] text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer text-xs"
             >
-              Switch to Admin Role (Demo Simulator)
+              Switch to Admin Role
             </button>
           </div>
         ) : !is2faAuthenticated ? (
@@ -1189,9 +1293,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {/* Admin Profile Avatar */}
                   <div className="flex items-center gap-2 pl-1">
                     <img
-                      src="https://ui-avatars.com/api/?name=Shantis+Admin&background=14171A&color=fff&bold=true"
+                      src="/assets/aistudio/pdf-logo__1__3934e2bd.jpg"
                       alt="Shantis Admin"
-                      className="w-8 h-8 rounded-full object-cover border border-slate-200"
+                      className="w-8 h-8 rounded-full object-contain bg-white border border-slate-200"
                     />
                   </div>
                 </div>
@@ -1658,32 +1762,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
 
                         <div className="space-y-3.5 flex-1 flex flex-col justify-center">
-                          {(orders.slice(0, 3)).map((cust, i) => {
-                            const orderCounts = ['25 Orders', '15 Orders', '23 Orders'];
-                            return (
+                          {orders.length === 0 ? (
+                            <div className="text-center py-6 text-xs text-slate-400">
+                              No customer orders recorded yet. Live orders placed via M-Pesa or WhatsApp checkout appear here automatically.
+                            </div>
+                          ) : (
+                            orders.slice(0, 3).map((cust) => (
                               <div
                                 key={cust.id}
                                 className="flex items-center justify-between gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
                               >
                                 <div className="flex items-center gap-3 min-w-0">
-                                  <img
-                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                      cust.customer_name
-                                    )}&background=${
-                                      i === 0 ? '238B3D' : i === 1 ? 'F58220' : '0284C7'
-                                    }&color=fff&bold=true`}
-                                    alt={cust.customer_name}
-                                    className="w-11 h-11 rounded-full object-cover shrink-0"
-                                  />
+                                  <div className="w-11 h-11 rounded-full bg-[#238B3D] text-white font-extrabold text-sm flex items-center justify-center shrink-0">
+                                    {(cust.customer_name || 'C').charAt(0).toUpperCase()}
+                                  </div>
                                   <div className="min-w-0">
                                     <h4 className="text-xs font-bold text-slate-900 truncate">
                                       {cust.customer_name}
                                     </h4>
                                     <p className="text-[11px] text-slate-500 mt-0.5">
-                                      <strong className="text-slate-700">
-                                        {orderCounts[i].split(' ')[0]}
-                                      </strong>{' '}
-                                      Orders • {cust.customer_location}
+                                      {cust.customer_location}
                                     </p>
                                   </div>
                                 </div>
@@ -1694,8 +1792,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   View
                                 </button>
                               </div>
-                            );
-                          })}
+                            ))
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2577,6 +2675,104 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     ))}
                   </div>
+
+                  {/* SQLite Database Users & Hashed Password Manager */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs mt-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                      <div>
+                        <h3 className="font-extrabold text-base text-slate-900">
+                          Database Users & Scrypt Password Hash Manager
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          All user passwords and 2FA codes are salted and hashed with cryptographic scrypt (64-byte) in ./data/shantis_solar.sqlite
+                        </p>
+                      </div>
+                      <span className="bg-emerald-50 text-[#238B3D] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold">
+                        scrypt + 16-Byte Salt Active
+                      </span>
+                    </div>
+
+                    {passwordSaveMsg && (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#238B3D] font-bold rounded-xl flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>{passwordSaveMsg}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSaveUserPassword} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Select User Account</label>
+                        <select
+                          value={passwordForm.email}
+                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, email: e.target.value }))}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
+                        >
+                          <option value="admin@shantisdesigns.co.ke">admin@shantisdesigns.co.ke (Admin)</option>
+                          <option value="engineer@shantisdesigns.co.ke">engineer@shantisdesigns.co.ke (Engineer)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">New Password (will be hashed)</label>
+                        <input
+                          type="password"
+                          required
+                          minLength={6}
+                          placeholder="Enter new strong password"
+                          value={passwordForm.newPassword}
+                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">New 6-Digit 2FA Code (optional)</label>
+                        <input
+                          type="password"
+                          maxLength={6}
+                          placeholder="e.g. 254880"
+                          value={passwordForm.newTotpCode}
+                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, newTotpCode: e.target.value }))}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSavingPassword}
+                        className="px-4 py-2 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl cursor-pointer shadow-2xs"
+                      >
+                        {isSavingPassword ? 'Hashing & Saving...' : 'Hash & Save Password'}
+                      </button>
+                    </form>
+
+                    <div className="overflow-x-auto pt-2">
+                      <table className="w-full text-left border-t border-slate-100">
+                        <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b">
+                          <tr>
+                            <th className="py-2.5 px-3">User / Email</th>
+                            <th className="py-2.5 px-3">Role</th>
+                            <th className="py-2.5 px-3">SQLite Password Hash (scrypt-64)</th>
+                            <th className="py-2.5 px-3">2FA TOTP Hash</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                          {dbUsers.map((u) => (
+                            <tr key={u.id}>
+                              <td className="py-2.5 px-3 font-sans">
+                                <p className="font-bold text-slate-900">{u.name}</p>
+                                <p className="text-slate-500 text-[11px]">{u.email}</p>
+                              </td>
+                              <td className="py-2.5 px-3 uppercase font-bold text-[#238B3D]">{u.role}</td>
+                              <td className="py-2.5 px-3 text-slate-600 max-w-[260px] truncate" title={u.password_hash}>
+                                {u.password_hash}
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-500 max-w-[180px] truncate" title={u.totp_code_hash}>
+                                {u.totp_code_hash}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -3336,7 +3532,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <img src={rev.author_photo} alt={rev.author_name} className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                              {rev.author_photo ? (
+                                <img src={rev.author_photo} alt={rev.author_name} className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-[#238B3D] text-white font-bold text-sm flex items-center justify-center shrink-0">
+                                  {(rev.author_name || 'G').charAt(0).toUpperCase()}
+                                </div>
+                              )}
                               <div>
                                 <h4 className="font-extrabold text-xs text-slate-900">{rev.author_name}</h4>
                                 <p className="text-[11px] text-slate-500">{rev.reviewer_badge || '1 review'} • {rev.time_ago}</p>
@@ -3444,6 +3646,153 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <p className="text-xl font-black text-[#238B3D] mt-0.5">{reviews.length} (5.0 ★)</p>
                       </div>
                     </div>
+                  </div>
+
+                  {/* M-PESA DARAJA API CUSTOM KEYS & SECRET KEY (HASHED IN SQLITE DATABASE) */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                      <div>
+                        <h3 className="font-extrabold text-base text-slate-900">
+                          Safaricom M-Pesa Daraja API Custom Keys & Secret Key (Hashed SQLite Storage)
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Save your custom M-Pesa Consumer Key, Secret Key, Passkey, and Shortcode directly to ./data/shantis_solar.sqlite hashed with scrypt-64
+                        </p>
+                      </div>
+                      <span className="bg-emerald-50 text-[#238B3D] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold">
+                        Hashed in SQLite (`mpesa_api_credentials`)
+                      </span>
+                    </div>
+
+                    {mpesaSaveMsg && (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#238B3D] font-bold rounded-xl flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>{mpesaSaveMsg}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSaveMpesaCredentials} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Paybill / Till Shortcode</label>
+                          <input
+                            type="text"
+                            required
+                            value={mpesaForm.shortcode}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, shortcode: e.target.value }))}
+                            placeholder="e.g. 4089912"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Daraja Environment</label>
+                          <select
+                            value={mpesaForm.environment}
+                            onChange={(e) =>
+                              setMpesaForm((prev) => ({
+                                ...prev,
+                                environment: e.target.value as 'sandbox' | 'production',
+                              }))
+                            }
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
+                          >
+                            <option value="production">Production (Live Safaricom Daraja)</option>
+                            <option value="sandbox">Sandbox</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">STK Push Callback URL</label>
+                          <input
+                            type="url"
+                            required
+                            value={mpesaForm.callbackUrl}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, callbackUrl: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            M-Pesa Custom Consumer Key (Hashed on Save)
+                          </label>
+                          <input
+                            type="password"
+                            value={mpesaForm.consumerKey}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, consumerKey: e.target.value }))}
+                            placeholder={mpesaConfigSummary?.consumer_key_masked || 'Enter custom Daraja Consumer Key'}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            M-Pesa Custom Consumer Secret Key (Hashed on Save)
+                          </label>
+                          <input
+                            type="password"
+                            value={mpesaForm.consumerSecret}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, consumerSecret: e.target.value }))}
+                            placeholder={mpesaConfigSummary?.consumer_secret_masked || 'Enter custom Daraja Consumer Secret Key'}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Lipa Na M-Pesa Online Passkey (Hashed on Save)
+                          </label>
+                          <input
+                            type="password"
+                            value={mpesaForm.passkey}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, passkey: e.target.value }))}
+                            placeholder={mpesaConfigSummary?.passkey_masked || 'Enter custom Lipa Na M-Pesa Passkey'}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Initiator Password / Security Credential (Hashed on Save)
+                          </label>
+                          <input
+                            type="password"
+                            value={mpesaForm.initiatorPassword}
+                            onChange={(e) => setMpesaForm((prev) => ({ ...prev, initiatorPassword: e.target.value }))}
+                            placeholder="Enter Initiator Password"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <p className="text-[11px] text-slate-500">
+                          Last Updated in SQLite: <strong className="text-slate-700">{mpesaConfigSummary?.updated_at || 'Active'}</strong>
+                        </p>
+                        <button
+                          type="submit"
+                          disabled={isSavingMpesa}
+                          className="px-5 py-2.5 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl cursor-pointer shadow-sm"
+                        >
+                          {isSavingMpesa ? 'Hashing & Saving to SQLite...' : 'Save Custom M-Pesa Keys to Database (Hashed)'}
+                        </button>
+                      </div>
+                    </form>
+
+                    {mpesaConfigSummary && (
+                      <div className="p-3.5 bg-slate-900 text-slate-200 rounded-xl space-y-1.5 font-mono text-[11px]">
+                        <p className="text-emerald-400 font-sans font-bold text-xs">
+                          Active SQLite Scrypt-64 Hashes (`mpesa_api_credentials` table):
+                        </p>
+                        <p className="truncate">
+                          <span className="text-slate-400">Consumer Key Hash:</span> {mpesaConfigSummary.consumer_key_hash}
+                        </p>
+                        <p className="truncate">
+                          <span className="text-slate-400">Secret Key Hash:</span> {mpesaConfigSummary.consumer_secret_hash}
+                        </p>
+                        <p className="truncate">
+                          <span className="text-slate-400">Passkey Hash:</span> {mpesaConfigSummary.passkey_hash}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

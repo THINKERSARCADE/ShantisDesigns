@@ -147,8 +147,15 @@ const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   updated_at: new Date().toISOString(),
 };
 
-function hashPassword(password: string, salt: string): string {
+export function hashPassword(password: string, salt: string): string {
   return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+
+export function maskSecretValue(secret: string): string {
+  const clean = (secret || '').trim();
+  if (!clean) return '';
+  if (clean.length <= 6) return '••••••';
+  return `${clean.slice(0, 3)}••••••••${clean.slice(-3)}`;
 }
 
 function generateSeoKeywordsForProduct(p: Product): string[] {
@@ -403,9 +410,25 @@ export function initializeDatabase(): void {
       ip_address TEXT,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS mpesa_api_credentials (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      shortcode TEXT NOT NULL DEFAULT '4108955',
+      environment TEXT NOT NULL DEFAULT 'production',
+      callback_url TEXT NOT NULL DEFAULT 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+      consumer_key_masked TEXT NOT NULL DEFAULT '',
+      consumer_key_hash TEXT NOT NULL DEFAULT '',
+      consumer_secret_masked TEXT NOT NULL DEFAULT '',
+      consumer_secret_hash TEXT NOT NULL DEFAULT '',
+      passkey_masked TEXT NOT NULL DEFAULT '',
+      passkey_hash TEXT NOT NULL DEFAULT '',
+      initiator_password_hash TEXT NOT NULL DEFAULT '',
+      salt TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL
+    );
   `);
 
-  // Seed Users if empty
+  // Seed Users if empty (All passwords and TOTP secrets stored hashed with scryptSync)
   const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
   if (userCount === 0) {
     const insertUser = db.prepare(`
@@ -421,8 +444,8 @@ export function initializeDatabase(): void {
       hashPassword('Shantis#Solar2026!', adminSalt),
       adminSalt,
       'super_admin',
-      'Chief Solar Operations Admin',
-      '254880',
+      'Shantis Designs Admin',
+      hashPassword('254880', adminSalt),
       now
     );
     insertUser.run(
@@ -430,9 +453,64 @@ export function initializeDatabase(): void {
       hashPassword('EPRA#Tech2026!', engSalt),
       engSalt,
       'Inventory Manager',
-      'Senior EPC Lead Engineer',
-      '254880',
+      'Shantis Solar Engineer',
+      hashPassword('254880', engSalt),
       now
+    );
+  } else {
+    // Migrate any existing users so totp_code and password_hash are strictly scrypt-hashed (64-byte = 128 hex chars)
+    const existingUsers = db.prepare('SELECT * FROM users').all() as any[];
+    const updateUserHash = db.prepare(`
+      UPDATE users SET password_hash = ?, totp_code = ?, salt = ?, name = ? WHERE id = ?
+    `);
+    for (const u of existingUsers) {
+      const salt = u.salt && u.salt.length >= 16 ? u.salt : crypto.randomBytes(16).toString('hex');
+      const pwHash =
+        u.password_hash && u.password_hash.length === 128
+          ? u.password_hash
+          : hashPassword(String(u.password_hash || 'Shantis#Solar2026!'), salt);
+      const totpHash =
+        u.totp_code && u.totp_code.length === 128
+          ? u.totp_code
+          : hashPassword(String(u.totp_code || '254880'), salt);
+      const cleanName =
+        u.email === 'admin@shantisdesigns.co.ke'
+          ? 'Shantis Designs Admin'
+          : u.email === 'engineer@shantisdesigns.co.ke'
+          ? 'Shantis Solar Engineer'
+          : u.name;
+      updateUserHash.run(pwHash, totpHash, salt, cleanName, u.id);
+    }
+  }
+
+  // Ensure default row exists in mpesa_api_credentials (hashed)
+  const mpesaRow = db.prepare('SELECT COUNT(*) as count FROM mpesa_api_credentials WHERE id = 1').get() as { count: number };
+  if (mpesaRow.count === 0) {
+    const mpesaSalt = crypto.randomBytes(16).toString('hex');
+    const envKey = process.env.MPESA_CONSUMER_KEY || '';
+    const envSecret = process.env.MPESA_CONSUMER_SECRET || '';
+    const envPasskey = process.env.MPESA_PASSKEY || '';
+    db.prepare(`
+      INSERT INTO mpesa_api_credentials (
+        id, shortcode, environment, callback_url,
+        consumer_key_masked, consumer_key_hash,
+        consumer_secret_masked, consumer_secret_hash,
+        passkey_masked, passkey_hash,
+        initiator_password_hash, salt, updated_at
+      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      process.env.MPESA_SHORTCODE || '4108955',
+      'production',
+      'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+      envKey ? maskSecretValue(envKey) : '',
+      envKey ? hashPassword(envKey, mpesaSalt) : '',
+      envSecret ? maskSecretValue(envSecret) : '',
+      envSecret ? hashPassword(envSecret, mpesaSalt) : '',
+      envPasskey ? maskSecretValue(envPasskey) : '',
+      envPasskey ? hashPassword(envPasskey, mpesaSalt) : '',
+      '',
+      mpesaSalt,
+      new Date().toISOString()
     );
   }
 
@@ -710,7 +788,7 @@ export function initializeDatabase(): void {
     )`
   ).run();
 
-  // Seed or migrate Reviews to match live Google Business Profile (Teen Network Magazine Show, Gerishon Ngugi)
+  // Seed or migrate Reviews to match live Google Business Profile (https://g.page/r/CVAYv1cTmiLaEAE/review)
   const revCount = (db.prepare('SELECT COUNT(*) as count FROM reviews').get() as { count: number }).count;
   const hasTeenNetwork = db
     .prepare("SELECT COUNT(*) as count FROM reviews WHERE author_name = 'Teen Network Magazine Show'")
@@ -741,15 +819,24 @@ export function initializeDatabase(): void {
           r.owner_reply || '',
           r.owner_reply_time || 'a week ago',
           JSON.stringify(r.keywords || []),
-          r.google_review_url || ''
+          'https://g.page/r/CVAYv1cTmiLaEAE/review'
         );
-        registerImageAsset(r.author_photo, `Review: ${r.author_name}`, 'review', r.id);
+        if (r.author_photo) {
+          registerImageAsset(r.author_photo, `Review: ${r.author_name}`, 'review', r.id);
+        }
       }
     });
     tx(INITIAL_REVIEWS);
+  } else {
+    // Remove any fallback ui-avatars.com URLs and ensure official Google review link
+    db.prepare("UPDATE reviews SET author_photo = '' WHERE author_photo LIKE '%ui-avatars.com%'").run();
+    db.prepare("UPDATE reviews SET google_review_url = 'https://g.page/r/CVAYv1cTmiLaEAE/review'").run();
   }
 
-  // Seed Articles & Repair Truncated Meta Descriptions
+  // Purge synthetic blog articles (10015, 10016) so only original shantisdesigns.co.ke articles remain
+  db.prepare('DELETE FROM articles WHERE id IN (10015, 10016)').run();
+
+  // Seed Original Articles & Repair Truncated Meta Descriptions
   const artCount = (db.prepare('SELECT COUNT(*) as count FROM articles').get() as { count: number }).count;
   if (artCount === 0) {
     const insertArt = db.prepare(`
@@ -792,66 +879,16 @@ export function initializeDatabase(): void {
     tx(INITIAL_ARTICLES);
   }
 
-  // Seed Initial Media items explicitly
+  // Seed Initial Media items explicitly and purge any external ui-avatars fallback media rows
+  db.prepare("DELETE FROM media_assets WHERE source_url LIKE '%ui-avatars.com%'").run();
   for (const m of INITIAL_MEDIA) {
     registerImageAsset(m.url, m.name, 'media_library', m.id, m.id);
   }
 
-  // Seed Orders
-  const ordCount = (db.prepare('SELECT COUNT(*) as count FROM orders').get() as { count: number }).count;
-  if (ordCount === 0) {
-    const insertOrd = db.prepare(`
-      INSERT INTO orders (
-        id, order_number, customer_name, customer_phone, customer_email,
-        customer_location, items_json, total, payment_method, status, mpesa_receipt, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((ords: Order[]) => {
-      for (const o of ords) {
-        insertOrd.run(
-          o.id,
-          o.order_number,
-          o.customer_name,
-          o.customer_phone,
-          o.customer_email,
-          o.customer_location,
-          JSON.stringify(o.items),
-          o.total,
-          o.payment_method,
-          o.status,
-          o.mpesa_receipt || null,
-          o.created_at
-        );
-      }
-    });
-    tx(INITIAL_ORDERS);
-  }
-
-  // Seed WhatsApp Leads
-  const leadCount = (db.prepare('SELECT COUNT(*) as count FROM whatsapp_leads').get() as { count: number }).count;
-  if (leadCount === 0) {
-    const insertLead = db.prepare(`
-      INSERT INTO whatsapp_leads (
-        id, product_id, product_name, phone_number, total_value, timestamp, status, notes, source
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((leads: WhatsAppLead[]) => {
-      for (const l of leads) {
-        insertLead.run(
-          l.id,
-          l.product_id || null,
-          l.product_name,
-          l.phone_number,
-          l.total_value,
-          l.timestamp,
-          l.status,
-          l.notes || '',
-          l.source || 'whatsapp_button'
-        );
-      }
-    });
-    tx(INITIAL_LEADS);
-  }
+  // Purge all demo orders & demo WhatsApp leads from the SQLite database
+  db.prepare("DELETE FROM orders WHERE order_number IN ('SH-2026-1041', 'SH-2026-1042') OR customer_name IN ('James Mwangi', 'Beatrice Wanjiku')").run();
+  db.prepare("DELETE FROM whatsapp_leads WHERE phone_number IN ('+254722334455', '+254711987654', '+254733112233')").run();
+  db.prepare("DELETE FROM audit_logs WHERE actor LIKE '%Patrick Mwangi%'").run();
 
   // Seed Site Settings (About Data & Homepage Config)
   const upsertSetting = db.prepare(`
@@ -1075,5 +1112,162 @@ export const SqlRepository = {
     const computed = hashPassword(passwordPlain, user.salt);
     if (computed !== user.password_hash) return null;
     return user;
+  },
+
+  verifyUserTotp(userId: number, totpPlain: string): boolean {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+    if (!user) return false;
+    const computed = hashPassword(totpPlain.trim(), user.salt);
+    return computed === user.totp_code;
+  },
+
+  updateUserPassword(email: string, newPasswordPlain: string, newTotpPlain?: string) {
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim()) as any;
+    if (!user) return null;
+    const newSalt = crypto.randomBytes(16).toString('hex');
+    const newPwHash = hashPassword(newPasswordPlain, newSalt);
+    const newTotpHash = newTotpPlain
+      ? hashPassword(newTotpPlain.trim(), newSalt)
+      : user.totp_code;
+    db.prepare('UPDATE users SET password_hash = ?, salt = ?, totp_code = ? WHERE id = ?').run(
+      newPwHash,
+      newSalt,
+      newTotpHash,
+      user.id
+    );
+    return {
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      passwordHashPreview: `${newPwHash.slice(0, 16)}...${newPwHash.slice(-12)}`,
+      algorithm: 'scrypt-64byte-hex',
+    };
+  },
+
+  getUsersSummary() {
+    const rows = db.prepare('SELECT id, email, role, name, password_hash, totp_code, salt, created_at FROM users ORDER BY id ASC').all() as any[];
+    return rows.map((u) => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+      name: u.name,
+      password_hash: u.password_hash,
+      totp_code_hash: u.totp_code,
+      salt: u.salt,
+      created_at: u.created_at,
+    }));
+  },
+
+  getMpesaCredentials() {
+    const row = db.prepare('SELECT * FROM mpesa_api_credentials WHERE id = 1').get() as any;
+    if (!row) {
+      return {
+        shortcode: '4108955',
+        environment: 'production',
+        callback_url: 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+        consumer_key_masked: '',
+        consumer_key_hash: '',
+        consumer_secret_masked: '',
+        consumer_secret_hash: '',
+        passkey_masked: '',
+        passkey_hash: '',
+        initiator_password_hash: '',
+        has_keys: false,
+        updated_at: new Date().toISOString(),
+      };
+    }
+    return {
+      shortcode: row.shortcode,
+      environment: row.environment,
+      callback_url: row.callback_url,
+      consumer_key_masked: row.consumer_key_masked,
+      consumer_key_hash: row.consumer_key_hash,
+      consumer_secret_masked: row.consumer_secret_masked,
+      consumer_secret_hash: row.consumer_secret_hash,
+      passkey_masked: row.passkey_masked,
+      passkey_hash: row.passkey_hash,
+      initiator_password_hash: row.initiator_password_hash,
+      has_keys: Boolean(row.consumer_key_hash && row.consumer_secret_hash),
+      updated_at: row.updated_at,
+    };
+  },
+
+  saveMpesaCredentials(params: {
+    shortcode?: string;
+    environment?: string;
+    callbackUrl?: string;
+    consumerKey?: string;
+    consumerSecret?: string;
+    passkey?: string;
+    initiatorPassword?: string;
+  }) {
+    const current = db.prepare('SELECT * FROM mpesa_api_credentials WHERE id = 1').get() as any;
+    const salt = current?.salt || crypto.randomBytes(16).toString('hex');
+    const shortcode = (params.shortcode || current?.shortcode || '4108955').trim();
+    const environment = (params.environment || current?.environment || 'production').trim();
+    const callbackUrl = (
+      params.callbackUrl ||
+      current?.callback_url ||
+      'https://shantisdesigns.co.ke/api/payments/mpesa/callback'
+    ).trim();
+
+    const consumerKeyMasked = params.consumerKey?.trim()
+      ? maskSecretValue(params.consumerKey.trim())
+      : current?.consumer_key_masked || '';
+    const consumerKeyHash = params.consumerKey?.trim()
+      ? hashPassword(params.consumerKey.trim(), salt)
+      : current?.consumer_key_hash || '';
+
+    const consumerSecretMasked = params.consumerSecret?.trim()
+      ? maskSecretValue(params.consumerSecret.trim())
+      : current?.consumer_secret_masked || '';
+    const consumerSecretHash = params.consumerSecret?.trim()
+      ? hashPassword(params.consumerSecret.trim(), salt)
+      : current?.consumer_secret_hash || '';
+
+    const passkeyMasked = params.passkey?.trim()
+      ? maskSecretValue(params.passkey.trim())
+      : current?.passkey_masked || '';
+    const passkeyHash = params.passkey?.trim()
+      ? hashPassword(params.passkey.trim(), salt)
+      : current?.passkey_hash || '';
+
+    const initiatorPasswordHash = params.initiatorPassword?.trim()
+      ? hashPassword(params.initiatorPassword.trim(), salt)
+      : current?.initiator_password_hash || '';
+
+    const updatedAt = new Date().toISOString();
+
+    db.prepare(`
+      UPDATE mpesa_api_credentials
+      SET shortcode = ?,
+          environment = ?,
+          callback_url = ?,
+          consumer_key_masked = ?,
+          consumer_key_hash = ?,
+          consumer_secret_masked = ?,
+          consumer_secret_hash = ?,
+          passkey_masked = ?,
+          passkey_hash = ?,
+          initiator_password_hash = ?,
+          salt = ?,
+          updated_at = ?
+      WHERE id = 1
+    `).run(
+      shortcode,
+      environment,
+      callbackUrl,
+      consumerKeyMasked,
+      consumerKeyHash,
+      consumerSecretMasked,
+      consumerSecretHash,
+      passkeyMasked,
+      passkeyHash,
+      initiatorPasswordHash,
+      salt,
+      updatedAt
+    );
+
+    return this.getMpesaCredentials();
   },
 };

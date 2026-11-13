@@ -6986,7 +6986,7 @@ export const INITIAL_PROJECTS: Project[] = [
     "category_name": "Showroom",
     "system_size": "Full Display of Inverters, Batteries, Panels & Pumps",
     "panels_count": "Horay N-Type & JA Solar Live Display",
-    "inverter_specs": "Must, Deye, Growatt & Eastman Live Demo Units",
+    "inverter_specs": "Must, Deye, Growatt & Eastman Display Units",
     "battery_specs": "Lithium Valley, EcoFlow, Allgrand & Eastman Stock",
     "image_url": "https://shantisprojects.lovable.app/__l5e/assets-v1/78fdbbd6-07d9-40dc-87de-9b29f1867f72/showroom.jpg",
     "gallery": [
@@ -7203,8 +7203,7 @@ export const INITIAL_PARTNERS: Partner[] = [
   }
 ];
 
-export const GOOGLE_BUSINESS_PROFILE_URL =
-  'https://www.google.com/search?q=shantis+designs&client=ms-android-transsion&hs=OJKW&sca_esv=f822089436cb05c6&sxsrf=AKL5yDi4kXNJ7m0tfYIKTo2Us_YAAZWhOA%3A1794566463617&ei=P-n2apmfJfOfhbIPhoXYiQY&biw=411&bih=763&oq=shantis+designs&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIg9zaGFudGlzIGRlc2lnbnMyBRAAGIAEMgQQABgeMgYQABgeGAoyBRAAGO8FMgUQABjvBTIFEAAY7wUyCBAAGIkFGKIEMggQABiJBRiiBEi-J1CVJFiVJHAAeACQAQCYAZMDoAG0BaoBBzItMS4wLjG4AQPIAQD4AQGYAgKgAuAFwgIJEAAYHhgNGLADwgILEAAYCBgeGA0YsAPCAg4QABiABBiKBRiGAxiwA8ICCBAAGO8FGLADwgILEAAYiQUYogQYsAOYAwDiAwUSATEgQIgGAZAGC5IHBTMtMS4xoAfbCrIHBTMtMS4xuAfgBcIHBTMtMS4xyAcrgAgB&sclient=mobile-gws-wiz-serp#ebo=0&mpd=~13542450485038602063/customers/reviews';
+export const GOOGLE_BUSINESS_PROFILE_URL = 'https://g.page/r/CVAYv1cTmiLaEAE/review';
 
 export const INITIAL_REVIEWS: GoogleReview[] = [
   {
@@ -7226,7 +7225,7 @@ export const INITIAL_REVIEWS: GoogleReview[] = [
   {
     "id": 2,
     "author_name": "Gerishon Ngugi",
-    "author_photo": "https://ui-avatars.com/api/?name=Gerishon+Ngugi&background=238B3D&color=fff&bold=true",
+    "author_photo": "",
     "rating": 5,
     "time_ago": "a month ago",
     "text": "Great team of experts for your solar installations who you can trust 👍",
@@ -7277,137 +7276,10 @@ export const INITIAL_ARTICLES: Article[] = [
       "Tier 1 Solar Panels"
     ],
     "read_time": "5 min read"
-  },
-  {
-    "id": 10015,
-    "title": "How to Choose the Right Doyin Solar Submersible Borehole Pump in Kenya",
-    "slug": "how-to-choose-doyin-solar-submersible-borehole-pump-kenya",
-    "category": "Water Pumping Engineering",
-    "content": "Selecting a solar water pump in Kenya requires matching your borehole dynamic head (meters) and daily water demand (liters/hour) to the right Doyin DC, AC, or Hybrid Submersible Pump. The Doyin 4SD and 4SFI series feature 304 stainless steel impellers and intelligent MPPT pump controllers that allow dual AC/DC hybrid input, ensuring continuous water pumping even on overcast days.",
-    "excerpt": "Learn how to size Doyin DC and AC/DC Hybrid submersible borehole pumps (0.75HP to 10HP) for Kenyan farms, estates, and community water projects in Meru, Machakos, Isiolo, Nakuru & Kisumu.",
-    "meta_description": "Complete engineering guide to sizing Doyin solar submersible borehole and booster water pumps across Nairobi, Meru, Machakos, Isiolo, Nakuru & Mombasa, Kenya.",
-    "author": "Shantis Solar EPC Engineers",
-    "published_at": "2026-02-18",
-    "image_url": "https://shantisdesigns.co.ke/wp-content/uploads/2025/12/4SD10-Submersible-Deep-Well-Borehole-Pump-50Hz-450x450.avif",
-    "tags": [
-      "Water Pumps",
-      "Doyin Solar Pumps Kenya",
-      "Borehole Solar Meru Machakos Isiolo"
-    ],
-    "read_time": "6 min read"
-  },
-  {
-    "id": 10016,
-    "title": "Lithium Valley vs Lead-Acid Batteries: Why Kenyan Homes Are Switching to LiFePO4",
-    "slug": "lithium-valley-lifepo4-solar-batteries-kenya-guide",
-    "category": "Energy Storage Systems (ESS)",
-    "content": "Wall-mounted and rack-mounted Lithium Valley LiFePO4 batteries deliver 6,000+ charge cycles at 80% Depth of Discharge (DoD), giving Kenyan homeowners over 10 to 15 years of maintenance-free service compared to 2-3 years for conventional lead-acid batteries. With built-in RS485 and CAN-Bus BMS communication, Lithium Valley 5.12kWh, 10.24kWh, and 15.36kWh units pair seamlessly with Must, Deye, and Growatt hybrid inverters.",
-    "excerpt": "Discover why Lithium Valley wall-mounted and rack-mounted LiFePO4 battery systems offer the lowest levelized cost of storage for homes and businesses in Nairobi, Mombasa, Kisumu, Meru & Nakuru.",
-    "meta_description": "Compare Lithium Valley LiFePO4 solar batteries with lead-acid batteries in Kenya. 6,000+ cycles & smart BMS in Nairobi, Mombasa, Kisumu, Meru & Nakuru.",
-    "author": "Shantis Solar EPC Engineers",
-    "published_at": "2026-01-25",
-    "image_url": "https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-18-at-18.33.16.jpeg",
-    "tags": [
-      "Lithium Valley Kenya",
-      "Solar Batteries Nairobi Mombasa",
-      "Energy Storage Systems (ESS)"
-    ],
-    "read_time": "5 min read"
   }
 ];
 
-export const INITIAL_LEADS: WhatsAppLead[] = [
-  {
-    "id": 1,
-    "product_id": 11109,
-    "product_name": "1x Must PV1800 PREM 3.5KVA Hybrid Inverter + 1x Lithium Valley 5.12kWh Battery",
-    "phone_number": "+254722334455",
-    "total_value": 137000,
-    "timestamp": "2026-11-10 14:22",
-    "status": "quoted",
-    "notes": "Peter Njoroge — Thika Road, Nairobi",
-    "source": "cart"
-  },
-  {
-    "id": 2,
-    "product_id": 11592,
-    "product_name": "20x Horay N-Type 630W Solar Panels + Deye 12kW 3-Phase Hybrid Inverter",
-    "phone_number": "+254711987654",
-    "total_value": 542000,
-    "timestamp": "2026-11-09 11:05",
-    "status": "converted",
-    "notes": "St. Marys Secondary Ruiru — Ruiru Sub-County",
-    "source": "product_quote"
-  },
-  {
-    "id": 3,
-    "product_id": 9961,
-    "product_name": "Doyin 4SD10 Hybrid Submersible Borehole Pump 2.0HP (1500W)",
-    "phone_number": "+254733112233",
-    "total_value": 46000,
-    "timestamp": "2026-11-11 09:15",
-    "status": "new",
-    "notes": "Josephine Mutua — Machakos County",
-    "source": "installation_request"
-  }
-];
+export const INITIAL_LEADS: WhatsAppLead[] = [];
 
-export const INITIAL_ORDERS: Order[] = [
-  {
-    "id": 1041,
-    "order_number": "SH-2026-1041",
-    "customer_name": "James Mwangi",
-    "customer_phone": "254712345678",
-    "customer_email": "jmwangi@gmail.com",
-    "customer_location": "Lower Kabete Road, House 14, Nairobi County",
-    "items": [
-      {
-        "id": 1,
-        "order_id": 1041,
-        "product_id": 11524,
-        "product_name": "Lithium Valley-BAT-W5.12Da2 5.12kWh",
-        "quantity": 1,
-        "price": 105000,
-        "product_image": "https://shantisdesigns.co.ke/wp-content/uploads/2026/11/LV-BAT-W5.12Da2.png"
-      },
-      {
-        "id": 2,
-        "order_id": 1041,
-        "product_id": 11592,
-        "product_name": "Horay N-Type Solar Panel - 630W",
-        "quantity": 4,
-        "price": 12600,
-        "product_image": "https://shantisdesigns.co.ke/wp-content/uploads/2026/11/Horay-N-Type-Solar-Panels-1.png"
-      }
-    ],
-    "total": 155400,
-    "payment_method": "mpesa_daraja",
-    "status": "paid",
-    "mpesa_receipt": "SJK8912M4P",
-    "created_at": "2026-11-10 16:40"
-  },
-  {
-    "id": 1042,
-    "order_number": "SH-2026-1042",
-    "customer_name": "Beatrice Wanjiku",
-    "customer_phone": "254720998877",
-    "customer_email": "bwanjiku@yahoo.com",
-    "customer_location": "Tatu City Residential Precinct, Kiambu County",
-    "items": [
-      {
-        "id": 3,
-        "order_id": 1042,
-        "product_id": 10310,
-        "product_name": "ECOFLOW DELTA 2",
-        "quantity": 1,
-        "price": 72600,
-        "product_image": "https://shantisdesigns.co.ke/wp-content/uploads/2026/10/WhatsApp-Image-2026-01-06-at-20.44.24-1-1-450x450.jpeg"
-      }
-    ],
-    "total": 72600,
-    "payment_method": "mpesa_daraja",
-    "status": "paid",
-    "mpesa_receipt": "SJL4409K2Q",
-    "created_at": "2026-11-11 08:30"
-  }
-];
+export const INITIAL_ORDERS: Order[] = [];
+

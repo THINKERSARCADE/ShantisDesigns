@@ -312,6 +312,7 @@ export default function App() {
       }
       return [...prev, { product, quantity }];
     });
+    setIsCartOpen(true);
   };
 
   const handleUpdateCartQuantity = (productId: number, delta: number) => {
