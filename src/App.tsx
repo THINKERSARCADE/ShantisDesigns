@@ -92,6 +92,8 @@ export default function App() {
   const [comparisonIds, setComparisonIds] = useState<number[]>([]);
 
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
+  const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null);
+  const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(null);
   // Dedicated Individual Product Page state (/product/[slug]/)
   const [activeProductPage, setActiveProductPage] = useState<Product | null>(null);
   // Quick-View Modal Product state
@@ -137,6 +139,10 @@ export default function App() {
       }
     }
     if (cleanPath === '/projects' || cleanPath.startsWith('/portfolio/')) {
+      const pSlug = cleanPath.startsWith('/portfolio/')
+        ? cleanPath.replace('/portfolio/', '').split('/')[0] || null
+        : null;
+      setSelectedProjectSlug(pSlug);
       setCurrentPage('projects');
       return;
     }
@@ -152,7 +158,11 @@ export default function App() {
       setCurrentPage('order-tracking');
       return;
     }
-    if (cleanPath === '/blog' || cleanPath === '/insights') {
+    if (cleanPath === '/blog' || cleanPath.startsWith('/blog/') || cleanPath === '/insights') {
+      const bSlug = cleanPath.startsWith('/blog/')
+        ? cleanPath.replace('/blog/', '').split('/')[0] || null
+        : null;
+      setSelectedArticleSlug(bSlug);
       setCurrentPage('insights');
       return;
     }
@@ -219,10 +229,13 @@ export default function App() {
     setCurrentPage(page);
     if (page === 'home') {
       setSelectedCategorySlug(null);
+      setSelectedProjectSlug(null);
+      setSelectedArticleSlug(null);
       pushUrl('/');
     } else if (page === 'shop') {
       pushUrl(selectedCategorySlug ? `/product-category/${selectedCategorySlug}/` : '/shop/');
     } else if (page === 'projects') {
+      setSelectedProjectSlug(null);
       pushUrl('/projects/');
     } else if (page === 'about') {
       pushUrl('/about/');
@@ -231,6 +244,7 @@ export default function App() {
     } else if (page === 'order-tracking') {
       pushUrl('/order-tracking/');
     } else if (page === 'insights') {
+      setSelectedArticleSlug(null);
       pushUrl('/blog/');
     } else if (page === 'kenya-seo') {
       pushUrl('/solar-installation-kenya/');
@@ -378,9 +392,20 @@ export default function App() {
       <SeoSchema
         products={products}
         articles={articles}
+        projects={projects}
         categories={categories}
         currentPage={currentPage}
         activeProduct={activeProductPage}
+        activeArticle={
+          selectedArticleSlug
+            ? articles.find(a => a.slug.toLowerCase() === selectedArticleSlug.toLowerCase()) || null
+            : null
+        }
+        activeProject={
+          selectedProjectSlug
+            ? projects.find(p => p.slug.toLowerCase() === selectedProjectSlug.toLowerCase()) || null
+            : null
+        }
         selectedCategorySlug={selectedCategorySlug}
       />
 
@@ -583,6 +608,11 @@ export default function App() {
         {currentPage === 'projects' && (
           <ProjectsPage
             projects={projects}
+            activeProjectSlug={selectedProjectSlug}
+            onSelectProjectSlug={slug => {
+              setSelectedProjectSlug(slug);
+              pushUrl(slug ? `/portfolio/${slug}/` : '/projects/');
+            }}
             onRequestQuote={() => {
               setQuoteProduct(null);
               setIsQuoteOpen(true);
@@ -591,7 +621,16 @@ export default function App() {
         )}
 
         {/* VIEW 5: INSIGHTS & BLOG PAGE (/blog/) */}
-        {currentPage === 'insights' && <InsightsPage articles={articles} />}
+        {currentPage === 'insights' && (
+          <InsightsPage
+            articles={articles}
+            activeArticleSlug={selectedArticleSlug}
+            onSelectArticleSlug={slug => {
+              setSelectedArticleSlug(slug);
+              pushUrl(slug ? `/blog/${slug}/` : '/blog/');
+            }}
+          />
+        )}
 
         {/* VIEW 6: ABOUT US PAGE (/about/) */}
         {currentPage === 'about' && (

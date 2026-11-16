@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Project } from '../../types';
 import {
   MapPin,
@@ -11,6 +11,7 @@ import {
   Layers,
   ExternalLink,
   Camera,
+  Film,
   ChevronLeft,
   ChevronRight,
   X
@@ -19,31 +20,85 @@ import {
 interface ProjectsPageProps {
   projects: Project[];
   onRequestQuote: () => void;
+  activeProjectSlug?: string | null;
+  onSelectProjectSlug?: (slug: string | null) => void;
 }
 
-export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQuote }) => {
+const getProjectVideos = (proj: Project | null): string[] => {
+  if (!proj) return [];
+  const raw = [...(proj.videos || []), ...(proj.video_url ? [proj.video_url] : [])]
+    .map(v => v?.trim())
+    .filter(Boolean) as string[];
+  return Array.from(new Set(raw));
+};
+
+export const ProjectsPage: React.FC<ProjectsPageProps> = ({
+  projects,
+  onRequestQuote,
+  activeProjectSlug = null,
+  onSelectProjectSlug,
+}) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [activeCaseStudy, setActiveCaseStudy] = useState<Project | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+  const [modalMediaTab, setModalMediaTab] = useState<'photos' | 'videos'>('photos');
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number>(0);
 
-  const openProjectGallery = (proj: Project, imgIndex = 0) => {
+  useEffect(() => {
+    if (!activeProjectSlug) return;
+    const matched = projects.find(
+      p => p.slug?.toLowerCase() === activeProjectSlug.toLowerCase()
+    );
+    if (matched) {
+      setActiveCaseStudy(matched);
+      setActiveImageIndex(0);
+      setActiveVideoIndex(0);
+      setModalMediaTab('photos');
+    }
+  }, [activeProjectSlug, projects]);
+
+  const openProjectGallery = (
+    proj: Project,
+    imgIndex = 0,
+    initialTab: 'photos' | 'videos' = 'photos'
+  ) => {
     setActiveCaseStudy(proj);
     setActiveImageIndex(imgIndex);
+    setActiveVideoIndex(0);
+    setModalMediaTab(initialTab);
+    onSelectProjectSlug?.(proj.slug);
   };
 
-  // Featured case studies from live site
-  const featuredSlugs = [
-    'tatu-city-solar-installation',
-    'secondary-school-solar-installation-in-ruiru',
-    'thika-road-residential-solar-installation'
-  ];
-  const featuredProjects = projects
-    .filter(p =>
-      featuredSlugs.some(slug => p.slug === slug || p.title.toLowerCase().includes(slug.split('-')[0]))
-    )
-    .slice(0, 3);
+  const closeProjectModal = () => {
+    setActiveCaseStudy(null);
+    onSelectProjectSlug?.(null);
+  };
 
-  // Filter categories matching live site: All, Solar Installation, Solar Water Heating, Water Installation, Storage, Showroom
+  // Always keep the latest projects on top (highest database ID first)
+  const sortedProjects = [...projects].sort((a, b) => Number(b.id) - Number(a.id));
+
+  // Featured case studies prioritizing newly added featured installs + flagship Ruiru Hybrid & Embakasi deliveries
+  const newestCustomFeatured = sortedProjects.filter(
+    p => p.featured && Number(p.id) > 16
+  );
+  const featuredSlugs = [
+    'ruiru-carport-hybrid-solar-installation',
+    'embakasi-baraka-estate-solar-installation',
+    'tatu-city-solar-installation',
+  ];
+  const preferredFeatured = featuredSlugs
+    .map(slug => sortedProjects.find(p => p.slug === slug))
+    .filter((p): p is Project => Boolean(p));
+  const remainingFeatured = sortedProjects.filter(
+    p => p.featured && Number(p.id) <= 16 && !featuredSlugs.includes(p.slug)
+  );
+  const featuredProjects = [
+    ...newestCustomFeatured,
+    ...preferredFeatured,
+    ...remainingFeatured,
+  ].slice(0, 3);
+
+  // Filter categories
   const filterTabs = [
     'All',
     'Solar Installation',
@@ -55,8 +110,8 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
 
   const filtered =
     selectedFilter === 'All'
-      ? projects
-      : projects.filter(
+      ? sortedProjects
+      : sortedProjects.filter(
           p =>
             p.category_name?.toLowerCase() === selectedFilter.toLowerCase() ||
             (selectedFilter === 'Solar Installation' && p.category === 'residential') ||
@@ -64,7 +119,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
             (selectedFilter === 'Water Installation' && p.category === 'agricultural')
         );
 
-  const totalPhotosCount = projects.reduce(
+  const totalPhotosCount = sortedProjects.reduce(
     (sum, p) => sum + (p.gallery && p.gallery.length > 0 ? p.gallery.length : 1),
     0
   );
@@ -76,6 +131,8 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
       ? [activeCaseStudy.image_url]
       : [];
 
+  const currentVideos = getProjectVideos(activeCaseStudy);
+
   return (
     <div className="bg-slate-50 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
@@ -83,13 +140,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
         <div className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 bg-[#238B3D]/10 text-[#238B3D] border border-[#238B3D]/25 px-3.5 py-1 rounded-full text-xs font-bold mb-3 uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4 text-[#238B3D]" />
-            <span>EPRA Licensed Solar EPC Portfolio • {totalPhotosCount} Verified Field Photos</span>
+            <span>EPRA Cat CV & V1 Solar EPC Portfolio • {totalPhotosCount} Verified Field Photos</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
             Powering Kenya, one roof at a time.
           </h1>
           <p className="text-xs sm:text-base text-slate-600 mt-3 leading-relaxed">
-            Residential, institutional and commercial solar delivered by Shantis Designs across Nairobi, Kiambu, Nakuru, Kirinyaga, Meru, Mombasa, Kisumu, Isiolo & Machakos — inverters, lithium batteries, N-Type panels and complete backup systems engineered for African conditions.
+            Residential, carport, institutional and commercial solar delivered by EPRA Contractor Category CV & Vendor V1 specialist Shantis Designs across Nairobi, Ruiru, Embakasi, Kiambu, Nakuru, Meru, Mombasa, Kisumu, Isiolo & Machakos.
           </p>
 
           {/* Exact 4 Metrics */}
@@ -124,7 +181,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                 Featured case studies
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                A closer look at the projects our clients ask about most.
+                A closer look at the residential, solar carport & commercial installations our clients ask about most.
               </p>
             </div>
           </div>
@@ -132,6 +189,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {featuredProjects.map(proj => {
               const photos = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+              const videos = getProjectVideos(proj);
               return (
                 <div
                   key={`featured-${proj.id}`}
@@ -144,12 +202,27 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                       alt={proj.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute top-3 left-3 bg-[#F58220] text-white text-[11px] font-bold px-3 py-1 rounded-full">
-                      {proj.system_size}
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                      {Number(proj.id) >= 15 && (
+                        <span className="bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                          Latest
+                        </span>
+                      )}
+                      <span className="bg-[#F58220] text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                        {proj.system_size}
+                      </span>
                     </div>
-                    <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{photos.length} {photos.length === 1 ? 'Photo' : 'Photos'}</span>
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      {videos.length > 0 && (
+                        <span className="bg-[#238B3D] text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                          <Film className="w-3.5 h-3.5" />
+                          <span>Video</span>
+                        </span>
+                      )}
+                      <span className="bg-black/75 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{photos.length}</span>
+                      </span>
                     </div>
                     <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-xs text-white text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-amber-400" />
@@ -173,7 +246,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                     <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
                       <span className="text-emerald-400 font-bold">{proj.kplc_savings}</span>
                       <span className="inline-flex items-center gap-1 font-bold text-white group-hover:text-[#F58220]">
-                        <span>View Gallery ({photos.length})</span>
+                        <span>View Gallery ({photos.length}{videos.length > 0 ? ` + ${videos.length} Video` : ''})</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
@@ -192,7 +265,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                 Recent solar installations
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                Filter by category to see the systems and complete site photo galleries we’ve deployed across Kenya.
+                Filter by category to inspect systems, site walkthrough videos, and installation photo galleries across Kenya.
               </p>
             </div>
 
@@ -218,6 +291,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {filtered.map(proj => {
               const photos = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+              const videos = getProjectVideos(proj);
               return (
                 <div
                   key={proj.id}
@@ -237,9 +311,24 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                       {proj.category_name}
                     </div>
 
-                    <div className="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-                      <Camera className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{photos.length} {photos.length === 1 ? 'Photo' : 'Site Photos'}</span>
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      {videos.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openProjectGallery(proj, 0, 'videos');
+                          }}
+                          className="bg-[#238B3D] hover:bg-[#1b7030] text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md cursor-pointer"
+                        >
+                          <Film className="w-3.5 h-3.5" />
+                          <span>Site Video</span>
+                        </button>
+                      )}
+                      <div className="bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
+                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{photos.length} {photos.length === 1 ? 'Photo' : 'Site Photos'}</span>
+                      </div>
                     </div>
 
                     <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-xs text-white text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5">
@@ -340,17 +429,26 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                     </div>
 
                     {/* Action CTA */}
-                    <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className={`pt-2 grid grid-cols-1 ${videos.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-2.5`}>
                       <button
-                        onClick={() => openProjectGallery(proj, 0)}
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        onClick={() => openProjectGallery(proj, 0, 'photos')}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>View All {photos.length} Photos</span>
+                        <span>View {photos.length} Photos</span>
                       </button>
+                      {videos.length > 0 && (
+                        <button
+                          onClick={() => openProjectGallery(proj, 0, 'videos')}
+                          className="w-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Film className="w-3.5 h-3.5 text-[#F58220]" />
+                          <span>Watch Video</span>
+                        </button>
+                      )}
                       <button
                         onClick={onRequestQuote}
-                        className="w-full bg-[#238B3D] hover:bg-[#1b7030] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                        className="w-full bg-[#238B3D] hover:bg-[#1b7030] text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                       >
                         <span>Request Similar System</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -363,7 +461,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
           </div>
         </section>
 
-        {/* SECTION 3: Complete Field Installation Photo Archive (All 80+ Live Site Images) */}
+        {/* SECTION 3: Complete Field Installation Photo Archive */}
         <section className="space-y-6 pt-6 border-t border-slate-200">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
@@ -374,13 +472,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                 Complete Field Installation Photo Gallery ({totalPhotosCount} Photos)
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                Every photograph below is stored in our SQL database from real Shantis Designs rooftop arrays, inverter rooms, lithium battery banks, and borehole water installations across Kenya.
+                Every photograph below is stored in our SQL database from real Shantis Designs solar carports, rooftop arrays, inverter rooms, lithium battery banks, and borehole water installations across Kenya.
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {projects.flatMap(proj => {
+            {sortedProjects.flatMap(proj => {
               const photos = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
               return photos.map((imgUrl, idx) => (
                 <div
@@ -404,65 +502,140 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
           </div>
         </section>
 
-        {/* Case Study & Multi-Photo Lightbox Modal */}
+        {/* Case Study & Multi-Photo / Multi-Video Lightbox Modal */}
         {activeCaseStudy && (
           <div
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-            onClick={() => setActiveCaseStudy(null)}
+            onClick={closeProjectModal}
           >
             <div
               className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-slate-200 my-auto"
               onClick={e => e.stopPropagation()}
             >
-              <div className="relative aspect-16/9 bg-slate-950 flex items-center justify-center">
-                <img
-                  src={currentGallery[activeImageIndex] || activeCaseStudy.image_url}
-                  alt={`${activeCaseStudy.title} - Photo ${activeImageIndex + 1}`}
-                  className="w-full h-full object-contain"
-                />
+              {/* Top Photo / Video Switcher when site videos exist */}
+              {currentVideos.length > 0 && (
+                <div className="bg-slate-900 px-5 py-2.5 flex items-center justify-between border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setModalMediaTab('photos')}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                        modalMediaTab === 'photos'
+                          ? 'bg-[#F58220] text-white'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Site Photos ({currentGallery.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalMediaTab('videos')}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                        modalMediaTab === 'videos'
+                          ? 'bg-[#238B3D] text-white'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Film className="w-3.5 h-3.5" />
+                      <span>Site Walkthrough {currentVideos.length > 1 ? `Videos (${currentVideos.length})` : 'Video'}</span>
+                    </button>
+                  </div>
+                  <button
+                    onClick={closeProjectModal}
+                    className="bg-slate-800 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Close</span>
+                  </button>
+                </div>
+              )}
 
-                {currentGallery.length > 1 && (
+              <div className="relative aspect-16/9 bg-slate-950 flex items-center justify-center">
+                {modalMediaTab === 'videos' && currentVideos.length > 0 ? (
+                  <video
+                    key={currentVideos[activeVideoIndex] || currentVideos[0]}
+                    src={currentVideos[activeVideoIndex] || currentVideos[0]}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    poster={activeCaseStudy.image_url}
+                    className="w-full h-full object-contain bg-black"
+                  />
+                ) : (
                   <>
-                    <button
-                      onClick={() =>
-                        setActiveImageIndex(prev =>
-                          prev === 0 ? currentGallery.length - 1 : prev - 1
-                        )
-                      }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#F58220] text-white flex items-center justify-center transition-colors cursor-pointer"
-                      aria-label="Previous project photo"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setActiveImageIndex(prev =>
-                          prev === currentGallery.length - 1 ? 0 : prev + 1
-                        )
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#F58220] text-white flex items-center justify-center transition-colors cursor-pointer"
-                      aria-label="Next project photo"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
+                    <img
+                      src={currentGallery[activeImageIndex] || activeCaseStudy.image_url}
+                      alt={`${activeCaseStudy.title} - Photo ${activeImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                    />
+
+                    {currentGallery.length > 1 && (
+                      <>
+                        <button
+                          onClick={() =>
+                            setActiveImageIndex(prev =>
+                              prev === 0 ? currentGallery.length - 1 : prev - 1
+                            )
+                          }
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#F58220] text-white flex items-center justify-center transition-colors cursor-pointer"
+                          aria-label="Previous project photo"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setActiveImageIndex(prev =>
+                              prev === currentGallery.length - 1 ? 0 : prev + 1
+                            )
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#F58220] text-white flex items-center justify-center transition-colors cursor-pointer"
+                          aria-label="Next project photo"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+
+                    <div className="absolute bottom-3 left-3 bg-black/75 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      Photo {activeImageIndex + 1} of {currentGallery.length}
+                    </div>
                   </>
                 )}
 
-                <div className="absolute bottom-3 left-3 bg-black/75 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Photo {activeImageIndex + 1} of {currentGallery.length}
-                </div>
-
-                <button
-                  onClick={() => setActiveCaseStudy(null)}
-                  className="absolute top-3 right-3 bg-black/75 hover:bg-red-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Close</span>
-                </button>
+                {currentVideos.length === 0 && (
+                  <button
+                    onClick={closeProjectModal}
+                    className="absolute top-3 right-3 bg-black/75 hover:bg-red-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Close</span>
+                  </button>
+                )}
               </div>
 
-              {/* Thumbnail Strip inside Modal */}
-              {currentGallery.length > 1 && (
+              {/* Thumbnail or Multi-Video Switcher Strip inside Modal */}
+              {modalMediaTab === 'videos' && currentVideos.length > 1 && (
+                <div className="bg-slate-900 px-6 py-3 flex items-center gap-2 overflow-x-auto">
+                  {currentVideos.map((_, vIdx) => (
+                    <button
+                      key={`modal-vid-${vIdx}`}
+                      type="button"
+                      onClick={() => setActiveVideoIndex(vIdx)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        activeVideoIndex === vIdx
+                          ? 'bg-[#238B3D] text-white'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Film className="w-3.5 h-3.5" />
+                      <span>Walkthrough Video {vIdx + 1}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {modalMediaTab === 'photos' && currentGallery.length > 1 && (
                 <div className="bg-slate-900 px-6 py-3 flex items-center gap-2 overflow-x-auto">
                   {currentGallery.map((imgUrl, idx) => (
                     <button
@@ -519,10 +692,22 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects, onRequestQ
                   <p className="text-[#238B3D] font-bold">
                     <strong>Outcome:</strong> {activeCaseStudy.kplc_savings}
                   </p>
+                  {activeCaseStudy.seo_keywords && activeCaseStudy.seo_keywords.length > 0 && (
+                    <div className="pt-2 border-t border-slate-200 flex flex-wrap gap-1.5">
+                      {activeCaseStudy.seo_keywords.slice(0, 4).map((kw, i) => (
+                        <span
+                          key={i}
+                          className="bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-medium"
+                        >
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => {
-                    setActiveCaseStudy(null);
+                    closeProjectModal();
                     onRequestQuote();
                   }}
                   className="w-full bg-[#F58220] hover:bg-[#e07214] text-white font-black py-3 rounded-xl text-xs sm:text-sm cursor-pointer"

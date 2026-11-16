@@ -29012,7 +29012,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-630W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "630W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29052,7 +29052,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-590W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "590W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29092,7 +29092,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-560W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "560W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29132,7 +29132,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-520W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "520W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29172,7 +29172,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-500W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29212,7 +29212,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-490W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "490W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29252,7 +29252,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-460W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "460W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29292,7 +29292,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-450W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "450W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29332,7 +29332,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-440W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "440W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29372,7 +29372,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-420W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "420W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29412,7 +29412,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "HORAY-350W",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "350W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -29456,7 +29456,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "GROWATT-SPE-12000-ES",
       "Product Category": "Off-Grid & Hybrid Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12KVA",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -29500,7 +29500,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "GROWATT-SPF-6000-ES",
       "Product Category": "Off-Grid & Hybrid Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "6KVA",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -29544,7 +29544,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "GROWATT-SPF-3500-ES",
       "Product Category": "Off-Grid & Hybrid Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.5KVA",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -29588,7 +29588,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-SC215L125P-06W",
       "Product Category": "Commercial & Industrial (C&I) BESS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "06W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -29631,7 +29631,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-SC100A50P-06W",
       "Product Category": "Commercial & Industrial (C&I) BESS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "06W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -29674,7 +29674,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-MAST-T12K-A",
       "Product Category": "Mobile & All-in-One ESS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "15kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -29719,7 +29719,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W16-E5",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "16.0768kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -29764,7 +29764,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W15-E5",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "14.336kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -29809,7 +29809,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W5-E5",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -29853,7 +29853,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-BAT-W5.12DA2",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -29898,7 +29898,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W3-5D",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2.56kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -29941,7 +29941,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-6KHB-120",
       "Product Category": "Hybrid Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "6kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -29986,7 +29986,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LKX-BAT-W15.36DA",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "15.36kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30031,7 +30031,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LKX-BAT-W10.24DA",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10.24kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30076,7 +30076,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LKX-BAT-W5.12DA",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30120,7 +30120,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-25.6V-100AH",
       "Product Category": "12V & 24V Drop-In LiFePO4 Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100Ah",
       "Rated Voltage": "25.6V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30165,7 +30165,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-LFP200-12",
       "Product Category": "12V & 24V Drop-In LiFePO4 Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2.56kW",
       "Rated Voltage": "12.8V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30210,7 +30210,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-LFP100-12",
       "Product Category": "12V & 24V Drop-In LiFePO4 Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1.28kW",
       "Rated Voltage": "12.8V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30255,7 +30255,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-BAT-R5.12AA",
       "Product Category": "Rack Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30298,7 +30298,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-RACK-KIT-TB",
       "Product Category": "Battery Mounting & Hardware",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30339,7 +30339,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W15-5A-FOOTPAD",
       "Product Category": "Battery Mounting & Hardware",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "14.336kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30380,7 +30380,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W15-5A-WHEELS",
       "Product Category": "Battery Mounting & Hardware",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "14.336kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30426,7 +30426,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W15-5A",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "14.336kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30471,7 +30471,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-W10-5A",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10.24kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30516,7 +30516,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-BAT-W10.24AC",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10.24kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30561,7 +30561,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "LV-BAT-W5.12AC",
       "Product Category": "Wall Mounted Lithium Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -30600,7 +30600,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "SD-JINKOBIFI-11296",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -30639,7 +30639,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ALP-0222B200-01",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -30676,7 +30676,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ALP-0222D400-01",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -30713,7 +30713,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1800-VPM-3.2K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.2KVA",
       "Rated Voltage": "1800 V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30752,7 +30752,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1800-VPM-2.2K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2.2KVA",
       "Rated Voltage": "1800 V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30791,7 +30791,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1800-VHM-5.5K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.5KVA",
       "Rated Voltage": "1800 V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30830,7 +30830,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1800-PREM-5.5K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.5KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30869,7 +30869,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1900-EXP-10K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30908,7 +30908,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV1900-EXP-12K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30947,7 +30947,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV3600-PRO-12K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -30986,7 +30986,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV2900-HP-5K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2900 HP",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31025,7 +31025,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "PV2900-HP-6K",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2900 HP",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31064,7 +31064,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "DEYE-SE-G10.2-LV",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -31103,7 +31103,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10124",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "12V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -31142,7 +31142,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10133",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31179,7 +31179,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10130",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31216,7 +31216,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10131",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31253,7 +31253,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10127",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31290,7 +31290,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10128",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31327,7 +31327,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10129",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "300W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -31364,7 +31364,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10123",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "150AH",
       "Rated Voltage": "12V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -31403,7 +31403,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10110",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -31442,7 +31442,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10105",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1HP",
       "Rated Voltage": "800V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31481,7 +31481,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10106",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2HP",
       "Rated Voltage": "1000V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31520,7 +31520,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10109",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -31559,7 +31559,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10103",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "20000W",
       "Rated Voltage": "380V-415V Three-Phase AC",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31598,7 +31598,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10102",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "15000W",
       "Rated Voltage": "380V-415V Three-Phase AC",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31637,7 +31637,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10100",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "16000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31676,7 +31676,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10099",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31715,7 +31715,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10098",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31754,7 +31754,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10097",
       "Product Category": "Solar Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "8000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -31793,7 +31793,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10073",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "620W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -31832,7 +31832,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10058",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -31871,7 +31871,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10070",
       "Product Category": "Solar Panels",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "300W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -31910,7 +31910,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10071",
       "Product Category": "Solar Panels",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "585W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -31949,7 +31949,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10069",
       "Product Category": "Solar Panels",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -31988,7 +31988,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10068",
       "Product Category": "Solar Panels",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "150W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -32027,7 +32027,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10063",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "300AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -32066,7 +32066,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10062",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "12.8V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -32105,7 +32105,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10061",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -32144,7 +32144,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10060",
       "Product Category": "Solar Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -32183,7 +32183,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10055",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2.0HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32222,7 +32222,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10057",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "0.5HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32261,7 +32261,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10054",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1.25HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32300,7 +32300,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10052",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32339,7 +32339,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10051",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1100W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32378,7 +32378,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10049",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "7500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32417,7 +32417,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10048",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32456,7 +32456,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10046",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32495,7 +32495,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10045",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32534,7 +32534,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10044",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32573,7 +32573,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10041",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32612,7 +32612,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10036",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32651,7 +32651,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10030",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32690,7 +32690,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10027",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "4.0HP",
       "Rated Voltage": "380V-415V Three-Phase AC",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32729,7 +32729,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "ARC-10025",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1.0HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32769,7 +32769,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12394-S2669-S26-S91",
       "Product Category": "Hybrid Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32808,7 +32808,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12386-S2689",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1100W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32847,7 +32847,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12382-S2684",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32886,7 +32886,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12382-S2683",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1100W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32925,7 +32925,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12382-S2682",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "800W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -32964,7 +32964,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12375-S2677",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2200W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33003,7 +33003,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12375-S2676",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33042,7 +33042,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12375-S2675",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1100W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33081,7 +33081,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12375-S2674",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "800W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33120,7 +33120,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12400-S2662",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "0.75HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33159,7 +33159,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12400-S2661",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "0.5HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33198,7 +33198,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12400-S2660",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2.0HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33237,7 +33237,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12400-S2659",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1.5HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33276,7 +33276,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "12400-S2658",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.0HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -33315,7 +33315,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "WC-10090-10095",
       "Product Category": "SOLAR LIGHTS",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -33352,7 +33352,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "WC-10081-10082",
       "Product Category": "Solar LED Flood Light",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "60W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -33389,7 +33389,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "SD-9909",
       "Product Category": "All Grand Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "12V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -33428,7 +33428,7 @@ var INITIAL_PRODUCTS = [
       "Model / SKU": "WC-9901-9902",
       "Product Category": "All Grand Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100AH",
       "Rated Voltage": "12V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -33545,7 +33545,7 @@ Warranty
       "Model / SKU": "SD-9865",
       "Product Category": "EASTMAN BATTERIES",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -33584,7 +33584,7 @@ Warranty
       "Model / SKU": "SD-9862",
       "Product Category": "EASTMAN BATTERIES",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.12kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -33693,7 +33693,7 @@ Pure Sine Wave`,
       "Model / SKU": "SD-9856",
       "Product Category": "Eastman Inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "5.5kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -33808,7 +33808,7 @@ The Eastman 3.2kW (3200VA) Hybrid Solar Inverter is a high-performance energy br
       "Model / SKU": "SD-9852",
       "Product Category": "Eastman Inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.2kW",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -33847,7 +33847,7 @@ The Eastman 3.2kW (3200VA) Hybrid Solar Inverter is a high-performance energy br
       "Model / SKU": "WC-9754-9755",
       "Product Category": "Deye Mounted Battery Systems",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "100AH",
       "Rated Voltage": "51.2V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -33886,7 +33886,7 @@ The Eastman 3.2kW (3200VA) Hybrid Solar Inverter is a high-performance energy br
       "Model / SKU": "WC-9745-9746",
       "Product Category": "Deye Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1HP",
       "Rated Voltage": "800V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -33925,7 +33925,7 @@ The Eastman 3.2kW (3200VA) Hybrid Solar Inverter is a high-performance energy br
       "Model / SKU": "WC-9736-9737",
       "Product Category": "Deye Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12000W",
       "Rated Voltage": "380V-415V Three-Phase AC",
       "Output Waveform": "100% Pure Sine Wave",
@@ -33964,7 +33964,7 @@ The Eastman 3.2kW (3200VA) Hybrid Solar Inverter is a high-performance energy br
       "Model / SKU": "WC-9724-9725",
       "Product Category": "Deye Inverters",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "6000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34075,7 +34075,7 @@ Warranty: 3 Years`,
       "Model / SKU": "SD-2221",
       "Product Category": "Solar LED Flood Light",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "150W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -34209,7 +34209,7 @@ We don't just sell equipment; we provide peace of mind. Every ALP series camera 
       "Model / SKU": "WC-2217-2779",
       "Product Category": "Solar LED Flood Light",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -34330,7 +34330,7 @@ Investing in Lithium is an investment in peace of mind. No fumes, no maintenance
       "Model / SKU": "12444",
       "Product Category": "Must Batteries",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "25.6V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -34369,7 +34369,7 @@ Investing in Lithium is an investment in peace of mind. No fumes, no maintenance
       "Model / SKU": "12440",
       "Product Category": "GEL BATTERIES",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "200AH",
       "Rated Voltage": "12V",
       "Battery Chemistry": "LiFePO4 (Lithium Iron Phosphate) / Deep Cycle Gel",
@@ -34408,7 +34408,7 @@ Investing in Lithium is an investment in peace of mind. No fumes, no maintenance
       "Model / SKU": "12431",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "12KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34447,7 +34447,7 @@ Investing in Lithium is an investment in peace of mind. No fumes, no maintenance
       "Model / SKU": "12429",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "10KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34486,7 +34486,7 @@ Investing in Lithium is an investment in peace of mind. No fumes, no maintenance
       "Model / SKU": "12426",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "8KVA",
       "Rated Voltage": "48V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34821,7 +34821,7 @@ CE-EMC+LVD (EN6100-6-3:2007, EN6100-6-1:2017+EN IEC62109-1:2010, EN IEC62109-2:2
       "Model / SKU": "12424",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2900 HP",
       "Rated Voltage": "24V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34860,7 +34860,7 @@ CE-EMC+LVD (EN6100-6-3:2007, EN6100-6-1:2017+EN IEC62109-1:2010, EN IEC62109-2:2
       "Model / SKU": "12421",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.5KVA",
       "Rated Voltage": "24V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34899,7 +34899,7 @@ CE-EMC+LVD (EN6100-6-3:2007, EN6100-6-1:2017+EN IEC62109-1:2010, EN IEC62109-2:2
       "Model / SKU": "12417",
       "Product Category": "Must inverter",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1.5KVA",
       "Rated Voltage": "1800 V",
       "Output Waveform": "100% Pure Sine Wave",
@@ -34938,7 +34938,7 @@ CE-EMC+LVD (EN6100-6-3:2007, EN6100-6-1:2017+EN IEC62109-1:2010, EN IEC62109-2:2
       "Model / SKU": "12416",
       "Product Category": "Water Pumps",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -34978,7 +34978,7 @@ CE-EMC+LVD (EN6100-6-3:2007, EN6100-6-1:2017+EN IEC62109-1:2010, EN IEC62109-2:2
       "Model / SKU": "12415",
       "Product Category": "Automatic Pump Control Unit",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35042,7 +35042,7 @@ Best for Deep Wells: The VEVOR 1.5HP offers the highest lift capacity for the pr
       "Model / SKU": "12412",
       "Product Category": "AC Well Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "0.75HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35151,7 +35151,7 @@ For simple shower boosting, the Kolerflo 120W provides the best value.`,
       "Model / SKU": "12411",
       "Product Category": "AC Booster Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "2HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35191,7 +35191,7 @@ For simple shower boosting, the Kolerflo 120W provides the best value.`,
       "Model / SKU": "12407",
       "Product Category": "AC Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "3.0HP",
       "Rated Voltage": "380V-415V Three-Phase AC",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35231,7 +35231,7 @@ For simple shower boosting, the Kolerflo 120W provides the best value.`,
       "Model / SKU": "12400",
       "Product Category": "AC Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "4.0HP",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35351,7 +35351,7 @@ Because this is a "Heavy-Duty" unit, it is significantly heavier than plastic-im
       "Model / SKU": "12397-S91-S82",
       "Product Category": "Heavy-Duty Hybrid Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "4000W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35472,7 +35472,7 @@ Solar Array: For the 10 m3/h model, you typically need a larger solar array (200
       "Model / SKU": "12394-S20-S76-S52",
       "Product Category": "Hybrid Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "1500W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35614,7 +35614,7 @@ Safety Cable: Always use a stainless steel safety cable to suspend the pump; do 
       "Model / SKU": "12391",
       "Product Category": "Hybrid High Flow Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "800W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35759,7 +35759,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12386",
       "Product Category": "Hybrid Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "800W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35799,7 +35799,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12382",
       "Product Category": "DC Stainless Steel Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "600W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35839,7 +35839,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12375",
       "Product Category": "DC Submersible Pump",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "600W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Motor Type": "Brushless DC / AC Hybrid Permanent Magnet Submersible",
@@ -35879,7 +35879,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12374",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -35917,7 +35917,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12373",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -35955,7 +35955,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12372",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -35993,7 +35993,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12371",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36031,7 +36031,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12370",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36069,7 +36069,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12369",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36107,7 +36107,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12368",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36145,7 +36145,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12367",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36183,7 +36183,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12366",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36221,7 +36221,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12365",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36259,7 +36259,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12364",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36297,7 +36297,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12363",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36335,7 +36335,7 @@ Controller: If the controller is external, mount it in a shaded, ventilated area
       "Model / SKU": "12362",
       "Product Category": "Ecoflow Powerback up",
       "Warranty": "5 Years Manufacturer Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Build Standard": "Heavy-Duty IP65 Weatherproof Outdoor/Indoor Rating"
@@ -36452,7 +36452,7 @@ Inverter Matching: We help you select high-input inverters that can handle the e
       "Model / SKU": "12360",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "595W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -36491,7 +36491,7 @@ Inverter Matching: We help you select high-input inverters that can handle the e
       "Model / SKU": "12347",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "Commercial Grade Standard",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -36530,7 +36530,7 @@ Inverter Matching: We help you select high-input inverters that can handle the e
       "Model / SKU": "12346",
       "Product Category": "Solar Panels",
       "Warranty": "25 Years Performance Warranty",
-      "Certification": "EPRA Class T3 & KEBS Approved",
+      "Certification": "EPRA Cat CV & V1 Supplied & KEBS Approved",
       "Power / Capacity": "55W",
       "Rated Voltage": "230V AC / 48V DC Nominal",
       "Cell Technology": "N-Type Monocrystalline Half-Cut PERC/TOPCon",
@@ -36919,30 +36919,102 @@ var INITIAL_PROJECTS = [
     "kplc_savings": "Walk-In Engineering Consultation & Same-Day Dispatch",
     "description": "Come see inverters, batteries, panels, water pumps, and solar water heaters in person at our Nairobi showroom before you buy.",
     "featured": false
+  },
+  {
+    "id": 15,
+    "title": "Embakasi Baraka Estate 3.7kWp Hybrid Solar Installation",
+    "slug": "embakasi-baraka-estate-solar-installation",
+    "client": "Private Residence \u2014 Baraka Estate, Embakasi",
+    "location": "Embakasi \xB7 Baraka Estate, Nairobi",
+    "category": "residential",
+    "category_name": "Solar Installation",
+    "system_size": "3.7kWp Solar PV + 5.12kWh Lithium Storage",
+    "panels_count": "6x 615W Monocrystalline Half-Cut Solar Panels (3.7kWp)",
+    "inverter_specs": "Growatt Hybrid Solar Inverter + ShineWiFi-X Telemetry",
+    "battery_specs": "5.12kWh LithiumValley 51.2V/100Ah Wall-Mounted LiFePO4",
+    "image_url": "/assets/aistudio/IMG-20261102-WA0020_64780faa.jpg",
+    "gallery": [
+      "/assets/aistudio/IMG-20261102-WA0020_64780faa.jpg",
+      "/assets/aistudio/IMG-20261102-WA0017_580450be.jpg",
+      "/assets/aistudio/IMG-20261102-WA0021_22b44a90.jpg",
+      "/assets/aistudio/IMG-20261102-WA0018_589286fe.jpg",
+      "/assets/aistudio/IMG-20261102-WA0019_68ced2f3.jpg"
+    ],
+    "video_url": "/assets/aistudio/VID-20261102-WA0022_de4d20e9.mp4",
+    "videos": [
+      "/assets/aistudio/VID-20261102-WA0022_de4d20e9.mp4"
+    ],
+    "seo_keywords": [
+      "Solar installation Embakasi Baraka Estate Nairobi",
+      "Growatt hybrid inverter 3.7kWp Kenya",
+      "LithiumValley 51.2V 100Ah wall battery Nairobi",
+      "Zero KPLC daytime grid import solar system"
+    ],
+    "completion_date": "October 2026",
+    "kplc_savings": "0.00W Daytime Grid Import + 100% Battery SOC",
+    "description": "Turnkey EPRA Category CV & V1 residential hybrid installation in Baraka Estate, Embakasi, Nairobi featuring 6 pitched-roof monocrystalline panels, a Growatt hybrid inverter with ShinePhone telemetry (verified 0.00W grid import, 248V PV, 100% battery SOC), neat AC/DC protection switchgear, and a wall-mounted LithiumValley 51.2V 100Ah LiFePO4 battery.",
+    "featured": true
+  },
+  {
+    "id": 16,
+    "title": "Ruiru Hybrid Solar Carport & 16kWh LithiumValley Installation",
+    "slug": "ruiru-carport-hybrid-solar-installation",
+    "client": "Private Residence \u2014 Ruiru, Kiambu County",
+    "location": "Ruiru \xB7 Kiambu County",
+    "category": "residential",
+    "category_name": "Solar Installation",
+    "system_size": "5kWp Carport PV + 16kWh LithiumValley W16-E5",
+    "panels_count": "8x 600W Monocrystalline Panels on Structural Steel Carport",
+    "inverter_specs": "ATO Sun II Hybrid Inverter + Dual AC/DC Isolator DB",
+    "battery_specs": "16kWh LithiumValley W16-E5 Smart LiFePO4 Storage Bank",
+    "image_url": "/assets/aistudio/IMG-20261102-WA0024_c3825f9c.jpg",
+    "gallery": [
+      "/assets/aistudio/IMG-20261102-WA0024_c3825f9c.jpg",
+      "/assets/aistudio/IMG-20261102-WA0026_ccca215e.jpg",
+      "/assets/aistudio/IMG-20261102-WA0023_5cf90991.jpg",
+      "/assets/aistudio/IMG-20261102-WA0025_cd0df347.jpg",
+      "/assets/aistudio/IMG-20261102-WA0016_70200ad9.jpg"
+    ],
+    "video_url": "/assets/aistudio/VID-20261102-WA0014_8693ea78.mp4",
+    "videos": [
+      "/assets/aistudio/VID-20261102-WA0014_8693ea78.mp4",
+      "/assets/aistudio/VID-20261102-WA0015_b7ad5a69.mp4"
+    ],
+    "seo_keywords": [
+      "Solar installation Ruiru Kiambu County",
+      "Solar carport canopy installation Kenya",
+      "LithiumValley W16-E5 16kWh battery price Kenya",
+      "Hybrid inverter installation Thika Road Ruiru",
+      "EPRA Contractor Category CV and Vendor V1 Ruiru"
+    ],
+    "completion_date": "November 2026",
+    "kplc_savings": "90% KPLC Tariff Reduction + Whole-Home Night Autonomy",
+    "description": "Custom-engineered solar carport & energy storage system in Ruiru, Kiambu County built by our EPRA Contractor Category CV & Vendor Category V1 team. Features a heavy-duty black structural steel carport canopy supporting 8 high-efficiency monocrystalline panels, neat indoor PVC trunking, AC/DC surge protection switchgear, an ATO Sun II hybrid inverter, and a crated LithiumValley W16-E5 16kWh LiFePO4 battery bank.",
+    "featured": true
   }
 ];
 var INITIAL_ABOUT_DATA = {
   "headline": "Clean Energy, For a Greener Africa",
-  "subheading": "Shantis Solar Solutions is a licensed solar engineering, procurement, and construction company dedicated to delivering reliable, affordable, and sustainable clean energy solutions across Africa.",
+  "subheading": "Shantis Solar Solutions is a licensed EPRA Contractor Category CV & Vendor Category V1 solar engineering, procurement, and construction company dedicated to delivering reliable, affordable, and sustainable clean energy solutions across Africa.",
   "partner_section_title": "Your Partner in Solar Energy Transformation",
-  "partner_intro_1": "Shantis Designs Limited (trading as Shantis Solar Solutions) is a licensed solar EPC company registered under the Energy and Petroleum Regulatory Authority (EPRA) in Kenya. We specialize in solar power system design, installation, and maintenance for residential, commercial, and industrial clients.",
+  "partner_intro_1": "Shantis Designs Limited (trading as Shantis Solar Solutions) is a licensed solar EPC company registered under the Energy and Petroleum Regulatory Authority (EPRA) in Kenya as Contractor Category CV and Vendor Category V1. We specialize in solar power system design, installation, and maintenance for residential, commercial, and industrial clients.",
   "partner_intro_2": "Our mission is to empower homes and businesses through clean energy technologies that reduce costs and protect the environment. With a team of experienced professionals and a commitment to quality, we deliver tailored solutions backed by expert support and ongoing maintenance.",
   "why_choose": [
     {
       "title": "Expertise You Can Trust",
-      "description": "Skilled professionals with proven experience."
+      "description": "EPRA Category CV & V1 certified engineers with proven track record."
     },
     {
       "title": "High-Quality Products",
-      "description": "Durable equipment from leading manufacturers."
+      "description": "Durable Tier-1 equipment from leading global manufacturers."
     },
     {
       "title": "Tailored Solutions",
-      "description": "Custom systems designed for your needs and budget."
+      "description": "Custom systems designed for your needs, roof or carport, and budget."
     },
     {
       "title": "Cost & Energy Savings",
-      "description": "Lowering electricity bills for long-term independence."
+      "description": "Lowering KPLC electricity bills for long-term energy independence."
     }
   ],
   "vision": "To be Africa's leading provider of innovative and sustainable solar energy solutions.",
@@ -36950,8 +37022,8 @@ var INITIAL_ABOUT_DATA = {
   "core_values": "Integrity, Quality Workmanship, Innovation, Customer Satisfaction, Environmental Responsibility.",
   "certifications": [
     {
-      "title": "EPRA Licensed",
-      "subtitle": "Solar PV Contractor/Vendor"
+      "title": "EPRA Licensed (Cat CV & V1)",
+      "subtitle": "Solar PV Contractor Category CV & Vendor Category V1"
     },
     {
       "title": "NCA Registered",
@@ -37047,6 +37119,105 @@ var INITIAL_MEDIA = [
     "size": "380 KB",
     "dimensions": "1024 \xD7 768 px",
     "uploaded_at": "2026-01-20"
+  },
+  {
+    "id": "media-embakasi-cover",
+    "name": "Embakasi Baraka Estate 6-Panel Rooftop Solar Array",
+    "url": "/assets/aistudio/IMG-20261102-WA0020_64780faa.jpg",
+    "mime_type": "image/jpeg",
+    "size": "420 KB",
+    "dimensions": "1600 \xD7 1200 px",
+    "uploaded_at": "2026-10-31"
+  },
+  {
+    "id": "media-embakasi-inverter",
+    "name": "Embakasi Baraka Estate Growatt Inverter & LithiumValley 5.12kWh",
+    "url": "/assets/aistudio/IMG-20261102-WA0017_580450be.jpg",
+    "mime_type": "image/jpeg",
+    "size": "360 KB",
+    "dimensions": "1200 \xD7 1600 px",
+    "uploaded_at": "2026-10-31"
+  },
+  {
+    "id": "media-embakasi-telemetry",
+    "name": "Embakasi Baraka Estate Growatt ShinePhone Live Telemetry",
+    "url": "/assets/aistudio/IMG-20261102-WA0019_68ced2f3.jpg",
+    "mime_type": "image/jpeg",
+    "size": "210 KB",
+    "dimensions": "900 \xD7 1900 px",
+    "uploaded_at": "2026-10-31"
+  },
+  {
+    "id": "media-embakasi-video",
+    "name": "Embakasi Baraka Estate Site Commissioning Walkthrough Video",
+    "url": "/assets/aistudio/VID-20261102-WA0022_de4d20e9.mp4",
+    "mime_type": "video/mp4",
+    "size": "4.8 MB",
+    "dimensions": "HD Site Video",
+    "uploaded_at": "2026-10-31"
+  },
+  {
+    "id": "media-ruiru-carport-cover",
+    "name": "Ruiru Hybrid Solar Carport Canopy & Engineering Team",
+    "url": "/assets/aistudio/IMG-20261102-WA0024_c3825f9c.jpg",
+    "mime_type": "image/jpeg",
+    "size": "208 KB",
+    "dimensions": "1600 \xD7 1200 px",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-inverter-battery",
+    "name": "Ruiru ATO Sun II Hybrid Inverter & 16kWh LithiumValley W16-E5 Wall Setup",
+    "url": "/assets/aistudio/IMG-20261102-WA0026_ccca215e.jpg",
+    "mime_type": "image/jpeg",
+    "size": "63 KB",
+    "dimensions": "900 \xD7 1900 px",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-array-top",
+    "name": "Ruiru 8-Panel Solar Carport Overhead View",
+    "url": "/assets/aistudio/IMG-20261102-WA0023_5cf90991.jpg",
+    "mime_type": "image/jpeg",
+    "size": "212 KB",
+    "dimensions": "1600 \xD7 1200 px",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-mounting",
+    "name": "Ruiru Solar Carport Steel Frame Panel Mounting",
+    "url": "/assets/aistudio/IMG-20261102-WA0025_cd0df347.jpg",
+    "mime_type": "image/jpeg",
+    "size": "148 KB",
+    "dimensions": "1600 \xD7 1200 px",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-crate",
+    "name": "Ruiru LithiumValley W16-E5 16kWh Battery Unboxing",
+    "url": "/assets/aistudio/IMG-20261102-WA0016_70200ad9.jpg",
+    "mime_type": "image/jpeg",
+    "size": "87 KB",
+    "dimensions": "900 \xD7 1600 px",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-video-1",
+    "name": "Ruiru LithiumValley W16-E5 Unboxing & BMS Walkthrough Video 1",
+    "url": "/assets/aistudio/VID-20261102-WA0014_8693ea78.mp4",
+    "mime_type": "video/mp4",
+    "size": "7.4 MB",
+    "dimensions": "HD Site Video",
+    "uploaded_at": "2026-11-02"
+  },
+  {
+    "id": "media-ruiru-video-2",
+    "name": "Ruiru LithiumValley W16-E5 Battery Site Handling Video 2",
+    "url": "/assets/aistudio/VID-20261102-WA0015_b7ad5a69.mp4",
+    "mime_type": "video/mp4",
+    "size": "9.7 MB",
+    "dimensions": "HD Site Video",
+    "uploaded_at": "2026-11-02"
   }
 ];
 var INITIAL_PARTNERS = [
@@ -37234,6 +37405,69 @@ var INITIAL_ARTICLES = [
       "Tier 1 Solar Panels"
     ],
     "read_time": "5 min read"
+  },
+  {
+    "id": 10010,
+    "title": "Ruiru Hybrid Solar Carport & 16kWh LithiumValley W16-E5 Installation Case Study",
+    "slug": "ruiru-carport-hybrid-solar-lithiumvalley-w16-e5-installation-kenya",
+    "category": "Project Case Studies & Engineering",
+    "content": "Ruiru, Membley, Kamakis, and the wider Thika Superhighway corridor in Kiambu County have become one of Kenya\u2019s fastest-growing residential and light-commercial zones. With modern compounds combining paved parking yards, security perimeter lighting, electric gates, boreholes, and heavy kitchen appliances, homeowners increasingly demand high-capacity hybrid solar backup that maximizes available compound space.\n\nAt Shantis Designs Solar Solutions (EPRA Contractor Category CV & Vendor Category V1), our engineering team designed and commissioned a turnkey 5kWp Hybrid Solar Carport and 16kWh LithiumValley W16-E5 energy storage installation in Ruiru, Kiambu County.\n\n1. Structural Steel Solar Carport Canopy Design\nInstead of crowding every panel onto complex hipped roof ridges, our fabrication and PV mounting engineers built a heavy-duty powder-coated black steel carport structure over the cabro driveway. The custom canopy serves two roles simultaneously:\n- Provides weather-sealed shaded vehicle parking across the paved yard\n- Supports an unobstructed 8-panel monocrystalline PV array (600W class) tilted for optimal Kiambu peak sun capture (~5.6 kWh/m\xB2/day)\n\n2. 16kWh LithiumValley W16-E5 LiFePO4 Battery Bank Commissioning\nFor overnight and multi-day blackout autonomy, the system pairs a high-voltage/48V LithiumValley W16-E5 (51.2V 314Ah / 16.07kWh) smart LiFePO4 battery with an ATO Sun II Hybrid Inverter. Our technicians unboxed, inspected BMS communication harnesses, level-mounted the wall enclosure, and terminated heavy-gauge battery DC conductors through dedicated DC isolator breakers inside clean white PVC trunking.\n\n3. Protection Switchgear, Surge Arrestors & EPRA Category CV/V1 Compliance\nEvery Ruiru residential and institutional installation completed by Shantis Designs follows strict EPRA Contractor Category CV and Vendor Category V1 standards:\n- Type-2 DC & AC Surge Protection Devices (SPDs) for lightning and grid spike protection\n- Dedicated AC bypass/changeover rotary isolator and labelled MCB/RCCB distribution sub-board\n- Closed-loop BMS CAN/RS485 communication between inverter and LithiumValley battery\n\n4. Real-World Benefits for Ruiru & Thika Road Homeowners\n- Cuts monthly KPLC electricity tokens by up to 85%\u201390%\n- Seamless zero-interruption (<10ms) backup for Wi-Fi, home offices, CCTV, fridges, electric fence, and borehole pumps\n- Expandable solar carport bay for future EV charging or extra battery modules\n\nPlanning a Solar Installation in Ruiru, Tatu City, Juja, or Kiambu?\nCall or WhatsApp our EPRA Cat CV & V1 engineering team on +254 115 521 631 or visit Royal King Building (Luthuli Street) and Dev Towers (Biashara Street), Nairobi for a free Ruiru site survey and customized Bill of Quantities.",
+    "excerpt": "How Shantis Designs (EPRA Cat CV & V1) engineered a custom steel solar carport canopy paired with an ATO Sun II hybrid inverter and 16kWh LithiumValley W16-E5 LiFePO4 battery in Ruiru, Kiambu County.",
+    "meta_description": "Ruiru hybrid solar carport & 16kWh LithiumValley W16-E5 battery installation case study by Shantis Designs (EPRA Cat CV & V1). Cut KPLC bills up to 90% in Kiambu.",
+    "author": "Shantis Designs Engineering Team",
+    "published_at": "2026-11-16",
+    "image_url": "/assets/aistudio/IMG-20261102-WA0024_c3825f9c.jpg",
+    "tags": [
+      "Solar Installation Ruiru",
+      "Solar Carport Kenya",
+      "LithiumValley W16-E5 16kWh",
+      "Hybrid Inverter Kiambu",
+      "Thika Road Solar Power",
+      "EPRA Category CV V1 Contractor"
+    ],
+    "read_time": "6 min read"
+  },
+  {
+    "id": 10011,
+    "title": "Embakasi Baraka Estate 3.7kWp Growatt Hybrid Solar Case Study \u2014 0.00W Daytime Grid Import",
+    "slug": "embakasi-baraka-estate-3-7kwp-growatt-lithiumvalley-solar-installation-nairobi",
+    "category": "Project Case Studies & Engineering",
+    "content": "Homeowners across Embakasi, Baraka Estate, Fedha, Nyayo Estate, and Donholm in Nairobi frequently ask how a compact 3.7kWp to 5kWp hybrid solar backup performs in real Kenyan estate conditions\u2014especially during partly cloudy mornings and evening peak loads.\n\nIn October 2026, Shantis Designs Solar Solutions (EPRA Contractor Category CV & Vendor Category V1) completed a verified residential installation in Baraka Estate, Embakasi, Nairobi with live cloud monitoring via Growatt ShinePhone.\n\n1. System Architecture Installed at Baraka Estate\n- Solar Array: 6x 615W Monocrystalline Half-Cut Solar Panels (3.7kWp total DC capacity) rail-mounted flush on concrete pitched roof tiles\n- Hybrid Inverter: Growatt Pure Sine Wave Hybrid MPPT Inverter with ShineWiFi-X real-time datalogger\n- Energy Storage: 5.12kWh LithiumValley 51.2V/100Ah wall-mounted LiFePO4 battery (6,000+ cycles)\n- Balance of System: Surface-mounted AC/DC protection distribution board, DC string isolators, Type-2 SPDs, earthing, and neat conduit trunking\n\n2. Live ShinePhone Plant Telemetry Results\nCommissioned plant screenshots from Baraka Estate confirm:\n- PV Capacity: 3.7kWp producing consistent clean power even under 23\xB0C cloudy skies\n- Battery State of Charge (SOC): 100.00% charged by midday\n- Import from KPLC Grid: 0.00W (total daytime self-consumption & battery charging)\n- Load Power Supported: Full household essentials\u2014lighting, television, Wi-Fi router, security cameras, laptops, and refrigerator\u2014with 229V AC / 54.5V DC battery stability\n\n3. Why Embakasi & Nairobi Eastlands Homes Choose 3.7kWp\u20135kWp + LithiumValley\n- Eliminates frustrating KPLC evening load-shedding and transformer trips\n- Quiet, fume-free apartment & townhouse operation compared to petrol generators\n- Real-time mobile app visibility on iOS & Android from anywhere in the world\n\nReady to eliminate daytime KPLC tokens in Embakasi, Syokimau, Utawala, or South B/C? Book an EPRA Cat CV & V1 residential site audit with Shantis Designs at +254 115 521 631.",
+    "excerpt": "Verified Growatt ShinePhone telemetry from Baraka Estate, Embakasi shows 0.00W grid import and 100% LithiumValley 5.12kWh LiFePO4 charge powered by a 6-panel 3.7kWp rooftop array.",
+    "meta_description": "Embakasi Baraka Estate 3.7kWp Growatt hybrid solar & 5.12kWh LithiumValley case study. Achieve 0.00W daytime KPLC import & 100% outage backup in Nairobi.",
+    "author": "Shantis Designs Engineering Team",
+    "published_at": "2026-11-10",
+    "image_url": "/assets/aistudio/IMG-20261102-WA0020_64780faa.jpg",
+    "tags": [
+      "Solar Installation Embakasi",
+      "Baraka Estate Nairobi Solar",
+      "Growatt Hybrid Inverter Kenya",
+      "LithiumValley 5.12kWh Battery",
+      "Zero KPLC Grid Import",
+      "Home Solar Backup Nairobi"
+    ],
+    "read_time": "5 min read"
+  },
+  {
+    "id": 10012,
+    "title": "EPRA Category CV & Vendor V1 Licensing Guide + 2026 Kenya Hybrid Solar Sizing & Price Keywords",
+    "slug": "epra-category-cv-v1-solar-contractor-kenya-hybrid-sizing-price-guide",
+    "category": "EPRA Standards & Sizing",
+    "content": "Under Kenya\u2019s Energy (Solar Photovoltaic Systems) Regulations enforced by the Energy and Petroleum Regulatory Authority (EPRA), working with a properly licensed contractor and vendor protects homeowners, schools, and factories against substandard wiring, uncertified batteries, and voided insurance or net-metering applications.\n\n1. What EPRA Contractor Category CV & Vendor Category V1 Mean for You\nShantis Designs Limited (Shantis Designs Solar Solutions) holds EPRA Contractor Category CV and Vendor Category V1 credentials alongside National Construction Authority (NCA) electrical registration:\n- Contractor Category CV: Authorizes engineering design, structural mounting (rooftop, ground-mount, and solar carports), DC/AC earthing, surge protection, and commissioning of residential, institutional, and commercial solar PV installations across Kenya.\n- Vendor Category V1: Authorizes wholesale and retail importation, distribution, and warranty backing of genuine Tier-1 solar panels (Horay N-Type, JA Solar, Jinko), hybrid inverters (Must, Deye, Growatt, Eastman), lithium batteries (LithiumValley, EcoFlow, Dyness), and Doyin borehole pumps.\n\n2. 2026 Kenya Solar Sizing & Application Benchmarks\n- 3kW \u2013 5kW Residential Hybrid Kit (Embakasi, Syokimau, Utawala, Kilimani): 6 to 8x 585W\u2013615W panels + 5kW hybrid inverter + 5.12kWh\u201310.24kWh LithiumValley battery. Cuts monthly KPLC bills by KES 10,000\u201322,000.\n- 5kW \u2013 10kW High-Autonomy Villa / Carport System (Ruiru, Tatu City, Karen, Runda, Nakuru): 8 to 18x N-Type bifacial panels + 6kW\u201310kW hybrid inverter + 15kWh\u201316kWh LithiumValley W16-E5 bank.\n- 15kW \u2013 100kW+ Three-Phase Commercial / School EPC (Ruiru, Mombasa, Kisumu, Meru, Eldoret): High-voltage Deye/Must three-phase inverters + rack LiFePO4 BESS.\n- 0.75HP \u2013 10HP Borehole Solarization (Meru, Isiolo, Machakos, Kajiado): Doyin 304 stainless submersible pumps + MPPT solar drives with zero diesel cost.\n\n3. Why Verified Protection & Telemetry Matter\nEvery installation from our Royal King Building (Luthuli Street) showroom and Dev Towers HQ (Biashara Street) is delivered with Type-2 DC/AC surge protection, rotary isolators, proper 4mm\xB2/6mm\xB2 UV-rated solar DC cabling, and remote app monitoring (Growatt ShinePhone, Deye Cloud, or SmartESS) \u2014 backed by nationwide dispatch to all 47 Kenyan counties.",
+    "excerpt": "Understand EPRA Contractor Category CV & Vendor Category V1 compliance in Kenya and compare 2026 residential, carport hybrid, commercial BESS, and borehole solar system sizes.",
+    "meta_description": "Official guide to EPRA Contractor Category CV & Vendor V1 solar licensing in Kenya plus 2026 hybrid solar sizing benchmarks for Nairobi, Ruiru, Mombasa, Meru & Nakuru.",
+    "author": "Shantis Designs Engineering Team",
+    "published_at": "2026-11-15",
+    "image_url": "/assets/aistudio/IMG-20261102-WA0017_580450be.jpg",
+    "tags": [
+      "EPRA Contractor Category CV",
+      "EPRA Vendor Category V1",
+      "Solar Sizing Guide Kenya",
+      "Best Solar Company in Kenya",
+      "LithiumValley Battery Kenya",
+      "Solar Panels Nairobi Ruiru Mombasa Meru"
+    ],
+    "read_time": "7 min read"
   }
 ];
 
@@ -37351,12 +37585,12 @@ var INITIAL_SERVICES = [
     slug: "residential-solar-backup-installation-kenya",
     category: "Residential EPC",
     short_description: "Custom 3kW to 15kW hybrid solar PV & LiFePO4 battery backup systems for Kenyan homes with 0ms blackout switchover.",
-    description: "EPRA Class T3 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.",
+    description: "EPRA Contractor Category CV & Vendor Category V1 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must, Growatt & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Ruiru, Embakasi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.",
     icon_name: "Sun",
     image_url: "https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg",
     features: [
       "Free site survey & load audit",
-      "EPRA licensed installation & warranty",
+      "EPRA Category CV & V1 licensed installation & warranty",
       "Zero transfer time (UPS-grade) backup",
       "Smart Wi-Fi mobile monitoring"
     ],
@@ -37416,15 +37650,15 @@ var INITIAL_SERVICES = [
 ];
 var DEFAULT_HOMEPAGE_CONFIG = {
   template_id: "classic_epc",
-  hero_kicker: "EPRA Licensed Solar EPC Contractor \xB7 Nairobi & Nationwide Kenya",
+  hero_kicker: "EPRA Contractor Category CV & Vendor V1 \xB7 Nairobi & Nationwide Kenya",
   hero_headline: "SHANTIS DESIGNS",
   hero_highlight: "SOLAR SOLUTIONS",
-  hero_subheadline: "Genuine Tier-1 Horay N-Type & JA Solar Panels, Must & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.",
+  hero_subheadline: "Genuine Tier-1 Horay N-Type & JA Solar Panels, Must, Growatt & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.",
   hero_image_url: "https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-06-at-19.48.50.jpeg",
   primary_cta_label: "Shop Solar Equipment",
   secondary_cta_label: "Size Your Solar System",
   epc_banner_title: "Need Turnkey Solar Installation in Kenya?",
-  epc_banner_subtitle: "Nationwide Delivery & EPRA-Certified Solar Installation Across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos \xB7 Call 0115 521 631",
+  epc_banner_subtitle: "Nationwide Delivery & EPRA Category CV & V1 Certified Solar Installation Across Nairobi, Ruiru, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos \xB7 Call 0115 521 631",
   show_trust_bar: true,
   show_deals_section: true,
   show_partners_marquee: true,
@@ -37569,6 +37803,9 @@ function initializeDatabase() {
       battery_specs TEXT NOT NULL,
       image_url TEXT NOT NULL,
       gallery_json TEXT NOT NULL DEFAULT '[]',
+      video_url TEXT DEFAULT '',
+      videos_json TEXT DEFAULT '[]',
+      seo_keywords_json TEXT DEFAULT '[]',
       completion_date TEXT NOT NULL,
       kplc_savings TEXT NOT NULL,
       description TEXT NOT NULL,
@@ -37728,7 +37965,10 @@ function initializeDatabase() {
     "ALTER TABLE mpesa_api_credentials ADD COLUMN consumer_key_enc TEXT DEFAULT ''",
     "ALTER TABLE mpesa_api_credentials ADD COLUMN consumer_secret_enc TEXT DEFAULT ''",
     "ALTER TABLE mpesa_api_credentials ADD COLUMN passkey_enc TEXT DEFAULT ''",
-    "ALTER TABLE mpesa_api_credentials ADD COLUMN initiator_password_enc TEXT DEFAULT ''"
+    "ALTER TABLE mpesa_api_credentials ADD COLUMN initiator_password_enc TEXT DEFAULT ''",
+    "ALTER TABLE projects ADD COLUMN video_url TEXT DEFAULT ''",
+    "ALTER TABLE projects ADD COLUMN videos_json TEXT DEFAULT '[]'",
+    "ALTER TABLE projects ADD COLUMN seo_keywords_json TEXT DEFAULT '[]'"
   ];
   for (const sql of alterStatements) {
     try {
@@ -37931,58 +38171,67 @@ function initializeDatabase() {
     });
     tx(INITIAL_PRODUCTS);
   }
-  const projCount = db.prepare("SELECT COUNT(*) as count FROM projects").get().count;
-  if (projCount === 0) {
-    const insertProj = db.prepare(`
-      INSERT INTO projects (
-        id, title, slug, client, location, category, category_name,
-        system_size, panels_count, inverter_specs, battery_specs,
-        image_url, gallery_json, completion_date, kplc_savings, description, featured
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((projs) => {
-      for (const proj of projs) {
-        const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
-        insertProj.run(
-          proj.id,
-          proj.title,
-          proj.slug,
-          proj.client,
-          proj.location,
-          proj.category,
-          proj.category_name || "Solar Installation",
-          proj.system_size,
-          proj.panels_count,
-          proj.inverter_specs,
-          proj.battery_specs,
-          proj.image_url,
-          JSON.stringify(gallery),
-          proj.completion_date,
-          proj.kplc_savings,
-          proj.description,
-          proj.featured ? 1 : 0
-        );
-        registerImageAsset(proj.image_url, `${proj.title} - Cover`, "project", proj.id);
-        gallery.forEach((imgUrl, idx) => {
-          registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, "project_gallery", `${proj.id}-${idx + 1}`);
-        });
-      }
-    });
-    tx(INITIAL_PROJECTS);
-  } else {
-    const updateGallery = db.prepare("UPDATE projects SET gallery_json = ?, image_url = ?, slug = ? WHERE id = ?");
-    const tx = db.transaction((projs) => {
-      for (const proj of projs) {
-        const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
-        updateGallery.run(JSON.stringify(gallery), proj.image_url, proj.slug, proj.id);
-        registerImageAsset(proj.image_url, `${proj.title} - Cover`, "project", proj.id);
-        gallery.forEach((imgUrl, idx) => {
-          registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, "project_gallery", `${proj.id}-${idx + 1}`);
-        });
-      }
-    });
-    tx(INITIAL_PROJECTS);
-  }
+  const insertOrIgnoreProj = db.prepare(`
+    INSERT OR IGNORE INTO projects (
+      id, title, slug, client, location, category, category_name,
+      system_size, panels_count, inverter_specs, battery_specs,
+      image_url, gallery_json, video_url, videos_json, seo_keywords_json,
+      completion_date, kplc_savings, description, featured
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const updateGallery = db.prepare(`
+    UPDATE projects
+    SET gallery_json = CASE WHEN COALESCE(gallery_json, '[]') IN ('', '[]') OR (id = 16 AND (gallery_json LIKE '%ruiru-secondary-school.jpeg%' OR gallery_json LIKE '%WhatsApp-Image-2026-08-18%')) THEN ? ELSE gallery_json END,
+        image_url = CASE WHEN COALESCE(image_url, '') = '' OR (id = 16 AND (image_url LIKE '%ruiru-secondary-school.jpeg%' OR image_url LIKE '%WhatsApp-Image-2026-08-18%')) THEN ? ELSE image_url END,
+        slug = COALESCE(NULLIF(slug, ''), ?),
+        video_url = COALESCE(NULLIF(video_url, ''), ?),
+        videos_json = CASE WHEN COALESCE(videos_json, '[]') IN ('', '[]') THEN ? ELSE videos_json END,
+        seo_keywords_json = CASE WHEN COALESCE(seo_keywords_json, '[]') IN ('', '[]') THEN ? ELSE seo_keywords_json END
+    WHERE id = ?
+  `);
+  const projTx = db.transaction((projs) => {
+    for (const proj of projs) {
+      const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+      const videos = proj.videos && proj.videos.length > 0 ? proj.videos : proj.video_url ? [proj.video_url] : [];
+      const seoKeywords = proj.seo_keywords || [];
+      insertOrIgnoreProj.run(
+        proj.id,
+        proj.title,
+        proj.slug,
+        proj.client,
+        proj.location,
+        proj.category,
+        proj.category_name || "Solar Installation",
+        proj.system_size,
+        proj.panels_count || "",
+        proj.inverter_specs || "",
+        proj.battery_specs || "",
+        proj.image_url,
+        JSON.stringify(gallery),
+        proj.video_url || "",
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
+        proj.completion_date,
+        proj.kplc_savings,
+        proj.description,
+        proj.featured ? 1 : 0
+      );
+      updateGallery.run(
+        JSON.stringify(gallery),
+        proj.image_url,
+        proj.slug,
+        proj.video_url || "",
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
+        proj.id
+      );
+      registerImageAsset(proj.image_url, `${proj.title} - Cover`, "project", proj.id);
+      gallery.forEach((imgUrl, idx) => {
+        registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, "project_gallery", `${proj.id}-${idx + 1}`);
+      });
+    }
+  });
+  projTx(INITIAL_PROJECTS);
   const srvCount = db.prepare("SELECT COUNT(*) as count FROM services").get().count;
   if (srvCount === 0) {
     const insertSrv = db.prepare(`
@@ -38084,47 +38333,39 @@ function initializeDatabase() {
     db.prepare("UPDATE reviews SET google_review_url = 'https://g.page/r/CVAYv1cTmiLaEAE/review'").run();
   }
   db.prepare("DELETE FROM articles WHERE id IN (10015, 10016)").run();
-  const artCount = db.prepare("SELECT COUNT(*) as count FROM articles").get().count;
-  if (artCount === 0) {
-    const insertArt = db.prepare(`
-      INSERT INTO articles (
-        id, title, slug, category, content, excerpt, meta_description,
-        author, published_at, image_url, tags_json, read_time
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((arts) => {
-      for (const a of arts) {
-        insertArt.run(
-          a.id,
-          a.title,
-          a.slug,
-          a.category,
-          a.content,
-          a.excerpt,
-          a.meta_description,
-          a.author,
-          a.published_at,
-          a.image_url,
-          JSON.stringify(a.tags || []),
-          a.read_time
-        );
-        registerImageAsset(a.image_url, `Article: ${a.title}`, "article", a.id);
-      }
-    });
-    tx(INITIAL_ARTICLES);
-  } else {
-    const updateArtSeo = db.prepare(`
-      UPDATE articles
-      SET excerpt = ?, meta_description = ?, tags_json = ?
-      WHERE id = ?
-    `);
-    const tx = db.transaction((arts) => {
-      for (const a of arts) {
-        updateArtSeo.run(a.excerpt, a.meta_description, JSON.stringify(a.tags || []), a.id);
-      }
-    });
-    tx(INITIAL_ARTICLES);
-  }
+  const insertArt = db.prepare(`
+    INSERT OR IGNORE INTO articles (
+      id, title, slug, category, content, excerpt, meta_description,
+      author, published_at, image_url, tags_json, read_time
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const updateArtSeo = db.prepare(`
+    UPDATE articles
+    SET excerpt = ?, meta_description = ?, tags_json = ?,
+        image_url = CASE WHEN id = 10010 AND (image_url LIKE '%ruiru-secondary-school.jpeg%' OR image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN ? ELSE image_url END
+    WHERE id = ?
+  `);
+  const artTx = db.transaction((arts) => {
+    for (const a of arts) {
+      insertArt.run(
+        a.id,
+        a.title,
+        a.slug,
+        a.category,
+        a.content,
+        a.excerpt,
+        a.meta_description,
+        a.author,
+        a.published_at,
+        a.image_url,
+        JSON.stringify(a.tags || []),
+        a.read_time
+      );
+      updateArtSeo.run(a.excerpt, a.meta_description, JSON.stringify(a.tags || []), a.image_url, a.id);
+      registerImageAsset(a.image_url, `Article: ${a.title}`, "article", a.id);
+    }
+  });
+  artTx(INITIAL_ARTICLES);
   db.prepare("DELETE FROM media_assets WHERE source_url LIKE '%ui-avatars.com%'").run();
   for (const m of INITIAL_MEDIA) {
     registerImageAsset(m.url, m.name, "media_library", m.id, m.id);
@@ -38132,6 +38373,9 @@ function initializeDatabase() {
   db.prepare("DELETE FROM orders WHERE order_number IN ('SH-2026-1041', 'SH-2026-1042') OR customer_name IN ('James Mwangi', 'Beatrice Wanjiku')").run();
   db.prepare("DELETE FROM whatsapp_leads WHERE phone_number IN ('+254722334455', '+254711987654', '+254733112233')").run();
   db.prepare("DELETE FROM audit_logs WHERE actor LIKE '%Patrick Mwangi%'").run();
+  db.prepare(
+    "UPDATE services SET description = ?, features_json = ? WHERE id = 1 AND description LIKE '%Class T3%'"
+  ).run(INITIAL_SERVICES[0].description, JSON.stringify(INITIAL_SERVICES[0].features));
   const upsertSetting = db.prepare(`
     INSERT OR IGNORE INTO site_settings (key, value_json, updated_at)
     VALUES (?, ?, ?)
@@ -38139,6 +38383,24 @@ function initializeDatabase() {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   upsertSetting.run("about_data", JSON.stringify(INITIAL_ABOUT_DATA), now);
   upsertSetting.run("homepage_config", JSON.stringify(DEFAULT_HOMEPAGE_CONFIG), now);
+  try {
+    const aboutRow = db.prepare("SELECT value_json FROM site_settings WHERE key = 'about_data'").get();
+    if (aboutRow?.value_json && (aboutRow.value_json.includes("Solar PV Contractor/Vendor") || aboutRow.value_json.includes("Class T3"))) {
+      const parsed = JSON.parse(aboutRow.value_json);
+      parsed.partner_intro_1 = INITIAL_ABOUT_DATA.partner_intro_1;
+      parsed.subheading = INITIAL_ABOUT_DATA.subheading;
+      parsed.certifications = INITIAL_ABOUT_DATA.certifications;
+      db.prepare("UPDATE site_settings SET value_json = ?, updated_at = ? WHERE key = 'about_data'").run(JSON.stringify(parsed), now);
+    }
+    const hpRow = db.prepare("SELECT value_json FROM site_settings WHERE key = 'homepage_config'").get();
+    if (hpRow?.value_json && (hpRow.value_json.includes("EPRA Licensed Solar EPC Contractor") || hpRow.value_json.includes("Class T3"))) {
+      const parsedHp = JSON.parse(hpRow.value_json);
+      parsedHp.hero_kicker = DEFAULT_HOMEPAGE_CONFIG.hero_kicker;
+      parsedHp.epc_banner_subtitle = DEFAULT_HOMEPAGE_CONFIG.epc_banner_subtitle;
+      db.prepare("UPDATE site_settings SET value_json = ?, updated_at = ? WHERE key = 'homepage_config'").run(JSON.stringify(parsedHp), now);
+    }
+  } catch {
+  }
 }
 var SqlRepository = {
   getProducts() {
@@ -38186,7 +38448,7 @@ var SqlRepository = {
     }));
   },
   getProjects() {
-    const rows = db.prepare("SELECT * FROM projects ORDER BY id ASC").all();
+    const rows = db.prepare("SELECT * FROM projects ORDER BY id DESC").all();
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -38201,6 +38463,9 @@ var SqlRepository = {
       battery_specs: r.battery_specs,
       image_url: r.image_url,
       gallery: JSON.parse(r.gallery_json || "[]"),
+      video_url: r.video_url || "",
+      videos: JSON.parse(r.videos_json || "[]"),
+      seo_keywords: JSON.parse(r.seo_keywords_json || "[]"),
       completion_date: r.completion_date,
       kplc_savings: r.kplc_savings,
       description: r.description,
@@ -38253,7 +38518,7 @@ var SqlRepository = {
     }));
   },
   getArticles() {
-    const rows = db.prepare("SELECT * FROM articles ORDER BY published_at DESC").all();
+    const rows = db.prepare("SELECT * FROM articles ORDER BY published_at DESC, id DESC").all();
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -38654,12 +38919,12 @@ var INITIAL_SERVICES2 = [
     slug: "residential-solar-backup-installation-kenya",
     category: "Residential EPC",
     short_description: "Custom 3kW to 15kW hybrid solar PV & LiFePO4 battery backup systems for Kenyan homes with 0ms blackout switchover.",
-    description: "EPRA Class T3 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.",
+    description: "EPRA Contractor Category CV & Vendor Category V1 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must, Growatt & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Ruiru, Embakasi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.",
     icon_name: "Sun",
     image_url: "https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg",
     features: [
       "Free site survey & load audit",
-      "EPRA licensed installation & warranty",
+      "EPRA Category CV & V1 licensed installation & warranty",
       "Zero transfer time (UPS-grade) backup",
       "Smart Wi-Fi mobile monitoring"
     ],
@@ -38755,15 +39020,15 @@ var INITIAL_SERVICES2 = [
 ];
 var DEFAULT_HOMEPAGE_CONFIG2 = {
   template_id: "classic_epc",
-  hero_kicker: "EPRA Licensed Solar EPC Contractor \xB7 Nairobi & Nationwide Kenya",
+  hero_kicker: "EPRA Contractor Category CV & Vendor V1 \xB7 Nairobi & Nationwide Kenya",
   hero_headline: "SHANTIS DESIGNS",
   hero_highlight: "SOLAR SOLUTIONS",
-  hero_subheadline: "Genuine Tier-1 Horay N-Type & JA Solar Panels, Must & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.",
+  hero_subheadline: "Genuine Tier-1 Horay N-Type & JA Solar Panels, Must, Growatt & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.",
   hero_image_url: "https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-06-at-19.48.50.jpeg",
   primary_cta_label: "Shop Solar Equipment",
   secondary_cta_label: "Size Your Solar System",
   epc_banner_title: "Need Turnkey Solar Installation in Kenya?",
-  epc_banner_subtitle: "Nationwide Delivery & EPRA-Certified Solar Installation Across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos \xB7 Call 0115 521 631",
+  epc_banner_subtitle: "Nationwide Delivery & EPRA Category CV & V1 Certified Solar Installation Across Nairobi, Ruiru, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos \xB7 Call 0115 521 631",
   show_trust_bar: true,
   show_deals_section: true,
   show_partners_marquee: true,
@@ -38886,11 +39151,17 @@ async function ensurePostgresInitialized() {
         battery_specs TEXT,
         image_url TEXT NOT NULL,
         gallery JSONB DEFAULT '[]'::jsonb,
+        video_url TEXT DEFAULT '',
+        videos JSONB DEFAULT '[]'::jsonb,
+        seo_keywords JSONB DEFAULT '[]'::jsonb,
         completion_date TEXT,
         kplc_savings TEXT,
         description TEXT,
         featured BOOLEAN DEFAULT FALSE
       );
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS video_url TEXT DEFAULT '';
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]'::jsonb;
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_keywords JSONB DEFAULT '[]'::jsonb;
 
       CREATE TABLE IF NOT EXISTS services (
         id INTEGER PRIMARY KEY,
@@ -39175,37 +39446,46 @@ async function ensurePostgresInitialized() {
         );
       }
     }
-    const projCount = await client.query("SELECT COUNT(*)::int AS c FROM projects");
-    if (projCount.rows[0].c === 0) {
-      for (const pr of INITIAL_PROJECTS) {
-        await client.query(
-          `INSERT INTO projects (
-            id, title, slug, client, location, category, category_name,
-            system_size, panels_count, inverter_specs, battery_specs,
-            image_url, gallery, completion_date, kplc_savings, description, featured
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)
-          ON CONFLICT (id) DO NOTHING`,
-          [
-            pr.id,
-            pr.title,
-            pr.slug,
-            pr.client,
-            pr.location,
-            pr.category,
-            pr.category_name || "Solar Installation",
-            pr.system_size,
-            pr.panels_count || "",
-            pr.inverter_specs || "",
-            pr.battery_specs || "",
-            pr.image_url,
-            JSON.stringify(pr.gallery && pr.gallery.length > 0 ? pr.gallery : [pr.image_url]),
-            pr.completion_date || "",
-            pr.kplc_savings || "",
-            pr.description || "",
-            Boolean(pr.featured)
-          ]
-        );
-      }
+    for (const pr of INITIAL_PROJECTS) {
+      const gallery = pr.gallery && pr.gallery.length > 0 ? pr.gallery : [pr.image_url];
+      const videos = pr.videos && pr.videos.length > 0 ? pr.videos : pr.video_url ? [pr.video_url] : [];
+      const seoKeywords = pr.seo_keywords || [];
+      await client.query(
+        `INSERT INTO projects (
+          id, title, slug, client, location, category, category_name,
+          system_size, panels_count, inverter_specs, battery_specs,
+          image_url, gallery, video_url, videos, seo_keywords,
+          completion_date, kplc_savings, description, featured
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
+        ON CONFLICT (id) DO UPDATE SET
+          image_url = CASE WHEN projects.id = 16 AND (projects.image_url LIKE '%ruiru-secondary-school.jpeg%' OR projects.image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.image_url ELSE projects.image_url END,
+          gallery = CASE WHEN projects.id = 16 AND (projects.gallery::text LIKE '%ruiru-secondary-school.jpeg%' OR projects.gallery::text LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.gallery ELSE projects.gallery END,
+          video_url = COALESCE(NULLIF(projects.video_url, ''), EXCLUDED.video_url),
+          videos = CASE WHEN projects.videos IS NULL OR projects.videos = '[]'::jsonb THEN EXCLUDED.videos ELSE projects.videos END,
+          seo_keywords = CASE WHEN projects.seo_keywords IS NULL OR projects.seo_keywords = '[]'::jsonb THEN EXCLUDED.seo_keywords ELSE projects.seo_keywords END`,
+        [
+          pr.id,
+          pr.title,
+          pr.slug,
+          pr.client,
+          pr.location,
+          pr.category,
+          pr.category_name || "Solar Installation",
+          pr.system_size,
+          pr.panels_count || "",
+          pr.inverter_specs || "",
+          pr.battery_specs || "",
+          pr.image_url,
+          JSON.stringify(gallery),
+          pr.video_url || "",
+          JSON.stringify(videos),
+          JSON.stringify(seoKeywords),
+          pr.completion_date || "",
+          pr.kplc_savings || "",
+          pr.description || "",
+          Boolean(pr.featured)
+        ]
+      );
     }
     const srvCount = await client.query("SELECT COUNT(*)::int AS c FROM services");
     if (srvCount.rows[0].c === 0) {
@@ -39230,32 +39510,35 @@ async function ensurePostgresInitialized() {
           ]
         );
       }
+    } else {
+      await client.query(
+        `UPDATE services SET description = $1, features = $2::jsonb WHERE id = 1 AND description LIKE '%Class T3%'`,
+        [INITIAL_SERVICES2[0].description, JSON.stringify(INITIAL_SERVICES2[0].features)]
+      );
     }
-    const artCount = await client.query("SELECT COUNT(*)::int AS c FROM articles");
-    if (artCount.rows[0].c === 0) {
-      for (const a of INITIAL_ARTICLES) {
-        await client.query(
-          `INSERT INTO articles (
-            id, title, slug, excerpt, content, author, category,
-            image_url, published_at, read_time, meta_description, tags
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
-          ON CONFLICT (id) DO NOTHING`,
-          [
-            a.id,
-            a.title,
-            a.slug,
-            a.excerpt,
-            a.content,
-            a.author,
-            a.category,
-            a.image_url,
-            a.published_at,
-            a.read_time,
-            a.meta_description,
-            JSON.stringify(a.tags || [])
-          ]
-        );
-      }
+    for (const a of INITIAL_ARTICLES) {
+      await client.query(
+        `INSERT INTO articles (
+          id, title, slug, excerpt, content, author, category,
+          image_url, published_at, read_time, meta_description, tags
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
+        ON CONFLICT (id) DO UPDATE SET
+          image_url = CASE WHEN articles.id = 10010 AND (articles.image_url LIKE '%ruiru-secondary-school.jpeg%' OR articles.image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.image_url ELSE articles.image_url END`,
+        [
+          a.id,
+          a.title,
+          a.slug,
+          a.excerpt,
+          a.content,
+          a.author,
+          a.category,
+          a.image_url,
+          a.published_at,
+          a.read_time,
+          a.meta_description,
+          JSON.stringify(a.tags || [])
+        ]
+      );
     }
     const partCount = await client.query("SELECT COUNT(*)::int AS c FROM partners");
     if (partCount.rows[0].c === 0) {
@@ -39313,6 +39596,21 @@ async function ensurePostgresInitialized() {
       await client.query("INSERT INTO about_page (id, data_json) VALUES (1, $1::jsonb)", [
         JSON.stringify(INITIAL_ABOUT_DATA)
       ]);
+    } else {
+      const existingAbout = await client.query("SELECT data_json FROM about_page WHERE id = 1");
+      const aboutData = existingAbout.rows[0]?.data_json;
+      const serialized = JSON.stringify(aboutData || {});
+      if (serialized.includes("Solar PV Contractor/Vendor") || serialized.includes("Class T3")) {
+        const updatedAbout = {
+          ...aboutData || {},
+          subheading: INITIAL_ABOUT_DATA.subheading,
+          partner_intro_1: INITIAL_ABOUT_DATA.partner_intro_1,
+          certifications: INITIAL_ABOUT_DATA.certifications
+        };
+        await client.query("UPDATE about_page SET data_json = $1::jsonb, updated_at = NOW() WHERE id = 1", [
+          JSON.stringify(updatedAbout)
+        ]);
+      }
     }
     const hpCount = await client.query("SELECT COUNT(*)::int AS c FROM homepage_config");
     if (hpCount.rows[0].c === 0) {
@@ -39321,16 +39619,33 @@ async function ensurePostgresInitialized() {
         "INSERT INTO homepage_config (id, draft_json, published_json) VALUES (1, $1::jsonb, $2::jsonb)",
         [cfgJson, cfgJson]
       );
-    }
-    const mediaCount = await client.query("SELECT COUNT(*)::int AS c FROM media_library");
-    if (mediaCount.rows[0].c === 0) {
-      for (const m of INITIAL_MEDIA) {
+    } else {
+      const existingHp = await client.query("SELECT draft_json, published_json FROM homepage_config WHERE id = 1");
+      const pub = existingHp.rows[0]?.published_json;
+      const draft = existingHp.rows[0]?.draft_json;
+      if (JSON.stringify(pub || {}).includes("EPRA Licensed Solar EPC Contractor")) {
+        const nextPub = {
+          ...pub || {},
+          hero_kicker: DEFAULT_HOMEPAGE_CONFIG2.hero_kicker,
+          epc_banner_subtitle: DEFAULT_HOMEPAGE_CONFIG2.epc_banner_subtitle
+        };
+        const nextDraft = {
+          ...draft || {},
+          hero_kicker: DEFAULT_HOMEPAGE_CONFIG2.hero_kicker,
+          epc_banner_subtitle: DEFAULT_HOMEPAGE_CONFIG2.epc_banner_subtitle
+        };
         await client.query(
-          `INSERT INTO media_library (id, name, url, mime_type, size, dimensions)
-           VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO NOTHING`,
-          [m.id, m.name, m.url, m.mime_type || "image/jpeg", m.size || "280 KB", m.dimensions || "800 \xD7 800 px"]
+          "UPDATE homepage_config SET draft_json = $1::jsonb, published_json = $2::jsonb, updated_at = NOW() WHERE id = 1",
+          [JSON.stringify(nextDraft), JSON.stringify(nextPub)]
         );
       }
+    }
+    for (const m of INITIAL_MEDIA) {
+      await client.query(
+        `INSERT INTO media_library (id, name, url, mime_type, size, dimensions)
+         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO NOTHING`,
+        [m.id, m.name, m.url, m.mime_type || "image/jpeg", m.size || "280 KB", m.dimensions || "800 \xD7 800 px"]
+      );
     }
     const usrCount = await client.query("SELECT COUNT(*)::int AS c FROM users");
     if (usrCount.rows[0].c === 0) {
@@ -39628,7 +39943,7 @@ var PgRepository = {
   },
   async getProjects() {
     const pool = createPool();
-    const res = await pool.query("SELECT * FROM projects ORDER BY id ASC");
+    const res = await pool.query("SELECT * FROM projects ORDER BY id DESC");
     return res.rows.map((r) => ({
       id: Number(r.id),
       title: r.title,
@@ -39643,6 +39958,9 @@ var PgRepository = {
       battery_specs: r.battery_specs || "",
       image_url: r.image_url,
       gallery: parseJsonField(r.gallery, []),
+      video_url: r.video_url || "",
+      videos: parseJsonField(r.videos, []),
+      seo_keywords: parseJsonField(r.seo_keywords, []),
       completion_date: r.completion_date || "",
       kplc_savings: r.kplc_savings || "",
       description: r.description || "",
@@ -39651,21 +39969,31 @@ var PgRepository = {
   },
   async upsertProject(proj) {
     const pool = createPool();
-    const id = Number(proj.id || Date.now());
+    let id = Number(proj.id || 0);
+    if (!id || id > 2147483647) {
+      const maxRes = await pool.query("SELECT COALESCE(MAX(id), 0)::int AS max_id FROM projects");
+      id = Number(maxRes.rows[0]?.max_id || 0) + 1;
+    }
     const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+    const videos = Array.isArray(proj.videos) ? proj.videos.filter(Boolean) : proj.video_url ? [proj.video_url] : [];
+    const videoUrl = String(proj.video_url || videos[0] || "");
+    const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
     const slug = proj.slug || String(proj.title).toLowerCase().replace(/[^a-z0-9]+/g, "-");
     await pool.query(
       `INSERT INTO projects (
         id, title, slug, client, location, category, category_name,
         system_size, panels_count, inverter_specs, battery_specs,
-        image_url, gallery, completion_date, kplc_savings, description, featured
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)
+        image_url, gallery, video_url, videos, seo_keywords,
+        completion_date, kplc_savings, description, featured
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, slug = EXCLUDED.slug, client = EXCLUDED.client,
         location = EXCLUDED.location, category = EXCLUDED.category,
         system_size = EXCLUDED.system_size, panels_count = EXCLUDED.panels_count,
         inverter_specs = EXCLUDED.inverter_specs, battery_specs = EXCLUDED.battery_specs,
         image_url = EXCLUDED.image_url, gallery = EXCLUDED.gallery,
+        video_url = EXCLUDED.video_url, videos = EXCLUDED.videos,
+        seo_keywords = EXCLUDED.seo_keywords,
         completion_date = EXCLUDED.completion_date, kplc_savings = EXCLUDED.kplc_savings,
         description = EXCLUDED.description, featured = EXCLUDED.featured`,
       [
@@ -39682,6 +40010,9 @@ var PgRepository = {
         proj.battery_specs || "",
         proj.image_url,
         JSON.stringify(gallery),
+        videoUrl,
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
         proj.completion_date || "2026",
         proj.kplc_savings || "",
         proj.description || "",
@@ -39693,13 +40024,17 @@ var PgRepository = {
   async updateProject(id, proj) {
     const pool = createPool();
     const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+    const videos = Array.isArray(proj.videos) ? proj.videos.filter(Boolean) : proj.video_url ? [proj.video_url] : [];
+    const videoUrl = String(proj.video_url || videos[0] || "");
+    const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
     await pool.query(
       `UPDATE projects SET
         title = $1, slug = $2, client = $3, location = $4, category = $5,
         system_size = $6, panels_count = $7, inverter_specs = $8, battery_specs = $9,
-        image_url = $10, gallery = $11::jsonb, completion_date = $12, kplc_savings = $13,
-        description = $14, featured = $15
-       WHERE id = $16`,
+        image_url = $10, gallery = $11::jsonb, video_url = $12, videos = $13::jsonb,
+        seo_keywords = $14::jsonb, completion_date = $15, kplc_savings = $16,
+        description = $17, featured = $18
+       WHERE id = $19`,
       [
         proj.title,
         proj.slug,
@@ -39712,6 +40047,9 @@ var PgRepository = {
         proj.battery_specs || "",
         proj.image_url,
         JSON.stringify(gallery),
+        videoUrl,
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
         proj.completion_date || "",
         proj.kplc_savings || "",
         proj.description || "",
@@ -40572,8 +40910,8 @@ var postgresInitPromise = isPostgresConfigured() ? ensurePostgresInitialized().c
 var app = (0, import_express.default)();
 var SHANTIS_GBP_URL = "https://g.page/r/CVAYv1cTmiLaEAE/review";
 var SHANTIS_MAPS_URL = "https://www.google.com/maps/place/Shantis+Designs+Solar+Solutions/@-1.2842386,36.8253148,17z/data=!4m8!3m7!1s0x182f115049f1603f:0xda229a1357bf1850!8m2!3d-1.2842386!4d36.8278897!9m1!1b1!16s%2Fg%2F11zdf52pcw?hl=en";
-app.use(import_express.default.json({ limit: "10mb" }));
-app.use(import_express.default.urlencoded({ extended: true }));
+app.use(import_express.default.json({ limit: "60mb" }));
+app.use(import_express.default.urlencoded({ extended: true, limit: "60mb" }));
 app.use("/api", async (_req, _res, next) => {
   if (isPostgresConfigured()) {
     await postgresInitPromise;
@@ -42053,14 +42391,22 @@ app.post("/api/projects", requireAdminAuth, async (req, res) => {
   if (isPostgresReady()) {
     return res.json({ projects: await PgRepository.upsertProject(proj) });
   }
-  const id = proj.id || Date.now();
+  let id = Number(proj.id || 0);
+  if (!id) {
+    const maxRow = db.prepare("SELECT COALESCE(MAX(id), 0) AS max_id FROM projects").get();
+    id = Number(maxRow?.max_id || 0) + 1;
+  }
   const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+  const videos = Array.isArray(proj.videos) ? proj.videos.filter(Boolean) : proj.video_url ? [proj.video_url] : [];
+  const videoUrl = String(proj.video_url || videos[0] || "");
+  const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
   db.prepare(
     `INSERT OR REPLACE INTO projects (
       id, title, slug, client, location, category, category_name,
       system_size, panels_count, inverter_specs, battery_specs,
-      image_url, gallery_json, completion_date, kplc_savings, description, featured
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      image_url, gallery_json, video_url, videos_json, seo_keywords_json,
+      completion_date, kplc_savings, description, featured
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     proj.title,
@@ -42075,6 +42421,9 @@ app.post("/api/projects", requireAdminAuth, async (req, res) => {
     proj.battery_specs,
     proj.image_url,
     JSON.stringify(gallery),
+    videoUrl,
+    JSON.stringify(videos),
+    JSON.stringify(seoKeywords),
     proj.completion_date || "2026",
     proj.kplc_savings,
     proj.description,
@@ -42089,11 +42438,15 @@ app.put("/api/projects/:id", requireAdminAuth, async (req, res) => {
     return res.json({ projects: await PgRepository.updateProject(id, proj) });
   }
   const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+  const videos = Array.isArray(proj.videos) ? proj.videos.filter(Boolean) : proj.video_url ? [proj.video_url] : [];
+  const videoUrl = String(proj.video_url || videos[0] || "");
+  const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
   db.prepare(
     `UPDATE projects SET
       title = ?, slug = ?, client = ?, location = ?, category = ?,
       system_size = ?, panels_count = ?, inverter_specs = ?, battery_specs = ?,
-      image_url = ?, gallery_json = ?, completion_date = ?, kplc_savings = ?, description = ?, featured = ?
+      image_url = ?, gallery_json = ?, video_url = ?, videos_json = ?, seo_keywords_json = ?,
+      completion_date = ?, kplc_savings = ?, description = ?, featured = ?
      WHERE id = ?`
   ).run(
     proj.title,
@@ -42107,6 +42460,9 @@ app.put("/api/projects/:id", requireAdminAuth, async (req, res) => {
     proj.battery_specs,
     proj.image_url,
     JSON.stringify(gallery),
+    videoUrl,
+    JSON.stringify(videos),
+    JSON.stringify(seoKeywords),
     proj.completion_date,
     proj.kplc_savings,
     proj.description,
@@ -42660,16 +43016,17 @@ app.get("/sitemap.xml", async (_req, res) => {
   const pg2 = isPostgresReady();
   const products = pg2 ? await PgRepository.getProducts() : SqlRepository.getProducts();
   const categories = pg2 ? await PgRepository.getCategories() : SqlRepository.getCategories();
+  const projects = pg2 ? await PgRepository.getProjects() : SqlRepository.getProjects();
   const articles = pg2 ? await PgRepository.getArticles() : SqlRepository.getArticles();
   const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
   const staticPaths = [
     { loc: "https://shantisdesigns.co.ke/", priority: "1.0", changefreq: "daily" },
     { loc: "https://shantisdesigns.co.ke/shop/", priority: "0.95", changefreq: "daily" },
-    { loc: "https://shantisdesigns.co.ke/projects/", priority: "0.90", changefreq: "weekly" },
+    { loc: "https://shantisdesigns.co.ke/projects/", priority: "0.92", changefreq: "weekly" },
     { loc: "https://shantisdesigns.co.ke/about/", priority: "0.85", changefreq: "monthly" },
     { loc: "https://shantisdesigns.co.ke/contact-2/", priority: "0.85", changefreq: "monthly" },
     { loc: "https://shantisdesigns.co.ke/order-tracking/", priority: "0.75", changefreq: "monthly" },
-    { loc: "https://shantisdesigns.co.ke/blog/", priority: "0.85", changefreq: "weekly" },
+    { loc: "https://shantisdesigns.co.ke/blog/", priority: "0.88", changefreq: "weekly" },
     { loc: "https://shantisdesigns.co.ke/solar-installation-kenya/", priority: "0.95", changefreq: "weekly" },
     { loc: "https://shantisdesigns.co.ke/solar-installation-nairobi/", priority: "0.92", changefreq: "weekly" },
     { loc: "https://shantisdesigns.co.ke/solar-installation-mombasa/", priority: "0.92", changefreq: "weekly" },
@@ -42706,12 +43063,20 @@ app.get("/sitemap.xml", async (_req, res) => {
     <priority>0.85</priority>
   </url>`
     ),
+    ...projects.map(
+      (pr) => `  <url>
+    <loc>https://shantisdesigns.co.ke/portfolio/${pr.slug}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>`
+    ),
     ...articles.map(
       (a) => `  <url>
-    <loc>https://shantisdesigns.co.ke/${a.slug}/</loc>
+    <loc>https://shantisdesigns.co.ke/blog/${a.slug}/</loc>
     <lastmod>${a.published_at || today}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
+    <priority>0.85</priority>
   </url>`
     )
   ].join("\n");

@@ -27,7 +27,7 @@ import {
 
 export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
   template_id: 'modern_marketplace',
-  hero_kicker: 'EPRA Licensed Solar PV Contractor (License #EPRA/PV/0294)',
+  hero_kicker: 'EPRA Contractor Category CV & Vendor Category V1 · Shantis Designs Limited',
   hero_headline: 'Clean Energy, For a Greener Africa',
   hero_highlight: 'Solar Systems for Africa',
   hero_subheadline:

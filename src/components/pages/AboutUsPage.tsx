@@ -62,7 +62,7 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ data, onOpenQuote }) =
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-1.5 bg-[#238B3D]/10 text-[#238B3D] border border-[#238B3D]/25 px-3.5 py-1 rounded-full text-xs font-semibold">
             <ShieldCheck className="w-4 h-4 text-[#238B3D]" />
-            <span>EPRA Licensed Solar PV Contractor / Vendor • Shantis Designs Limited</span>
+            <span>EPRA Contractor Category CV & Vendor Category V1 • Shantis Designs Limited</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">

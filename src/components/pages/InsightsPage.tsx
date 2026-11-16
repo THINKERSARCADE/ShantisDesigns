@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Article } from '../../types';
 import { 
   BookOpen, 
@@ -9,24 +9,62 @@ import {
   ArrowRight, 
   X, 
   Share2,
-  CheckCircle2,
+  Check,
   Search
 } from 'lucide-react';
 
 interface InsightsPageProps {
   articles: Article[];
+  activeArticleSlug?: string | null;
+  onSelectArticleSlug?: (slug: string | null) => void;
 }
 
-export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
+export const InsightsPage: React.FC<InsightsPageProps> = ({
+  articles,
+  activeArticleSlug = null,
+  onSelectArticleSlug,
+}) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeArticleSlug) {
+      setSelectedArticle(null);
+      return;
+    }
+    const found = articles.find(
+      a => a.slug.toLowerCase() === activeArticleSlug.toLowerCase()
+    );
+    if (found) setSelectedArticle(found);
+  }, [activeArticleSlug, articles]);
+
+  const openArticle = (article: Article) => {
+    setSelectedArticle(article);
+    onSelectArticleSlug?.(article.slug);
+  };
+
+  const closeArticle = () => {
+    setSelectedArticle(null);
+    onSelectArticleSlug?.(null);
+  };
+
+  const copyArticleUrl = (slug: string) => {
+    const shareUrl = `${window.location.origin}/blog/${slug}/`;
+    navigator.clipboard?.writeText(shareUrl);
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug(null), 2000);
+  };
 
   const filtered = articles.filter(a => {
-    const matchesSearch = searchQuery.trim() === '' || 
-      a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      q === '' ||
+      a.title.toLowerCase().includes(q) ||
+      a.content.toLowerCase().includes(q) ||
+      a.excerpt.toLowerCase().includes(q) ||
+      (a.tags || []).some(t => t.toLowerCase().includes(q));
 
     const matchesCat = selectedCategory === 'all' || a.category === selectedCategory;
     return matchesSearch && matchesCat;
@@ -48,14 +86,14 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
             Solar Technology, EPRA Standards & Energy Sizing
           </h1>
           <p className="text-xs sm:text-base text-slate-600 mt-3 leading-relaxed">
-            Expert engineering guides, EPRA regulations, KPLC electricity tariff calculations, and lithium battery comparisons written by licensed Class T3 practitioners.
+            Expert engineering guides, EPRA regulations, KPLC electricity tariff calculations, and lithium battery comparisons written by EPRA Contractor Category CV & Vendor Category V1 licensed practitioners.
           </p>
 
           {/* Search Bar */}
           <div className="mt-6 max-w-md mx-auto relative">
             <input
               type="text"
-              placeholder="Search articles on EPRA, inverters, batteries..."
+              placeholder="Search Ruiru carport, Embakasi Growatt, EPRA, LithiumValley..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:border-[#F58220] shadow-2xs"
@@ -96,7 +134,7 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
           {filtered.map(article => (
             <article
               key={article.id}
-              onClick={() => setSelectedArticle(article)}
+              onClick={() => openArticle(article)}
               className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group"
             >
               <div>
@@ -151,7 +189,10 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
 
       {/* Full Article Reader Modal */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
+          onClick={closeArticle}
+        >
           <div 
             className="relative bg-white rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200 max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -165,7 +206,7 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
               <button
-                onClick={() => setSelectedArticle(null)}
+                onClick={closeArticle}
                 className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close article modal"
               >
@@ -190,7 +231,7 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
             {/* Content text */}
             <div className="p-6 sm:p-8 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 font-medium text-xs">
-                💡 <strong>Key Takeaway:</strong> {selectedArticle.excerpt}
+                <strong>Key Takeaway:</strong> {selectedArticle.excerpt}
               </div>
 
               <div className="prose prose-slate max-w-none space-y-3 whitespace-pre-wrap">
@@ -201,19 +242,41 @@ export const InsightsPage: React.FC<InsightsPageProps> = ({ articles }) => {
                 <div className="pt-4 border-t border-slate-200 flex flex-wrap gap-2 items-center text-xs">
                   <Tag className="w-3.5 h-3.5 text-slate-400" />
                   {selectedArticle.tags.map((t, idx) => (
-                    <span key={idx} className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(t);
+                        setSelectedCategory('all');
+                        closeArticle();
+                      }}
+                      className="bg-slate-100 hover:bg-orange-50 hover:text-[#F58220] text-slate-600 px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer"
+                    >
                       #{t}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
 
             {/* Bottom bar */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Shantis Designs Solar Advisory</span>
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs gap-3">
               <button
-                onClick={() => setSelectedArticle(null)}
+                type="button"
+                onClick={() => copyArticleUrl(selectedArticle.slug)}
+                className="inline-flex items-center gap-1.5 text-slate-600 hover:text-[#F58220] font-bold cursor-pointer"
+              >
+                {copiedSlug === selectedArticle.slug ? (
+                  <Check className="w-4 h-4 text-[#238B3D]" />
+                ) : (
+                  <Share2 className="w-4 h-4" />
+                )}
+                <span>
+                  {copiedSlug === selectedArticle.slug ? 'Article Link Copied' : 'Copy Article Link'}
+                </span>
+              </button>
+              <button
+                onClick={closeArticle}
                 className="bg-[#238B3D] text-white font-bold py-2 px-5 rounded-xl cursor-pointer"
               >
                 Done Reading

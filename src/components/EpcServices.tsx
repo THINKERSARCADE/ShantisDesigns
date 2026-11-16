@@ -31,7 +31,7 @@ export const EpcServices: React.FC<EpcServicesProps> = ({ onOpenQuote }) => {
     {
       icon: Wrench,
       title: 'Preventive Maintenance & EPRA Audits',
-      description: 'Statutory energy audits, inverter firmware updates, solar panel thermal imaging, and Class T3 compliance certification for insurance renewal.',
+      description: 'Statutory energy audits, inverter firmware updates, solar panel thermal imaging, and EPRA Category CV & Vendor V1 compliance certification for insurance renewal.',
       benefits: ['Thermal drone scanning', 'Quarterly performance reports', 'Insurance compliant'],
       tag: 'Audits & O&M'
     }

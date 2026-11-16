@@ -1,35 +1,41 @@
 import React, { useEffect } from 'react';
-import { Product, Article, Category } from '../types';
+import { Product, Article, Category, Project } from '../types';
 import { NavPage } from './Header';
 
 interface SeoSchemaProps {
   products: Product[];
   articles: Article[];
+  projects?: Project[];
   categories?: Category[];
   currentPage?: NavPage;
   activeProduct?: Product | null;
+  activeArticle?: Article | null;
+  activeProject?: Project | null;
   selectedCategorySlug?: string | null;
 }
 
 export const SeoSchema: React.FC<SeoSchemaProps> = ({
   products,
   articles,
+  projects = [],
   categories = [],
   currentPage = 'home',
   activeProduct = null,
+  activeArticle = null,
+  activeProject = null,
   selectedCategorySlug = null,
 }) => {
   useEffect(() => {
     const baseUrl = 'https://shantisdesigns.co.ke';
     const countiesList =
-      'Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo, Machakos, Kiambu, Eldoret, Nyeri, Kilifi & all 47 Kenyan counties';
+      'Nairobi, Ruiru, Embakasi, Kiambu, Mombasa, Kisumu, Meru, Nakuru, Isiolo, Machakos, Eldoret, Nyeri, Kilifi & all 47 Kenyan counties';
 
     let pageTitle =
-      'Shantis Designs Solar Solutions | Solar Panels, Lithium Batteries & Inverters in Kenya';
+      'Shantis Designs Solar Solutions | EPRA Cat CV & V1 Solar Contractor Kenya';
     let pageDesc =
-      'Shop Tier-1 solar panels, Must & Deye hybrid inverters, Lithium Valley LiFePO4 batteries, EcoFlow backups & Doyin borehole pumps in Nairobi, Mombasa, Kisumu, Meru & Nakuru.';
+      'EPRA Contractor Category CV & Vendor Category V1 solar specialist in Kenya. Shop Tier-1 panels, Growatt & Deye hybrid inverters, LithiumValley 16kWh W16-E5 batteries, EcoFlow backups & Doyin borehole pumps.';
     let pageKeywords =
-      'solar panels price in Kenya, lithium solar batteries Nairobi, solar power backup Kenya, hybrid solar inverter Must Deye Kenya, Doyin solar borehole water pumps, solar installation Nairobi Mombasa Kisumu Meru Nakuru Isiolo Machakos, Shantis Designs Solar Solutions';
+      'solar panels price in Kenya, solar carport installation Ruiru Kenya, Embakasi Baraka Estate solar installation, LithiumValley W16-E5 16kWh battery price Kenya, Growatt hybrid inverter Kenya, EPRA Category CV V1 contractor Kenya, Shantis Designs Solar Solutions';
     let canonicalUrl = `${baseUrl}/`;
     let ogImage = `${baseUrl}/wp-content/uploads/2026/01/PV36PRO-4-6-01-1.jpg`;
     let ogType = 'website';
@@ -44,13 +50,13 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
       pageDesc =
         rawShort.length >= 60 && rawShort.length <= 160
           ? rawShort
-          : `Buy genuine ${activeProduct.name} at KES ${priceVal.toLocaleString()} in Kenya. Official warranty & fast delivery to Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos.`;
+          : `Buy genuine ${activeProduct.name} at KES ${priceVal.toLocaleString()} in Kenya. Official EPRA Cat V1 warranty & fast delivery to Nairobi, Ruiru, Mombasa, Kisumu, Meru, Nakuru & Machakos.`;
       pageKeywords = [
         ...(activeProduct.seo_keywords || []),
         `${activeProduct.name} price in Kenya`,
         `Buy ${activeProduct.name} Nairobi Mombasa Kisumu`,
         `${activeProduct.category_name} Meru Nakuru Isiolo Machakos`,
-        'Shantis Designs Solar Solutions Kenya',
+        'EPRA Category CV V1 Shantis Designs Solar Solutions Kenya',
       ].join(', ');
       canonicalUrl = activeProduct.permalink || `${baseUrl}/product/${activeProduct.slug}/`;
       ogImage = activeProduct.image_url || ogImage;
@@ -60,36 +66,49 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
       const catName =
         cat?.name ||
         selectedCategorySlug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-      pageTitle = `${catName} Price in Kenya — Nairobi, Mombasa & Kisumu | Shantis Designs`;
+      pageTitle = `${catName} Price in Kenya — Nairobi, Ruiru, Mombasa & Kisumu | Shantis Designs`;
       pageDesc =
         cat?.description ||
-        `Shop genuine ${catName} in Kenya with official warranty and countrywide delivery to Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos from Shantis Designs.`;
-      pageKeywords = `${catName} price in Kenya, Buy ${catName} Nairobi Mombasa Kisumu, Best ${catName} Meru Nakuru Isiolo Machakos, EPRA licensed ${catName} supplier Kenya, Shantis Designs Solar Solutions`;
+        `Shop genuine ${catName} in Kenya with official warranty and countrywide delivery from EPRA Category CV & V1 supplier Shantis Designs.`;
+      pageKeywords = `${catName} price in Kenya, Buy ${catName} Nairobi Ruiru Mombasa Kisumu, Best ${catName} Meru Nakuru Isiolo Machakos, EPRA Category CV V1 ${catName} supplier Kenya, Shantis Designs Solar Solutions`;
       canonicalUrl = cat?.permalink || `${baseUrl}/product-category/${selectedCategorySlug}/`;
       if (cat?.image_url) ogImage = cat.image_url;
     } else if (currentPage === 'shop') {
       pageTitle =
         'Shop Solar Panels, Lithium Batteries, Inverters & Borehole Pumps | Shantis Designs Kenya';
       pageDesc =
-        'Browse 157+ genuine Tier-1 solar panels, Must & Deye hybrid inverters, Lithium Valley LiFePO4 batteries & Doyin borehole pumps across Nairobi, Mombasa, Kisumu & Meru.';
+        'Browse 157+ genuine Tier-1 solar panels, Growatt, Must & Deye hybrid inverters, LithiumValley 5kWh–16kWh LiFePO4 batteries & Doyin borehole pumps across Kenya.';
       pageKeywords =
-        'solar shop Nairobi Kenya, buy solar panels Mombasa Kisumu Meru Nakuru, lithium solar battery price Kenya, hybrid solar inverter shop Luthuli Avenue Nairobi, Doyin water pumps Kenya';
+        'solar shop Nairobi Kenya, buy solar panels Ruiru Mombasa Kisumu Meru Nakuru, LithiumValley battery price Kenya, hybrid solar inverter shop Luthuli Avenue Nairobi, Doyin water pumps Kenya';
       canonicalUrl = `${baseUrl}/shop/`;
+    } else if (currentPage === 'projects' && activeProject) {
+      pageTitle = `${activeProject.title} — ${activeProject.location} Case Study | Shantis Designs`;
+      pageDesc = activeProject.description.slice(0, 158);
+      pageKeywords = [
+        ...(activeProject.seo_keywords || []),
+        `${activeProject.title}`,
+        `${activeProject.location} solar installation`,
+        `${activeProject.system_size}`,
+        'EPRA Category CV solar contractor Kenya',
+      ].join(', ');
+      canonicalUrl = `${baseUrl}/portfolio/${activeProject.slug}/`;
+      ogImage = activeProject.image_url || ogImage;
+      ogType = 'article';
     } else if (currentPage === 'projects') {
       pageTitle =
-        'Solar Installation Projects in Nairobi, Mombasa, Meru, Nakuru & Kisumu | Shantis Designs';
+        'Solar Installation Projects: Ruiru Carport, Embakasi Baraka Estate, Nairobi & Kenya | Shantis Designs';
       pageDesc =
-        'Explore 180+ verified residential, commercial & borehole solar installations (1.2 MW+ deployed) across Nairobi, Kiambu, Nakuru, Meru, Machakos, Mombasa & Kisumu, Kenya.';
+        'Explore 180+ verified solar installations by EPRA Category CV & V1 contractor Shantis Designs: Ruiru 5kWp solar carport & 16kWh LithiumValley, Embakasi Baraka Estate Growatt hybrid, and commercial plants across Kenya.';
       pageKeywords =
-        'solar installation projects Kenya, EPRA solar contractor Nairobi, residential solar installation Karen Runda Tatu City, commercial solar BESS Kenya, borehole solarization Nakuru Meru Machakos';
+        'Ruiru solar carport installation Kenya, Embakasi Baraka Estate solar installation, Growatt hybrid LithiumValley installation Nairobi, EPRA Category CV solar contractor Kenya, solar installation Tatu City Kiambu';
       canonicalUrl = `${baseUrl}/projects/`;
     } else if (currentPage === 'about') {
       pageTitle =
-        'About Us — EPRA Licensed Solar EPC Contractor in Kenya | Shantis Designs Solar Solutions';
+        'About Us — EPRA Category CV & Vendor V1 Solar EPC Contractor Kenya | Shantis Designs';
       pageDesc =
-        'Shantis Designs Limited is an EPRA Class T3 & NCA licensed solar EPC company serving Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo, Machakos & all 47 counties in Kenya.';
+        'Shantis Designs Limited is an EPRA Contractor Category CV, Vendor Category V1 & NCA licensed solar EPC company serving Nairobi, Ruiru, Kiambu, Mombasa, Kisumu, Meru, Nakuru & all 47 counties.';
       pageKeywords =
-        'Shantis Designs Limited, Shantis Solar Solutions Kenya, EPRA licensed solar companies in Kenya, NCA registered solar contractor Nairobi, solar engineering procurement construction Kenya';
+        'Shantis Designs Limited, EPRA Contractor Category CV Kenya, EPRA Vendor Category V1 solar supplier, NCA registered solar contractor Nairobi, solar engineering procurement construction Kenya';
       canonicalUrl = `${baseUrl}/about/`;
     } else if (currentPage === 'contact') {
       pageTitle =
@@ -97,39 +116,50 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
       pageDesc =
         'Visit our Nairobi Showroom at Royal King Building (Luthuli Street) or Head Office at Dev Towers (Biashara Street). Call +254 115 521 631 for delivery across all 47 Kenyan counties.';
       pageKeywords =
-        'Shantis Designs contact number, solar shop Luthuli Avenue Nairobi, solar equipment Biashara Street Nairobi, solar installation quote Mombasa Kisumu Meru Nakuru Isiolo Machakos';
+        'Shantis Designs contact number, solar shop Luthuli Avenue Nairobi, solar equipment Biashara Street Nairobi, solar installation quote Ruiru Embakasi Mombasa Kisumu Meru Nakuru';
       canonicalUrl = `${baseUrl}/contact-2/`;
     } else if (currentPage === 'order-tracking') {
       pageTitle =
         'Track Your Solar Equipment Order & County Dispatch | Shantis Designs Kenya';
       pageDesc =
-        'Track your real-time solar panels, inverter, lithium battery, or borehole pump dispatch to Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos, Kenya.';
+        'Track your real-time solar panels, inverter, lithium battery, or borehole pump dispatch to Nairobi, Ruiru, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos, Kenya.';
       pageKeywords =
-        'track solar order Kenya, Shantis Designs order tracking, solar delivery Nairobi Mombasa Kisumu Meru Nakuru';
+        'track solar order Kenya, Shantis Designs order tracking, solar delivery Nairobi Ruiru Mombasa Kisumu Meru Nakuru';
       canonicalUrl = `${baseUrl}/order-tracking/`;
+    } else if (currentPage === 'insights' && activeArticle) {
+      pageTitle = `${activeArticle.title} | Shantis Designs Solar Engineering Blog`;
+      pageDesc = activeArticle.meta_description || activeArticle.excerpt;
+      pageKeywords = [
+        ...(activeArticle.tags || []),
+        'EPRA Category CV V1 Kenya',
+        'Shantis Designs Solar Solutions',
+      ].join(', ');
+      canonicalUrl = `${baseUrl}/blog/${activeArticle.slug}/`;
+      ogImage = activeArticle.image_url || ogImage;
+      ogType = 'article';
     } else if (currentPage === 'insights') {
       pageTitle =
-        'Kenya Solar Engineering Blog, Price Guides & EPRA Sizing | Shantis Designs';
+        'Kenya Solar Engineering Blog, Ruiru Carport & Embakasi Case Studies | Shantis Designs';
       pageDesc =
-        'Read expert Kenya solar guides on JA Solar & Horay N-Type panels, Lithium Valley LiFePO4 battery sizing, Must/Deye inverters & Doyin borehole pumps for Nairobi, Mombasa & Kisumu.';
+        'Read EPRA Category CV & V1 engineering case studies: Ruiru 5kWp solar carport + 16kWh LithiumValley W16-E5, Embakasi Baraka Estate Growatt hybrid, and 2026 Kenya solar price guides.';
       pageKeywords =
-        'solar energy blog Kenya, JA Solar panels price Kenya, Lithium Valley battery guide Kenya, Doyin borehole pump sizing Meru Machakos Isiolo, KPLC solar savings calculator';
+        'solar carport Kenya case study, Ruiru solar installation blog, Embakasi Baraka Estate Growatt solar, LithiumValley W16-E5 Kenya, EPRA Category CV V1 solar guide, KPLC solar savings calculator';
       canonicalUrl = `${baseUrl}/blog/`;
       ogType = 'blog';
     } else if (currentPage === 'kenya-seo') {
       pageTitle =
-        'Solar Installation & Prices in Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos | Shantis Designs';
+        'Solar Installation & Prices in Nairobi, Ruiru, Embakasi, Meru, Mombasa & Kenya | Shantis Designs';
       pageDesc =
-        'Compare 2026 Kenya solar prices & request EPRA-certified installation in Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos for panels, lithium batteries & borehole pumps.';
+        'Compare 2026 Kenya solar prices & request EPRA Category CV & V1 certified installation in Nairobi, Ruiru, Embakasi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos.';
       pageKeywords =
-        'solar installation Nairobi, solar panels Mombasa, solar power backup Kisumu, solar borehole pumps Meru, off grid solar Nakuru, solar water pumps Isiolo, home solar systems Machakos, best solar company in Kenya';
+        'solar installation Nairobi, solar carport Ruiru Kiambu, solar installation Embakasi, solar panels Mombasa, solar power backup Kisumu, solar borehole pumps Meru, off grid solar Nakuru, solar water pumps Isiolo, home solar systems Machakos';
       canonicalUrl = `${baseUrl}/solar-installation-kenya/`;
     } else if (currentPage === 'terms') {
       pageTitle = 'Terms and Conditions of Sale & Warranty | Shantis Designs Solar Solutions Kenya';
       pageDesc =
-        'Official Terms and Conditions of sale, EPRA warranty coverage, M-Pesa Daraja payment verification, and nationwide delivery across all 47 Kenyan counties.';
+        'Official Terms and Conditions of sale, EPRA Category CV & V1 warranty coverage, M-Pesa Daraja payment verification, and nationwide delivery across all 47 Kenyan counties.';
       pageKeywords =
-        'Shantis Designs terms and conditions, solar panel warranty Kenya, EPRA solar warranty Nairobi Mombasa Kisumu';
+        'Shantis Designs terms and conditions, solar panel warranty Kenya, EPRA Cat CV V1 solar warranty Nairobi Mombasa Kisumu';
       canonicalUrl = `${baseUrl}/terms-and-conditions/`;
     } else if (currentPage === 'privacy') {
       pageTitle =
@@ -203,7 +233,7 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
         url: `${baseUrl}/`,
         name: 'Shantis Designs Solar Solutions',
         description:
-          'EPRA Licensed Solar PV Contractor & Distributor of Solar Panels, Hybrid Inverters, Lithium Batteries, EcoFlow Power Stations & Doyin Water Pumps across Nairobi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos, Kenya.',
+          'EPRA Contractor Category CV & Vendor Category V1 Solar PV Engineer & Distributor of Solar Panels, Hybrid Inverters, Lithium Batteries, EcoFlow Power Stations & Doyin Water Pumps across Nairobi, Ruiru, Embakasi, Mombasa, Kisumu, Meru, Nakuru, Isiolo & Machakos, Kenya.',
         potentialAction: {
           '@type': 'SearchAction',
           target: `${baseUrl}/?s={search_term_string}&post_type=product`,
@@ -231,6 +261,7 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
         areaServed: [
           { '@type': 'Country', name: 'Kenya' },
           { '@type': 'City', name: 'Nairobi' },
+          { '@type': 'City', name: 'Ruiru' },
           { '@type': 'City', name: 'Mombasa' },
           { '@type': 'City', name: 'Kisumu' },
           { '@type': 'City', name: 'Meru' },
@@ -304,6 +335,7 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
           itemCondition: 'https://schema.org/NewCondition',
           areaServed: [
             'Nairobi',
+            'Ruiru',
             'Mombasa',
             'Kisumu',
             'Meru',
@@ -324,6 +356,89 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
       });
     }
 
+    if (currentPage === 'insights') {
+      const targetArticles = activeArticle ? [activeArticle] : articles.slice(0, 6);
+      targetArticles.forEach((art) => {
+        graphNodes.push({
+          '@type': 'BlogPosting',
+          '@id': `${baseUrl}/blog/${art.slug}/#article`,
+          headline: art.title,
+          description: art.meta_description || art.excerpt,
+          image: art.image_url,
+          datePublished: art.published_at || '2026-11-02',
+          keywords: (art.tags || []).join(', '),
+          author: {
+            '@type': 'Organization',
+            name: art.author || 'Shantis Designs Solar Solutions',
+          },
+          publisher: { '@id': `${baseUrl}/#organization` },
+          mainEntityOfPage: `${baseUrl}/blog/${art.slug}/`,
+        });
+      });
+    }
+
+    if (currentPage === 'projects') {
+      const targetProjects = activeProject ? [activeProject] : projects.slice(0, 8);
+      graphNodes.push({
+        '@type': 'ItemList',
+        name: 'Shantis Designs Solar Installation Portfolio in Kenya',
+        itemListElement: targetProjects.map((pr, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          url: `${baseUrl}/portfolio/${pr.slug}/`,
+          name: `${pr.title} (${pr.location})`,
+        })),
+      });
+
+      targetProjects
+        .filter((pr) => Boolean(pr.video_url || (pr.videos && pr.videos.length > 0)))
+        .forEach((pr) => {
+          const vid = pr.video_url || pr.videos?.[0];
+          if (!vid) return;
+          graphNodes.push({
+            '@type': 'VideoObject',
+            name: `${pr.title} — Field Commissioning Walkthrough`,
+            description: pr.description,
+            thumbnailUrl: pr.image_url,
+            uploadDate: pr.completion_date || '2026-11-02',
+            contentUrl: vid.startsWith('http') ? vid : `${baseUrl}${vid}`,
+            publisher: { '@id': `${baseUrl}/#organization` },
+          });
+        });
+    }
+
+    if (currentPage === 'home' || currentPage === 'kenya-seo' || currentPage === 'insights') {
+      graphNodes.push({
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Is Shantis Designs licensed by EPRA to install and supply solar systems in Kenya?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Shantis Designs Limited holds both EPRA Contractor Category CV and Vendor Category V1 solar licenses alongside NCA electrical contractor registration for residential, carport, commercial, and borehole installations across all 47 counties in Kenya.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How does a solar carport installation in Ruiru or Nairobi perform compared to rooftop mounting?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'A structural steel solar carport in Ruiru or Kiambu generates full 5kWp+ clean energy while shading two vehicles. Paired with a Blue ATO / Growatt hybrid inverter and 16kWh LithiumValley W16-E5 smart battery, it powers homes and EVs with under 10ms blackout transfer.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What battery and inverter size eliminates daytime KPLC grid import for a 3-bedroom home in Embakasi?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'As proven in our Embakasi Baraka Estate installation, a 3.7kWp solar array feeding a Growatt hybrid inverter and a 51.2V 100Ah (5.12kWh) LithiumValley LiFePO4 battery achieves 0.00W grid import during sunny daytime hours and maintains reliable overnight backup.',
+            },
+          },
+        ],
+      });
+    }
+
     const ldJsonPayload = {
       '@context': 'https://schema.org',
       '@graph': graphNodes,
@@ -337,7 +452,17 @@ export const SeoSchema: React.FC<SeoSchemaProps> = ({
       document.head.appendChild(scriptTag);
     }
     scriptTag.text = JSON.stringify(ldJsonPayload);
-  }, [products, articles, categories, currentPage, activeProduct, selectedCategorySlug]);
+  }, [
+    products,
+    articles,
+    projects,
+    categories,
+    currentPage,
+    activeProduct,
+    activeArticle,
+    activeProject,
+    selectedCategorySlug,
+  ]);
 
   return null;
 };

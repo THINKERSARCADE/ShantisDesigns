@@ -5,8 +5,8 @@ export const TrustBar: React.FC = () => {
   const pillars = [
     {
       icon: ShieldCheck,
-      title: 'EPRA T3 & NCA Licensed',
-      description: 'Authorized solar contractor in Kenya adhering to national electric safety codes.'
+      title: 'EPRA Cat CV & V1 & NCA Licensed',
+      description: 'Authorized solar contractor (Cat CV) & vendor (Cat V1) in Kenya adhering to national safety codes.'
     },
     {
       icon: Award,

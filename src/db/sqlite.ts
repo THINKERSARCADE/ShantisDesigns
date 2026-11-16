@@ -178,12 +178,12 @@ export const INITIAL_SERVICES: EPCService[] = [
     slug: 'residential-solar-backup-installation-kenya',
     category: 'Residential EPC',
     short_description: 'Custom 3kW to 15kW hybrid solar PV & LiFePO4 battery backup systems for Kenyan homes with 0ms blackout switchover.',
-    description: 'EPRA Class T3 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.',
+    description: 'EPRA Contractor Category CV & Vendor Category V1 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must, Growatt & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Ruiru, Embakasi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.',
     icon_name: 'Sun',
     image_url: 'https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg',
     features: [
       'Free site survey & load audit',
-      'EPRA licensed installation & warranty',
+      'EPRA Category CV & V1 licensed installation & warranty',
       'Zero transfer time (UPS-grade) backup',
       'Smart Wi-Fi mobile monitoring',
     ],
@@ -244,17 +244,17 @@ export const INITIAL_SERVICES: EPCService[] = [
 
 const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   template_id: 'classic_epc',
-  hero_kicker: 'EPRA Licensed Solar EPC Contractor · Nairobi & Nationwide Kenya',
+  hero_kicker: 'EPRA Contractor Category CV & Vendor V1 · Nairobi & Nationwide Kenya',
   hero_headline: 'SHANTIS DESIGNS',
   hero_highlight: 'SOLAR SOLUTIONS',
   hero_subheadline:
-    'Genuine Tier-1 Horay N-Type & JA Solar Panels, Must & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.',
+    'Genuine Tier-1 Horay N-Type & JA Solar Panels, Must, Growatt & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.',
   hero_image_url: 'https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-06-at-19.48.50.jpeg',
   primary_cta_label: 'Shop Solar Equipment',
   secondary_cta_label: 'Size Your Solar System',
   epc_banner_title: 'Need Turnkey Solar Installation in Kenya?',
   epc_banner_subtitle:
-    'Nationwide Delivery & EPRA-Certified Solar Installation Across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos · Call 0115 521 631',
+    'Nationwide Delivery & EPRA Category CV & V1 Certified Solar Installation Across Nairobi, Ruiru, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos · Call 0115 521 631',
   show_trust_bar: true,
   show_deals_section: true,
   show_partners_marquee: true,
@@ -403,6 +403,9 @@ export function initializeDatabase(): void {
       battery_specs TEXT NOT NULL,
       image_url TEXT NOT NULL,
       gallery_json TEXT NOT NULL DEFAULT '[]',
+      video_url TEXT DEFAULT '',
+      videos_json TEXT DEFAULT '[]',
+      seo_keywords_json TEXT DEFAULT '[]',
       completion_date TEXT NOT NULL,
       kplc_savings TEXT NOT NULL,
       description TEXT NOT NULL,
@@ -565,6 +568,9 @@ export function initializeDatabase(): void {
     "ALTER TABLE mpesa_api_credentials ADD COLUMN consumer_secret_enc TEXT DEFAULT ''",
     "ALTER TABLE mpesa_api_credentials ADD COLUMN passkey_enc TEXT DEFAULT ''",
     "ALTER TABLE mpesa_api_credentials ADD COLUMN initiator_password_enc TEXT DEFAULT ''",
+    "ALTER TABLE projects ADD COLUMN video_url TEXT DEFAULT ''",
+    "ALTER TABLE projects ADD COLUMN videos_json TEXT DEFAULT '[]'",
+    "ALTER TABLE projects ADD COLUMN seo_keywords_json TEXT DEFAULT '[]'",
   ];
   for (const sql of alterStatements) {
     try {
@@ -804,60 +810,68 @@ export function initializeDatabase(): void {
     tx(INITIAL_PRODUCTS);
   }
 
-  // Seed Projects (and always sync gallery_json so all 80+ live photos are stored in SQLite)
-  const projCount = (db.prepare('SELECT COUNT(*) as count FROM projects').get() as { count: number }).count;
-  if (projCount === 0) {
-    const insertProj = db.prepare(`
-      INSERT INTO projects (
-        id, title, slug, client, location, category, category_name,
-        system_size, panels_count, inverter_specs, battery_specs,
-        image_url, gallery_json, completion_date, kplc_savings, description, featured
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((projs: Project[]) => {
-      for (const proj of projs) {
-        const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
-        insertProj.run(
-          proj.id,
-          proj.title,
-          proj.slug,
-          proj.client,
-          proj.location,
-          proj.category,
-          proj.category_name || 'Solar Installation',
-          proj.system_size,
-          proj.panels_count,
-          proj.inverter_specs,
-          proj.battery_specs,
-          proj.image_url,
-          JSON.stringify(gallery),
-          proj.completion_date,
-          proj.kplc_savings,
-          proj.description,
-          proj.featured ? 1 : 0
-        );
-        registerImageAsset(proj.image_url, `${proj.title} - Cover`, 'project', proj.id);
-        gallery.forEach((imgUrl, idx) => {
-          registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, 'project_gallery', `${proj.id}-${idx + 1}`);
-        });
-      }
-    });
-    tx(INITIAL_PROJECTS);
-  } else {
-    // Ensure galleries are synced even if DB already existed
-    const updateGallery = db.prepare('UPDATE projects SET gallery_json = ?, image_url = ?, slug = ? WHERE id = ?');
-    const tx = db.transaction((projs: Project[]) => {
-      for (const proj of projs) {
-        const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
-        updateGallery.run(JSON.stringify(gallery), proj.image_url, proj.slug, proj.id);
-        registerImageAsset(proj.image_url, `${proj.title} - Cover`, 'project', proj.id);
-        gallery.forEach((imgUrl, idx) => {
-          registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, 'project_gallery', `${proj.id}-${idx + 1}`);
-        });
-      }
-    });
-    tx(INITIAL_PROJECTS);
-  }
+  // Seed Projects (and always insert new seed projects + sync gallery/video/SEO in SQLite)
+  const insertOrIgnoreProj = db.prepare(`
+    INSERT OR IGNORE INTO projects (
+      id, title, slug, client, location, category, category_name,
+      system_size, panels_count, inverter_specs, battery_specs,
+      image_url, gallery_json, video_url, videos_json, seo_keywords_json,
+      completion_date, kplc_savings, description, featured
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const updateGallery = db.prepare(`
+    UPDATE projects
+    SET gallery_json = CASE WHEN COALESCE(gallery_json, '[]') IN ('', '[]') OR (id = 16 AND (gallery_json LIKE '%ruiru-secondary-school.jpeg%' OR gallery_json LIKE '%WhatsApp-Image-2026-08-18%')) THEN ? ELSE gallery_json END,
+        image_url = CASE WHEN COALESCE(image_url, '') = '' OR (id = 16 AND (image_url LIKE '%ruiru-secondary-school.jpeg%' OR image_url LIKE '%WhatsApp-Image-2026-08-18%')) THEN ? ELSE image_url END,
+        slug = COALESCE(NULLIF(slug, ''), ?),
+        video_url = COALESCE(NULLIF(video_url, ''), ?),
+        videos_json = CASE WHEN COALESCE(videos_json, '[]') IN ('', '[]') THEN ? ELSE videos_json END,
+        seo_keywords_json = CASE WHEN COALESCE(seo_keywords_json, '[]') IN ('', '[]') THEN ? ELSE seo_keywords_json END
+    WHERE id = ?
+  `);
+  const projTx = db.transaction((projs: Project[]) => {
+    for (const proj of projs) {
+      const gallery = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+      const videos = proj.videos && proj.videos.length > 0 ? proj.videos : proj.video_url ? [proj.video_url] : [];
+      const seoKeywords = proj.seo_keywords || [];
+      insertOrIgnoreProj.run(
+        proj.id,
+        proj.title,
+        proj.slug,
+        proj.client,
+        proj.location,
+        proj.category,
+        proj.category_name || 'Solar Installation',
+        proj.system_size,
+        proj.panels_count || '',
+        proj.inverter_specs || '',
+        proj.battery_specs || '',
+        proj.image_url,
+        JSON.stringify(gallery),
+        proj.video_url || '',
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
+        proj.completion_date,
+        proj.kplc_savings,
+        proj.description,
+        proj.featured ? 1 : 0
+      );
+      updateGallery.run(
+        JSON.stringify(gallery),
+        proj.image_url,
+        proj.slug,
+        proj.video_url || '',
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
+        proj.id
+      );
+      registerImageAsset(proj.image_url, `${proj.title} - Cover`, 'project', proj.id);
+      gallery.forEach((imgUrl, idx) => {
+        registerImageAsset(imgUrl, `${proj.title} - Photo ${idx + 1}`, 'project_gallery', `${proj.id}-${idx + 1}`);
+      });
+    }
+  });
+  projTx(INITIAL_PROJECTS);
 
   // Seed EPC Services
   const srvCount = (db.prepare('SELECT COUNT(*) as count FROM services').get() as { count: number }).count;
@@ -977,48 +991,40 @@ export function initializeDatabase(): void {
   // Purge synthetic blog articles (10015, 10016) so only original shantisdesigns.co.ke articles remain
   db.prepare('DELETE FROM articles WHERE id IN (10015, 10016)').run();
 
-  // Seed Original Articles & Repair Truncated Meta Descriptions
-  const artCount = (db.prepare('SELECT COUNT(*) as count FROM articles').get() as { count: number }).count;
-  if (artCount === 0) {
-    const insertArt = db.prepare(`
-      INSERT INTO articles (
-        id, title, slug, category, content, excerpt, meta_description,
-        author, published_at, image_url, tags_json, read_time
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const tx = db.transaction((arts: Article[]) => {
-      for (const a of arts) {
-        insertArt.run(
-          a.id,
-          a.title,
-          a.slug,
-          a.category,
-          a.content,
-          a.excerpt,
-          a.meta_description,
-          a.author,
-          a.published_at,
-          a.image_url,
-          JSON.stringify(a.tags || []),
-          a.read_time
-        );
-        registerImageAsset(a.image_url, `Article: ${a.title}`, 'article', a.id);
-      }
-    });
-    tx(INITIAL_ARTICLES);
-  } else {
-    const updateArtSeo = db.prepare(`
-      UPDATE articles
-      SET excerpt = ?, meta_description = ?, tags_json = ?
-      WHERE id = ?
-    `);
-    const tx = db.transaction((arts: Article[]) => {
-      for (const a of arts) {
-        updateArtSeo.run(a.excerpt, a.meta_description, JSON.stringify(a.tags || []), a.id);
-      }
-    });
-    tx(INITIAL_ARTICLES);
-  }
+  // Always ensure newly added seed articles (like Ruiru, Embakasi, EPRA Cat CV & V1 guides) exist and keep SEO fields fresh
+  const insertArt = db.prepare(`
+    INSERT OR IGNORE INTO articles (
+      id, title, slug, category, content, excerpt, meta_description,
+      author, published_at, image_url, tags_json, read_time
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const updateArtSeo = db.prepare(`
+    UPDATE articles
+    SET excerpt = ?, meta_description = ?, tags_json = ?,
+        image_url = CASE WHEN id = 10010 AND (image_url LIKE '%ruiru-secondary-school.jpeg%' OR image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN ? ELSE image_url END
+    WHERE id = ?
+  `);
+  const artTx = db.transaction((arts: Article[]) => {
+    for (const a of arts) {
+      insertArt.run(
+        a.id,
+        a.title,
+        a.slug,
+        a.category,
+        a.content,
+        a.excerpt,
+        a.meta_description,
+        a.author,
+        a.published_at,
+        a.image_url,
+        JSON.stringify(a.tags || []),
+        a.read_time
+      );
+      updateArtSeo.run(a.excerpt, a.meta_description, JSON.stringify(a.tags || []), a.image_url, a.id);
+      registerImageAsset(a.image_url, `Article: ${a.title}`, 'article', a.id);
+    }
+  });
+  artTx(INITIAL_ARTICLES);
 
   // Seed Initial Media items explicitly and purge any external ui-avatars fallback media rows
   db.prepare("DELETE FROM media_assets WHERE source_url LIKE '%ui-avatars.com%'").run();
@@ -1031,6 +1037,11 @@ export function initializeDatabase(): void {
   db.prepare("DELETE FROM whatsapp_leads WHERE phone_number IN ('+254722334455', '+254711987654', '+254733112233')").run();
   db.prepare("DELETE FROM audit_logs WHERE actor LIKE '%Patrick Mwangi%'").run();
 
+  // Upgrade existing EPRA licensing copy in services & site_settings to Contractor Category CV & Vendor V1
+  db.prepare(
+    "UPDATE services SET description = ?, features_json = ? WHERE id = 1 AND description LIKE '%Class T3%'"
+  ).run(INITIAL_SERVICES[0].description, JSON.stringify(INITIAL_SERVICES[0].features));
+
   // Seed Site Settings (About Data & Homepage Config)
   const upsertSetting = db.prepare(`
     INSERT OR IGNORE INTO site_settings (key, value_json, updated_at)
@@ -1039,6 +1050,27 @@ export function initializeDatabase(): void {
   const now = new Date().toISOString();
   upsertSetting.run('about_data', JSON.stringify(INITIAL_ABOUT_DATA), now);
   upsertSetting.run('homepage_config', JSON.stringify(DEFAULT_HOMEPAGE_CONFIG), now);
+
+  // Migrate legacy About & Homepage strings in existing site_settings if still referencing Class T3 or old Contractor/Vendor
+  try {
+    const aboutRow = db.prepare("SELECT value_json FROM site_settings WHERE key = 'about_data'").get() as { value_json: string } | undefined;
+    if (aboutRow?.value_json && (aboutRow.value_json.includes('Solar PV Contractor/Vendor') || aboutRow.value_json.includes('Class T3'))) {
+      const parsed = JSON.parse(aboutRow.value_json);
+      parsed.partner_intro_1 = INITIAL_ABOUT_DATA.partner_intro_1;
+      parsed.subheading = INITIAL_ABOUT_DATA.subheading;
+      parsed.certifications = INITIAL_ABOUT_DATA.certifications;
+      db.prepare("UPDATE site_settings SET value_json = ?, updated_at = ? WHERE key = 'about_data'").run(JSON.stringify(parsed), now);
+    }
+    const hpRow = db.prepare("SELECT value_json FROM site_settings WHERE key = 'homepage_config'").get() as { value_json: string } | undefined;
+    if (hpRow?.value_json && (hpRow.value_json.includes('EPRA Licensed Solar EPC Contractor') || hpRow.value_json.includes('Class T3'))) {
+      const parsedHp = JSON.parse(hpRow.value_json);
+      parsedHp.hero_kicker = DEFAULT_HOMEPAGE_CONFIG.hero_kicker;
+      parsedHp.epc_banner_subtitle = DEFAULT_HOMEPAGE_CONFIG.epc_banner_subtitle;
+      db.prepare("UPDATE site_settings SET value_json = ?, updated_at = ? WHERE key = 'homepage_config'").run(JSON.stringify(parsedHp), now);
+    }
+  } catch {
+    // ignore setting migration errors
+  }
 }
 
 // Repository helper functions
@@ -1090,7 +1122,7 @@ export const SqlRepository = {
   },
 
   getProjects(): Project[] {
-    const rows = db.prepare('SELECT * FROM projects ORDER BY id ASC').all() as any[];
+    const rows = db.prepare('SELECT * FROM projects ORDER BY id DESC').all() as any[];
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -1105,6 +1137,9 @@ export const SqlRepository = {
       battery_specs: r.battery_specs,
       image_url: r.image_url,
       gallery: JSON.parse(r.gallery_json || '[]'),
+      video_url: r.video_url || '',
+      videos: JSON.parse(r.videos_json || '[]'),
+      seo_keywords: JSON.parse(r.seo_keywords_json || '[]'),
       completion_date: r.completion_date,
       kplc_savings: r.kplc_savings,
       description: r.description,
@@ -1161,7 +1196,7 @@ export const SqlRepository = {
   },
 
   getArticles(): Article[] {
-    const rows = db.prepare('SELECT * FROM articles ORDER BY published_at DESC').all() as any[];
+    const rows = db.prepare('SELECT * FROM articles ORDER BY published_at DESC, id DESC').all() as any[];
     return rows.map((r) => ({
       id: r.id,
       title: r.title,

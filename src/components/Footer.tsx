@@ -283,8 +283,8 @@ export const Footer: React.FC<FooterProps> = ({
               <div className="flex items-start gap-2 bg-white/80 p-2 rounded-lg border border-[#eed0be]">
                 <ShieldCheck className="w-4 h-4 text-[#238B3D] shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-extrabold text-slate-900">EPRA Licensed</p>
-                  <p className="text-[11px] text-slate-600">Solar PV Contractor/Vendor (Class T3)</p>
+                  <p className="font-extrabold text-slate-900">EPRA Licensed (Cat CV & V1)</p>
+                  <p className="text-[11px] text-slate-600">Contractor Category CV & Vendor Category V1</p>
                 </div>
               </div>
 

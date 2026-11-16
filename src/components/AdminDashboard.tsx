@@ -202,6 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [copiedMediaId, setCopiedMediaId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const projectGalleryFileRef = useRef<HTMLInputElement>(null);
+  const projectVideoFileRef = useRef<HTMLInputElement>(null);
 
   // Search State for Recent Activity Table & Products
   const [recentSearch, setRecentSearch] = useState('');
@@ -249,6 +250,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Project Form State (Including Multi-Photo Portfolio Gallery)
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [newProjectGalleryUrl, setNewProjectGalleryUrl] = useState('');
+  const [newProjectVideoUrl, setNewProjectVideoUrl] = useState('');
   const [projectForm, setProjectForm] = useState({
     title: '',
     client: '',
@@ -261,6 +263,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     batterySpecs: 'Grid-Tied Zero Export',
     imageUrl: 'https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg',
     gallery: [] as string[],
+    videoUrl: '',
+    videos: [] as string[],
+    seoKeywords: '',
     completionDate: 'October 2026',
     kplcSavings: 'KES 180,000/month saved',
     description: '',
@@ -996,6 +1001,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       mergedGallery.unshift(projectForm.imageUrl);
     }
 
+    const mergedVideos = Array.from(
+      new Set([...(projectForm.videos || []), ...(projectForm.videoUrl ? [projectForm.videoUrl] : [])].map(v => v.trim()).filter(Boolean))
+    );
+    const primaryVideoUrl = projectForm.videoUrl?.trim() || mergedVideos[0] || '';
+    const parsedSeoKeywords = projectForm.seoKeywords
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
     const res = editingProject
       ? await StorageService.updateProject({
           ...editingProject,
@@ -1011,6 +1025,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           battery_specs: projectForm.batterySpecs,
           image_url: projectForm.imageUrl,
           gallery: mergedGallery,
+          video_url: primaryVideoUrl,
+          videos: mergedVideos,
+          seo_keywords: parsedSeoKeywords,
           completion_date: projectForm.completionDate,
           kplc_savings: projectForm.kplcSavings,
           description: projectForm.description,
@@ -1029,6 +1046,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           battery_specs: projectForm.batterySpecs,
           image_url: projectForm.imageUrl,
           gallery: mergedGallery,
+          video_url: primaryVideoUrl,
+          videos: mergedVideos,
+          seo_keywords: parsedSeoKeywords,
           completion_date: projectForm.completionDate,
           kplc_savings: projectForm.kplcSavings,
           description: projectForm.description,
@@ -1797,6 +1817,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               panelsCount: '92x 550W Panels', inverterSpecs: 'Growatt 50kW',
                               batterySpecs: 'Grid-Tied', imageUrl: 'https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg',
                               gallery: ['https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg'],
+                              videoUrl: '', videos: [], seoKeywords: '',
                               completionDate: 'October 2026', kplcSavings: 'KES 180,000/month', description: '', featured: true
                             });
                             setActiveDrawer('project');
@@ -2938,7 +2959,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           };
                           reader.readAsDataURL(file);
                         }}
-                        accept="image/*"
+                        accept="image/*,video/mp4,video/webm,video/quicktime"
                         className="hidden"
                       />
                       <button
@@ -2946,16 +2967,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="inline-flex items-center gap-1.5 bg-[#238B3D] hover:bg-[#1b6b2f] text-white text-xs font-bold py-2 px-4 rounded-xl transition-colors cursor-pointer shadow-2xs"
                       >
                         <Upload className="w-4 h-4" />
-                        <span>Upload New Photo</span>
+                        <span>Upload Photo / Video</span>
                       </button>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {mediaItems.map(item => (
+                    {mediaItems.map(item => {
+                      const isVideo =
+                        item.mime_type?.startsWith('video/') ||
+                        item.url?.startsWith('data:video/') ||
+                        /\.(mp4|webm|mov)(\?|$)/i.test(item.url || '');
+                      return (
                       <div key={item.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs p-2 space-y-2">
                         <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
-                          <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                          {isVideo ? (
+                            <video src={item.url} controls playsInline preload="metadata" className="w-full h-full object-cover bg-black" />
+                          ) : (
+                            <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                          )}
                         </div>
                         <p className="text-[11px] font-bold text-slate-800 truncate">{item.name}</p>
                         <div className="flex items-center justify-between text-[10px]">
@@ -2985,7 +3015,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -3589,6 +3620,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           batterySpecs: 'Grid-Tied',
                           imageUrl: 'https://shantisdesigns.co.ke/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-20-at-08.33.51.jpeg',
                           gallery: ['https://shantisdesigns.co.ke/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-20-at-08.33.51.jpeg'],
+                          videoUrl: '',
+                          videos: [],
+                          seoKeywords: '',
                           completionDate: '2026', kplcSavings: 'KES 180,000/month', description: '', featured: true
                         });
                         setActiveDrawer('project');
@@ -3601,7 +3635,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {projects.map((proj) => {
+                    {[...projects].sort((a, b) => Number(b.id) - Number(a.id)).map((proj) => {
                       const galleryList = proj.gallery && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
                       return (
                         <div key={proj.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs flex flex-col justify-between">
@@ -3647,6 +3681,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                       batterySpecs: proj.battery_specs || '',
                                       imageUrl: proj.image_url,
                                       gallery: galleryList,
+                                      videoUrl: proj.video_url || '',
+                                      videos: Array.isArray(proj.videos) ? proj.videos : (proj.video_url ? [proj.video_url] : []),
+                                      seoKeywords: Array.isArray(proj.seo_keywords) ? proj.seo_keywords.join(', ') : '',
                                       completionDate: proj.completion_date,
                                       kplcSavings: proj.kplc_savings,
                                       description: proj.description,
@@ -3690,6 +3727,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     batterySpecs: proj.battery_specs || '',
                                     imageUrl: proj.image_url,
                                     gallery: galleryList,
+                                    videoUrl: proj.video_url || '',
+                                    videos: Array.isArray(proj.videos) ? proj.videos : (proj.video_url ? [proj.video_url] : []),
+                                    seoKeywords: Array.isArray(proj.seo_keywords) ? proj.seo_keywords.join(', ') : '',
                                     completionDate: proj.completion_date,
                                     kplcSavings: proj.kplc_savings,
                                     description: proj.description,
@@ -4408,7 +4448,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <div>
                         <h3 className="font-extrabold text-base text-slate-900">WooCommerce & SQLite Database Synchronization</h3>
                         <p className="text-xs text-slate-500">
-                          Synchronize all 157 products, 36 categories, 14 projects, 95+ project images, and permalinks with shantisdesigns.co.ke
+                          Synchronize all {products.length} products, {categories.length} categories, {projects.length} projects, 95+ project images, and permalinks with shantisdesigns.co.ke
                         </p>
                       </div>
                       <button
@@ -5155,11 +5195,138 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
 
+                    {/* SITE WALKTHROUGH VIDEOS MANAGER */}
+                    <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="font-extrabold text-slate-900">
+                          Site Walkthrough Videos ({projectForm.videos.length})
+                        </label>
+                        <div>
+                          <input
+                            type="file"
+                            ref={projectVideoFileRef}
+                            accept="video/mp4,video/webm,video/quicktime"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = async (ev) => {
+                                const dataUrl = ev.target?.result as string;
+                                const added = await StorageService.addMedia({
+                                  name: `${projectForm.title || 'Project'} Video - ${file.name}`,
+                                  url: dataUrl,
+                                  mime_type: file.type || 'video/mp4',
+                                  size: Math.round(file.size / 1024) + ' KB',
+                                  dimensions: 'MP4 Video',
+                                });
+                                if (!added) {
+                                  showNotice('error', 'Failed to upload video to SQL database (max 55MB).');
+                                  return;
+                                }
+                                setMediaItems(StorageService.getMedia());
+                                setProjectForm(prev => ({
+                                  ...prev,
+                                  videoUrl: prev.videoUrl || added.url,
+                                  videos: [...prev.videos, added.url],
+                                }));
+                                showNotice('success', `Uploaded video "${file.name}" to SQL media storage.`);
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => projectVideoFileRef.current?.click()}
+                            className="px-2.5 py-1 bg-[#F58220] hover:bg-[#e07214] text-white rounded-lg font-bold text-[11px] cursor-pointer"
+                          >
+                            + Upload MP4 Video
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Paste .mp4 video URL (e.g. /assets/aistudio/... or https://...)"
+                          value={newProjectVideoUrl}
+                          onChange={(e) => setNewProjectVideoUrl(e.target.value)}
+                          className="flex-1 px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!newProjectVideoUrl.trim()) return;
+                            const vUrl = newProjectVideoUrl.trim();
+                            setProjectForm(prev => ({
+                              ...prev,
+                              videoUrl: prev.videoUrl || vUrl,
+                              videos: prev.videos.includes(vUrl) ? prev.videos : [...prev.videos, vUrl],
+                            }));
+                            setNewProjectVideoUrl('');
+                          }}
+                          className="px-3 py-1.5 bg-slate-800 text-white font-bold rounded-lg cursor-pointer"
+                        >
+                          Add Video URL
+                        </button>
+                      </div>
+
+                      {projectForm.videos.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                          {projectForm.videos.map((vUrl, vIdx) => (
+                            <div key={vIdx} className="bg-white p-2 rounded-xl border border-slate-200 space-y-1.5">
+                              <video src={vUrl} controls playsInline preload="metadata" className="w-full h-24 rounded-lg bg-black object-cover" />
+                              <div className="flex items-center justify-between text-[10px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setProjectForm(prev => ({ ...prev, videoUrl: vUrl }))}
+                                  className={`font-bold cursor-pointer ${
+                                    projectForm.videoUrl === vUrl ? 'text-[#238B3D]' : 'text-slate-500 hover:text-slate-900'
+                                  }`}
+                                >
+                                  {projectForm.videoUrl === vUrl ? '★ Primary Video' : 'Set Primary'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setProjectForm(prev => {
+                                      const nextVideos = prev.videos.filter((_, i) => i !== vIdx);
+                                      return {
+                                        ...prev,
+                                        videos: nextVideos,
+                                        videoUrl: prev.videoUrl === vUrl ? (nextVideos[0] || '') : prev.videoUrl,
+                                      };
+                                    })
+                                  }
+                                  className="text-red-600 font-bold hover:underline cursor-pointer"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        SEO Keywords (Comma-Separated)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Ruiru solar carport installation, 16kWh LithiumValley W16-E5 Kenya, EPRA Cat CV"
+                        value={projectForm.seoKeywords}
+                        onChange={(e) => setProjectForm(prev => ({ ...prev, seoKeywords: e.target.value }))}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-[#238B3D]"
+                      />
+                    </div>
+
                     <button
                       type="submit"
                       className="w-full py-3 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl shadow-md cursor-pointer"
                     >
-                      Save Project & Gallery Images to SQLite
+                      Save Project, Photos & Videos to SQL
                     </button>
                   </form>
                 )}

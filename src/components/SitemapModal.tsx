@@ -106,10 +106,12 @@ ${products
   <!-- Project Portfolio Case Studies (${projects.length}) -->
 ${projects
   .map(proj => {
-    const slug = proj.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    const slug =
+      proj.slug ||
+      proj.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
     return `  <url>
     <loc>https://shantisdesigns.co.ke/portfolio/${slug}/</loc>
     <lastmod>${today}</lastmod>
@@ -123,7 +125,7 @@ ${projects
 ${articles
   .map(
     a => `  <url>
-    <loc>https://shantisdesigns.co.ke/${a.slug}/</loc>
+    <loc>https://shantisdesigns.co.ke/blog/${a.slug}/</loc>
     <lastmod>${a.published_at || today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

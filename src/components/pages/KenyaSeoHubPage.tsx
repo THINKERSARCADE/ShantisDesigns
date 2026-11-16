@@ -39,26 +39,26 @@ const KENYA_REGIONAL_HUBS: CountySeoProfile[] = [
   {
     id: 'nairobi',
     name: 'Nairobi & Kiambu Metropolitan',
-    region: 'Nairobi, Karen, Runda, Westlands, Kilimani, Thika Road, Tatu City, Ruiru, Lower Kabete, Syokimau',
+    region: 'Nairobi, Ruiru, Embakasi (Baraka Estate), Karen, Runda, Westlands, Kilimani, Thika Road, Tatu City, Syokimau',
     peakSunHours: '5.4 – 5.8 kWh/m²/day',
-    headline: 'Solar Panels, Lithium Batteries & Hybrid Power Backups in Nairobi',
+    headline: 'Solar Carports, Panels, Lithium Batteries & Hybrid Power Backups in Nairobi & Ruiru',
     summary:
-      'Headquartered at Royal King Building (Luthuli Street) and Dev Towers (Biashara Street), Shantis Designs Solar Solutions delivers same-day dispatch and EPRA Class T3 turnkey residential and commercial solar installations across Nairobi and Kiambu.',
+      'Headquartered at Royal King Building (Luthuli Street) and Dev Towers (Biashara Street), Shantis Designs Solar Solutions delivers same-day dispatch and EPRA Contractor Category CV & Vendor Category V1 turnkey solar carports, residential Growatt/Deye hybrids, and LithiumValley LiFePO4 installations across Nairobi, Embakasi, Ruiru, and Kiambu.',
     topSolutions: [
-      '5kW – 15kW Residential Hybrid Solar & Lithium Valley LiFePO4 Backup Systems',
+      '5kWp+ Custom Steel Solar Carport Canopies with 16kWh LithiumValley W16-E5 Smart Batteries (Ruiru & Kiambu)',
+      '3.7kWp – 10kWp Residential Hybrid Solar (Growatt + 51.2V 100Ah LithiumValley, Embakasi & Nairobi Estates)',
       'EcoFlow Delta 2, Delta 2 Max & Delta Pro Apartment Power Backups (Zero Noise / Zero Fumes)',
-      '12kW – 100kW Deye & Must Three-Phase Commercial & Institutional Solar Plants',
-      '200L – 300L Pressurized Evacuated Tube Solar Water Heaters',
+      '12kW – 100kW Deye & Must Three-Phase Commercial Plants & Pressurized Solar Water Heaters',
     ],
     targetKeywords: [
       'solar panels price in Nairobi Kenya',
-      'solar installation companies in Nairobi',
-      'lithium solar battery backup Nairobi',
-      'home power backup systems Kenya',
-      'Deye hybrid inverter price Nairobi',
-      'Must inverter shop Luthuli Avenue Nairobi',
+      'solar carport installation Ruiru Kenya',
+      'Embakasi Baraka Estate solar installation',
+      '16kWh LithiumValley W16-E5 battery price Kenya',
+      'EPRA Contractor Category CV V1 Kenya',
+      'Growatt Deye hybrid inverter Nairobi',
     ],
-    deliveryNote: 'Same-Day Showroom Pickup or 2–4 Hour Express Delivery in Nairobi & Kiambu',
+    deliveryNote: 'Same-Day Showroom Pickup or 2–4 Hour Express Delivery in Nairobi, Ruiru & Kiambu',
   },
   {
     id: 'meru',
@@ -242,15 +242,15 @@ export const KenyaSeoHubPage: React.FC<KenyaSeoHubPageProps> = ({
         <header className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-slate-800 shadow-xl space-y-6">
           <div className="inline-flex items-center gap-2 bg-[#F58220]/20 text-amber-300 border border-[#F58220]/40 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4 text-[#F58220]" />
-            <span>EPRA Class T3 Licensed Solar Contractor • All 47 Counties in Kenya</span>
+            <span>EPRA Contractor Cat CV & Vendor V1 Licensed • All 47 Counties in Kenya</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-            Best Solar Panels, Lithium Batteries, Power Backups & Borehole Pumps in Kenya — Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos
+            Best Solar Carports, Panels, Lithium Batteries & Borehole Pumps in Kenya — Nairobi, Ruiru, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos
           </h1>
 
           <p className="text-xs sm:text-base text-slate-300 max-w-4xl leading-relaxed">
-            Shantis Designs Solar Solutions is Kenya’s premier supplier and EPRA-certified installer of genuine Tier-1 <strong>Horay N-Type & JA Solar Panels</strong>, <strong>Must & Deye Hybrid Inverters</strong>, <strong>Lithium Valley LiFePO4 Solar Batteries</strong>, <strong>EcoFlow Portable Power Backups</strong>, and <strong>Doyin Submersible Solar Borehole Water Pumps</strong>. Explore our regional solar engineering hubs and current Kenyan price guide below.
+            Shantis Designs Solar Solutions is Kenya’s premier EPRA Contractor Category CV & Vendor Category V1 supplier and installer of genuine Tier-1 <strong>Horay N-Type & JA Solar Panels</strong>, <strong>Growatt, Must & Deye Hybrid Inverters</strong>, <strong>LithiumValley 5kWh–16kWh (W16-E5) LiFePO4 Batteries</strong>, <strong>EcoFlow Power Backups</strong>, and <strong>Doyin Solar Borehole Pumps</strong>. Explore our regional solar engineering hubs and current Kenyan price guide below.
           </p>
 
           {/* County Selector Bar */}
@@ -586,6 +586,43 @@ export const KenyaSeoHubPage: React.FC<KenyaSeoHubPageProps> = ({
               </h3>
               <p className="text-slate-300 leading-relaxed">
                 All {products.length} products and {categories.length} categories are indexed with high-conversion commercial keywords targeting solar panels price in Kenya, lithium batteries Nairobi, hybrid inverters Mombasa, and solar borehole water pumps in Meru, Kisumu, Nakuru, Isiolo & Machakos.
+              </p>
+            </div>
+          </div>
+        </section>
+        {/* SECTION 4 (H2): FREQUENTLY ASKED QUESTIONS (MATCHES SCHEMA.ORG FAQPage) */}
+        <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 space-y-6">
+          <div>
+            <span className="text-xs font-black uppercase text-[#F58220] tracking-wider">
+              EPRA Engineering & System Sizing FAQs
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+              Solar Installation, Carport & EPRA Category CV / V1 Questions in Kenya
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
+              <h3 className="text-sm font-black text-slate-900">
+                Is Shantis Designs licensed by EPRA in Kenya?
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                Yes. Shantis Designs Limited holds active <strong>EPRA Contractor Category CV</strong> and <strong>Vendor Category V1</strong> solar licenses alongside NCA electrical contractor registration for homes, carports, C&I plants, and borehole pumping across all 47 counties.
+              </p>
+            </div>
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
+              <h3 className="text-sm font-black text-slate-900">
+                Why choose a solar carport in Ruiru or Kiambu?
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                Our structural steel solar carport canopy in Ruiru turns driveway shade into a 5kWp+ generation plant paired with a <strong>16kWh LithiumValley W16-E5</strong> battery—leaving your main roof untouched while running heavy household loads seamlessly.
+              </p>
+            </div>
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
+              <h3 className="text-sm font-black text-slate-900">
+                Can a 3.7kWp hybrid eliminate daytime KPLC bills?
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                Verified by live ShinePhone telemetry at <strong>Embakasi Baraka Estate</strong>, a 3.7kWp rooftop array paired with a Growatt hybrid inverter and 51.2V 100Ah LithiumValley battery maintains <strong>0.00W grid import</strong> all day while charging to 100%.
               </p>
             </div>
           </div>

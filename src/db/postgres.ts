@@ -162,11 +162,17 @@ export async function ensurePostgresInitialized(): Promise<boolean> {
         battery_specs TEXT,
         image_url TEXT NOT NULL,
         gallery JSONB DEFAULT '[]'::jsonb,
+        video_url TEXT DEFAULT '',
+        videos JSONB DEFAULT '[]'::jsonb,
+        seo_keywords JSONB DEFAULT '[]'::jsonb,
         completion_date TEXT,
         kplc_savings TEXT,
         description TEXT,
         featured BOOLEAN DEFAULT FALSE
       );
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS video_url TEXT DEFAULT '';
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]'::jsonb;
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_keywords JSONB DEFAULT '[]'::jsonb;
 
       CREATE TABLE IF NOT EXISTS services (
         id INTEGER PRIMARY KEY,
@@ -454,37 +460,47 @@ export async function ensurePostgresInitialized(): Promise<boolean> {
       }
     }
 
-    const projCount = await client.query('SELECT COUNT(*)::int AS c FROM projects');
-    if (projCount.rows[0].c === 0) {
-      for (const pr of INITIAL_PROJECTS) {
-        await client.query(
-          `INSERT INTO projects (
-            id, title, slug, client, location, category, category_name,
-            system_size, panels_count, inverter_specs, battery_specs,
-            image_url, gallery, completion_date, kplc_savings, description, featured
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)
-          ON CONFLICT (id) DO NOTHING`,
-          [
-            pr.id,
-            pr.title,
-            pr.slug,
-            pr.client,
-            pr.location,
-            pr.category,
-            pr.category_name || 'Solar Installation',
-            pr.system_size,
-            pr.panels_count || '',
-            pr.inverter_specs || '',
-            pr.battery_specs || '',
-            pr.image_url,
-            JSON.stringify(pr.gallery && pr.gallery.length > 0 ? pr.gallery : [pr.image_url]),
-            pr.completion_date || '',
-            pr.kplc_savings || '',
-            pr.description || '',
-            Boolean(pr.featured),
-          ]
-        );
-      }
+    // Always ensure missing seed projects (Embakasi Baraka Estate, Ruiru Carport) are inserted and video/SEO synced
+    for (const pr of INITIAL_PROJECTS) {
+      const gallery = pr.gallery && pr.gallery.length > 0 ? pr.gallery : [pr.image_url];
+      const videos = pr.videos && pr.videos.length > 0 ? pr.videos : pr.video_url ? [pr.video_url] : [];
+      const seoKeywords = pr.seo_keywords || [];
+      await client.query(
+        `INSERT INTO projects (
+          id, title, slug, client, location, category, category_name,
+          system_size, panels_count, inverter_specs, battery_specs,
+          image_url, gallery, video_url, videos, seo_keywords,
+          completion_date, kplc_savings, description, featured
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
+        ON CONFLICT (id) DO UPDATE SET
+          image_url = CASE WHEN projects.id = 16 AND (projects.image_url LIKE '%ruiru-secondary-school.jpeg%' OR projects.image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.image_url ELSE projects.image_url END,
+          gallery = CASE WHEN projects.id = 16 AND (projects.gallery::text LIKE '%ruiru-secondary-school.jpeg%' OR projects.gallery::text LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.gallery ELSE projects.gallery END,
+          video_url = COALESCE(NULLIF(projects.video_url, ''), EXCLUDED.video_url),
+          videos = CASE WHEN projects.videos IS NULL OR projects.videos = '[]'::jsonb THEN EXCLUDED.videos ELSE projects.videos END,
+          seo_keywords = CASE WHEN projects.seo_keywords IS NULL OR projects.seo_keywords = '[]'::jsonb THEN EXCLUDED.seo_keywords ELSE projects.seo_keywords END`,
+        [
+          pr.id,
+          pr.title,
+          pr.slug,
+          pr.client,
+          pr.location,
+          pr.category,
+          pr.category_name || 'Solar Installation',
+          pr.system_size,
+          pr.panels_count || '',
+          pr.inverter_specs || '',
+          pr.battery_specs || '',
+          pr.image_url,
+          JSON.stringify(gallery),
+          pr.video_url || '',
+          JSON.stringify(videos),
+          JSON.stringify(seoKeywords),
+          pr.completion_date || '',
+          pr.kplc_savings || '',
+          pr.description || '',
+          Boolean(pr.featured),
+        ]
+      );
     }
 
     const srvCount = await client.query('SELECT COUNT(*)::int AS c FROM services');
@@ -510,33 +526,37 @@ export async function ensurePostgresInitialized(): Promise<boolean> {
           ]
         );
       }
+    } else {
+      await client.query(
+        `UPDATE services SET description = $1, features = $2::jsonb WHERE id = 1 AND description LIKE '%Class T3%'`,
+        [INITIAL_SERVICES[0].description, JSON.stringify(INITIAL_SERVICES[0].features)]
+      );
     }
 
-    const artCount = await client.query('SELECT COUNT(*)::int AS c FROM articles');
-    if (artCount.rows[0].c === 0) {
-      for (const a of INITIAL_ARTICLES) {
-        await client.query(
-          `INSERT INTO articles (
-            id, title, slug, excerpt, content, author, category,
-            image_url, published_at, read_time, meta_description, tags
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
-          ON CONFLICT (id) DO NOTHING`,
-          [
-            a.id,
-            a.title,
-            a.slug,
-            a.excerpt,
-            a.content,
-            a.author,
-            a.category,
-            a.image_url,
-            a.published_at,
-            a.read_time,
-            a.meta_description,
-            JSON.stringify(a.tags || []),
-          ]
-        );
-      }
+    // Always ensure newly added seed SEO articles (Ruiru, Embakasi, EPRA CV/V1) exist
+    for (const a of INITIAL_ARTICLES) {
+      await client.query(
+        `INSERT INTO articles (
+          id, title, slug, excerpt, content, author, category,
+          image_url, published_at, read_time, meta_description, tags
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
+        ON CONFLICT (id) DO UPDATE SET
+          image_url = CASE WHEN articles.id = 10010 AND (articles.image_url LIKE '%ruiru-secondary-school.jpeg%' OR articles.image_url LIKE '%WhatsApp-Image-2026-08-18%') THEN EXCLUDED.image_url ELSE articles.image_url END`,
+        [
+          a.id,
+          a.title,
+          a.slug,
+          a.excerpt,
+          a.content,
+          a.author,
+          a.category,
+          a.image_url,
+          a.published_at,
+          a.read_time,
+          a.meta_description,
+          JSON.stringify(a.tags || []),
+        ]
+      );
     }
 
     const partCount = await client.query('SELECT COUNT(*)::int AS c FROM partners');
@@ -598,6 +618,21 @@ export async function ensurePostgresInitialized(): Promise<boolean> {
       await client.query('INSERT INTO about_page (id, data_json) VALUES (1, $1::jsonb)', [
         JSON.stringify(INITIAL_ABOUT_DATA),
       ]);
+    } else {
+      const existingAbout = await client.query('SELECT data_json FROM about_page WHERE id = 1');
+      const aboutData = existingAbout.rows[0]?.data_json;
+      const serialized = JSON.stringify(aboutData || {});
+      if (serialized.includes('Solar PV Contractor/Vendor') || serialized.includes('Class T3')) {
+        const updatedAbout = {
+          ...(aboutData || {}),
+          subheading: INITIAL_ABOUT_DATA.subheading,
+          partner_intro_1: INITIAL_ABOUT_DATA.partner_intro_1,
+          certifications: INITIAL_ABOUT_DATA.certifications,
+        };
+        await client.query('UPDATE about_page SET data_json = $1::jsonb, updated_at = NOW() WHERE id = 1', [
+          JSON.stringify(updatedAbout),
+        ]);
+      }
     }
 
     const hpCount = await client.query('SELECT COUNT(*)::int AS c FROM homepage_config');
@@ -607,17 +642,34 @@ export async function ensurePostgresInitialized(): Promise<boolean> {
         'INSERT INTO homepage_config (id, draft_json, published_json) VALUES (1, $1::jsonb, $2::jsonb)',
         [cfgJson, cfgJson]
       );
-    }
-
-    const mediaCount = await client.query('SELECT COUNT(*)::int AS c FROM media_library');
-    if (mediaCount.rows[0].c === 0) {
-      for (const m of INITIAL_MEDIA) {
+    } else {
+      const existingHp = await client.query('SELECT draft_json, published_json FROM homepage_config WHERE id = 1');
+      const pub = existingHp.rows[0]?.published_json;
+      const draft = existingHp.rows[0]?.draft_json;
+      if (JSON.stringify(pub || {}).includes('EPRA Licensed Solar EPC Contractor')) {
+        const nextPub = {
+          ...(pub || {}),
+          hero_kicker: DEFAULT_HOMEPAGE_CONFIG.hero_kicker,
+          epc_banner_subtitle: DEFAULT_HOMEPAGE_CONFIG.epc_banner_subtitle,
+        };
+        const nextDraft = {
+          ...(draft || {}),
+          hero_kicker: DEFAULT_HOMEPAGE_CONFIG.hero_kicker,
+          epc_banner_subtitle: DEFAULT_HOMEPAGE_CONFIG.epc_banner_subtitle,
+        };
         await client.query(
-          `INSERT INTO media_library (id, name, url, mime_type, size, dimensions)
-           VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO NOTHING`,
-          [m.id, m.name, m.url, m.mime_type || 'image/jpeg', m.size || '280 KB', m.dimensions || '800 × 800 px']
+          'UPDATE homepage_config SET draft_json = $1::jsonb, published_json = $2::jsonb, updated_at = NOW() WHERE id = 1',
+          [JSON.stringify(nextDraft), JSON.stringify(nextPub)]
         );
       }
+    }
+
+    for (const m of INITIAL_MEDIA) {
+      await client.query(
+        `INSERT INTO media_library (id, name, url, mime_type, size, dimensions)
+         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO NOTHING`,
+        [m.id, m.name, m.url, m.mime_type || 'image/jpeg', m.size || '280 KB', m.dimensions || '800 × 800 px']
+      );
     }
 
     const usrCount = await client.query('SELECT COUNT(*)::int AS c FROM users');
@@ -936,7 +988,7 @@ export const PgRepository = {
 
   async getProjects(): Promise<Project[]> {
     const pool = createPool();
-    const res = await pool.query('SELECT * FROM projects ORDER BY id ASC');
+    const res = await pool.query('SELECT * FROM projects ORDER BY id DESC');
     return res.rows.map((r) => ({
       id: Number(r.id),
       title: r.title,
@@ -951,6 +1003,9 @@ export const PgRepository = {
       battery_specs: r.battery_specs || '',
       image_url: r.image_url,
       gallery: parseJsonField<string[]>(r.gallery, []),
+      video_url: r.video_url || '',
+      videos: parseJsonField<string[]>(r.videos, []),
+      seo_keywords: parseJsonField<string[]>(r.seo_keywords, []),
       completion_date: r.completion_date || '',
       kplc_savings: r.kplc_savings || '',
       description: r.description || '',
@@ -960,22 +1015,36 @@ export const PgRepository = {
 
   async upsertProject(proj: any) {
     const pool = createPool();
-    const id = Number(proj.id || Date.now());
+    let id = Number(proj.id || 0);
+    if (!id || id > 2147483647) {
+      const maxRes = await pool.query('SELECT COALESCE(MAX(id), 0)::int AS max_id FROM projects');
+      id = Number(maxRes.rows[0]?.max_id || 0) + 1;
+    }
     const gallery =
       Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+    const videos = Array.isArray(proj.videos)
+      ? proj.videos.filter(Boolean)
+      : proj.video_url
+      ? [proj.video_url]
+      : [];
+    const videoUrl = String(proj.video_url || videos[0] || '');
+    const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
     const slug = proj.slug || String(proj.title).toLowerCase().replace(/[^a-z0-9]+/g, '-');
     await pool.query(
       `INSERT INTO projects (
         id, title, slug, client, location, category, category_name,
         system_size, panels_count, inverter_specs, battery_specs,
-        image_url, gallery, completion_date, kplc_savings, description, featured
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)
+        image_url, gallery, video_url, videos, seo_keywords,
+        completion_date, kplc_savings, description, featured
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, slug = EXCLUDED.slug, client = EXCLUDED.client,
         location = EXCLUDED.location, category = EXCLUDED.category,
         system_size = EXCLUDED.system_size, panels_count = EXCLUDED.panels_count,
         inverter_specs = EXCLUDED.inverter_specs, battery_specs = EXCLUDED.battery_specs,
         image_url = EXCLUDED.image_url, gallery = EXCLUDED.gallery,
+        video_url = EXCLUDED.video_url, videos = EXCLUDED.videos,
+        seo_keywords = EXCLUDED.seo_keywords,
         completion_date = EXCLUDED.completion_date, kplc_savings = EXCLUDED.kplc_savings,
         description = EXCLUDED.description, featured = EXCLUDED.featured`,
       [
@@ -992,6 +1061,9 @@ export const PgRepository = {
         proj.battery_specs || '',
         proj.image_url,
         JSON.stringify(gallery),
+        videoUrl,
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
         proj.completion_date || '2026',
         proj.kplc_savings || '',
         proj.description || '',
@@ -1005,13 +1077,21 @@ export const PgRepository = {
     const pool = createPool();
     const gallery =
       Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+    const videos = Array.isArray(proj.videos)
+      ? proj.videos.filter(Boolean)
+      : proj.video_url
+      ? [proj.video_url]
+      : [];
+    const videoUrl = String(proj.video_url || videos[0] || '');
+    const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
     await pool.query(
       `UPDATE projects SET
         title = $1, slug = $2, client = $3, location = $4, category = $5,
         system_size = $6, panels_count = $7, inverter_specs = $8, battery_specs = $9,
-        image_url = $10, gallery = $11::jsonb, completion_date = $12, kplc_savings = $13,
-        description = $14, featured = $15
-       WHERE id = $16`,
+        image_url = $10, gallery = $11::jsonb, video_url = $12, videos = $13::jsonb,
+        seo_keywords = $14::jsonb, completion_date = $15, kplc_savings = $16,
+        description = $17, featured = $18
+       WHERE id = $19`,
       [
         proj.title,
         proj.slug,
@@ -1024,6 +1104,9 @@ export const PgRepository = {
         proj.battery_specs || '',
         proj.image_url,
         JSON.stringify(gallery),
+        videoUrl,
+        JSON.stringify(videos),
+        JSON.stringify(seoKeywords),
         proj.completion_date || '',
         proj.kplc_savings || '',
         proj.description || '',

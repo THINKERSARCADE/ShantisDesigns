@@ -469,7 +469,7 @@ export const ProductSinglePage: React.FC<ProductSinglePageProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px] text-slate-700 pt-1">
                 <div className="flex items-center gap-2 bg-[#FAF8F5] p-2.5 rounded-xl border border-stone-200/70">
                   <ShieldCheck className="w-4 h-4 text-[#238B3D] shrink-0" />
-                  <span>EPRA Class T3 Certified</span>
+                  <span>EPRA Cat CV & V1 Certified</span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#FAF8F5] p-2.5 rounded-xl border border-stone-200/70">
                   <Award className="w-4 h-4 text-[#F58220] shrink-0" />
@@ -552,7 +552,7 @@ export const ProductSinglePage: React.FC<ProductSinglePageProps> = ({
                   <p className="text-xs text-slate-600 leading-relaxed">
                     Order genuine <strong>{product.name}</strong> at the best price in Kenya from
                     Shantis Designs Solar Solutions (Royal King Building, Luthuli Street, Nairobi).
-                    We provide same-day dispatch and professional EPRA Class T3 solar installation
+                    We provide same-day dispatch and professional EPRA Cat CV & V1 solar installation
                     across <strong>Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, Machakos</strong>
                     , Kiambu, Eldoret, Nyeri, and all 47 counties in Kenya.
                   </p>
@@ -606,7 +606,7 @@ export const ProductSinglePage: React.FC<ProductSinglePageProps> = ({
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     Every unit purchased from Shantis Designs Solar Solutions (Royal King Building,
                     Luthuli Street & Dev Towers, Biashara Street, Nairobi) is backed by our licensed
-                    EPRA Class T3 engineering team and official manufacturer warranty.
+                    EPRA Contractor Category CV & Vendor V1 engineering team and official manufacturer warranty.
                   </p>
                   <ul className="text-xs text-slate-700 space-y-1.5 font-medium">
                     <li>✓ Serial number registered at checkout for warranty claims</li>

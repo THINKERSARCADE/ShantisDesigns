@@ -22,13 +22,13 @@ export const INITIAL_SERVICES: EPCService[] = [
     short_description:
       'Custom 3kW to 15kW hybrid solar PV & LiFePO4 battery backup systems for Kenyan homes with 0ms blackout switchover.',
     description:
-      'EPRA Class T3 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.',
+      'EPRA Contractor Category CV & Vendor Category V1 licensed design and installation of residential hybrid solar systems using Horay N-Type & JA Solar panels, Must, Growatt & Deye hybrid inverters, and Lithium Valley LiFePO4 wall-mounted batteries. Cut KPLC bills by up to 85% across Nairobi, Ruiru, Embakasi, Meru, Mombasa, Kisumu, Nakuru, Isiolo, and Machakos.',
     icon_name: 'Sun',
     image_url:
       'https://shantisprojects.lovable.app/__l5e/assets-v1/0f44c6c4-ebd7-4883-bae0-17c6dbe786a5/tatu-city.jpg',
     features: [
       'Free site survey & load audit',
-      'EPRA licensed installation & warranty',
+      'EPRA Category CV & V1 licensed installation & warranty',
       'Zero transfer time (UPS-grade) backup',
       'Smart Wi-Fi mobile monitoring',
     ],
@@ -134,18 +134,18 @@ export const INITIAL_SERVICES: EPCService[] = [
 
 export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   template_id: 'classic_epc',
-  hero_kicker: 'EPRA Licensed Solar EPC Contractor · Nairobi & Nationwide Kenya',
+  hero_kicker: 'EPRA Contractor Category CV & Vendor V1 · Nairobi & Nationwide Kenya',
   hero_headline: 'SHANTIS DESIGNS',
   hero_highlight: 'SOLAR SOLUTIONS',
   hero_subheadline:
-    'Genuine Tier-1 Horay N-Type & JA Solar Panels, Must & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.',
+    'Genuine Tier-1 Horay N-Type & JA Solar Panels, Must, Growatt & Deye Hybrid Inverters, Lithium Valley LiFePO4 Batteries, EcoFlow Power Backups, and Doyin Submersible Water Pumps.',
   hero_image_url:
     'https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-06-at-19.48.50.jpeg',
   primary_cta_label: 'Shop Solar Equipment',
   secondary_cta_label: 'Size Your Solar System',
   epc_banner_title: 'Need Turnkey Solar Installation in Kenya?',
   epc_banner_subtitle:
-    'Nationwide Delivery & EPRA-Certified Solar Installation Across Nairobi, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos · Call 0115 521 631',
+    'Nationwide Delivery & EPRA Category CV & V1 Certified Solar Installation Across Nairobi, Ruiru, Meru, Mombasa, Kisumu, Nakuru, Isiolo & Machakos · Call 0115 521 631',
   show_trust_bar: true,
   show_deals_section: true,
   show_partners_marquee: true,

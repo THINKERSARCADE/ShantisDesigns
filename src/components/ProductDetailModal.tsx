@@ -92,7 +92,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-2">
             <span className="bg-[#238B3D] text-white text-[10px] font-black uppercase px-2 py-0.5 rounded">
-              EPRA CLASS T3 CERTIFIED
+              EPRA CAT CV & V1 CERTIFIED
             </span>
             <span className="text-xs text-slate-400 font-mono hidden sm:inline">SKU: {product.sku}</span>
           </div>
@@ -187,7 +187,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-center gap-2 text-[#238B3D] font-bold">
                   <ShieldCheck className="w-4 h-4 text-[#238B3D] shrink-0" />
-                  <span>EPRA Class T3 & NCA Engineering Certified</span>
+                  <span>EPRA Cat CV & V1 & NCA Engineering Certified</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4 text-[#F58220] shrink-0" />

@@ -70,6 +70,9 @@ export interface Project {
   battery_specs?: string;
   image_url: string;
   gallery?: string[];
+  video_url?: string;
+  videos?: string[];
+  seo_keywords?: string[];
   completion_date: string;
   kplc_savings: string;
   description: string;

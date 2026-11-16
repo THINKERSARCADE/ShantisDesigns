@@ -32,8 +32,8 @@ const SHANTIS_GBP_URL = 'https://g.page/r/CVAYv1cTmiLaEAE/review';
 const SHANTIS_MAPS_URL =
   'https://www.google.com/maps/place/Shantis+Designs+Solar+Solutions/@-1.2842386,36.8253148,17z/data=!4m8!3m7!1s0x182f115049f1603f:0xda229a1357bf1850!8m2!3d-1.2842386!4d36.8278897!9m1!1b1!16s%2Fg%2F11zdf52pcw?hl=en';
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 
 // Wait for PostgreSQL initialization promise once on incoming API requests
 app.use('/api', async (_req: Request, _res: Response, next: NextFunction) => {
@@ -1877,14 +1877,26 @@ app.post('/api/projects', requireAdminAuth, async (req: Request, res: Response) 
   if (isPostgresReady()) {
     return res.json({ projects: await PgRepository.upsertProject(proj) });
   }
-  const id = proj.id || Date.now();
+  let id = Number(proj.id || 0);
+  if (!id) {
+    const maxRow = db.prepare('SELECT COALESCE(MAX(id), 0) AS max_id FROM projects').get() as { max_id: number };
+    id = Number(maxRow?.max_id || 0) + 1;
+  }
   const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+  const videos = Array.isArray(proj.videos)
+    ? proj.videos.filter(Boolean)
+    : proj.video_url
+    ? [proj.video_url]
+    : [];
+  const videoUrl = String(proj.video_url || videos[0] || '');
+  const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
   db.prepare(
     `INSERT OR REPLACE INTO projects (
       id, title, slug, client, location, category, category_name,
       system_size, panels_count, inverter_specs, battery_specs,
-      image_url, gallery_json, completion_date, kplc_savings, description, featured
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      image_url, gallery_json, video_url, videos_json, seo_keywords_json,
+      completion_date, kplc_savings, description, featured
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     proj.title,
@@ -1899,6 +1911,9 @@ app.post('/api/projects', requireAdminAuth, async (req: Request, res: Response) 
     proj.battery_specs,
     proj.image_url,
     JSON.stringify(gallery),
+    videoUrl,
+    JSON.stringify(videos),
+    JSON.stringify(seoKeywords),
     proj.completion_date || '2026',
     proj.kplc_savings,
     proj.description,
@@ -1914,11 +1929,19 @@ app.put('/api/projects/:id', requireAdminAuth, async (req: Request, res: Respons
     return res.json({ projects: await PgRepository.updateProject(id, proj) });
   }
   const gallery = Array.isArray(proj.gallery) && proj.gallery.length > 0 ? proj.gallery : [proj.image_url];
+  const videos = Array.isArray(proj.videos)
+    ? proj.videos.filter(Boolean)
+    : proj.video_url
+    ? [proj.video_url]
+    : [];
+  const videoUrl = String(proj.video_url || videos[0] || '');
+  const seoKeywords = Array.isArray(proj.seo_keywords) ? proj.seo_keywords : [];
   db.prepare(
     `UPDATE projects SET
       title = ?, slug = ?, client = ?, location = ?, category = ?,
       system_size = ?, panels_count = ?, inverter_specs = ?, battery_specs = ?,
-      image_url = ?, gallery_json = ?, completion_date = ?, kplc_savings = ?, description = ?, featured = ?
+      image_url = ?, gallery_json = ?, video_url = ?, videos_json = ?, seo_keywords_json = ?,
+      completion_date = ?, kplc_savings = ?, description = ?, featured = ?
      WHERE id = ?`
   ).run(
     proj.title,
@@ -1932,6 +1955,9 @@ app.put('/api/projects/:id', requireAdminAuth, async (req: Request, res: Respons
     proj.battery_specs,
     proj.image_url,
     JSON.stringify(gallery),
+    videoUrl,
+    JSON.stringify(videos),
+    JSON.stringify(seoKeywords),
     proj.completion_date,
     proj.kplc_savings,
     proj.description,
@@ -2589,17 +2615,18 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   const pg = isPostgresReady();
   const products = pg ? await PgRepository.getProducts() : SqlRepository.getProducts();
   const categories = pg ? await PgRepository.getCategories() : SqlRepository.getCategories();
+  const projects = pg ? await PgRepository.getProjects() : SqlRepository.getProjects();
   const articles = pg ? await PgRepository.getArticles() : SqlRepository.getArticles();
   const today = new Date().toISOString().split('T')[0];
 
   const staticPaths = [
     { loc: 'https://shantisdesigns.co.ke/', priority: '1.0', changefreq: 'daily' },
     { loc: 'https://shantisdesigns.co.ke/shop/', priority: '0.95', changefreq: 'daily' },
-    { loc: 'https://shantisdesigns.co.ke/projects/', priority: '0.90', changefreq: 'weekly' },
+    { loc: 'https://shantisdesigns.co.ke/projects/', priority: '0.92', changefreq: 'weekly' },
     { loc: 'https://shantisdesigns.co.ke/about/', priority: '0.85', changefreq: 'monthly' },
     { loc: 'https://shantisdesigns.co.ke/contact-2/', priority: '0.85', changefreq: 'monthly' },
     { loc: 'https://shantisdesigns.co.ke/order-tracking/', priority: '0.75', changefreq: 'monthly' },
-    { loc: 'https://shantisdesigns.co.ke/blog/', priority: '0.85', changefreq: 'weekly' },
+    { loc: 'https://shantisdesigns.co.ke/blog/', priority: '0.88', changefreq: 'weekly' },
     { loc: 'https://shantisdesigns.co.ke/solar-installation-kenya/', priority: '0.95', changefreq: 'weekly' },
     { loc: 'https://shantisdesigns.co.ke/solar-installation-nairobi/', priority: '0.92', changefreq: 'weekly' },
     { loc: 'https://shantisdesigns.co.ke/solar-installation-mombasa/', priority: '0.92', changefreq: 'weekly' },
@@ -2625,9 +2652,13 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       (p) =>
         `  <url>\n    <loc>https://shantisdesigns.co.ke/product/${p.slug}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.85</priority>\n  </url>`
     ),
+    ...projects.map(
+      (pr) =>
+        `  <url>\n    <loc>https://shantisdesigns.co.ke/portfolio/${pr.slug}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.85</priority>\n  </url>`
+    ),
     ...articles.map(
       (a) =>
-        `  <url>\n    <loc>https://shantisdesigns.co.ke/${a.slug}/</loc>\n    <lastmod>${a.published_at || today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.80</priority>\n  </url>`
+        `  <url>\n    <loc>https://shantisdesigns.co.ke/blog/${a.slug}/</loc>\n    <lastmod>${a.published_at || today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.85</priority>\n  </url>`
     ),
   ].join('\n');
 

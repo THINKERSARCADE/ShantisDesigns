@@ -62,7 +62,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
             <Sun className="w-5 h-5 text-amber-300" />
             <div>
               <h3 className="font-extrabold text-base">Request Solar Installation Quote</h3>
-              <p className="text-xs text-white/80">EPRA T3 Licensed Site Sizing & Assessment</p>
+              <p className="text-xs text-white/80">EPRA Cat CV & V1 Licensed Site Sizing & Assessment</p>
             </div>
           </div>
           <button
