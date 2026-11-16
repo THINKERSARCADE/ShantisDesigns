@@ -1,7 +1,15 @@
-import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import { createRequire } from 'module';
+import {
+  hashWithRandomSalt,
+  verifyScryptSecret,
+  maskSecretValue as maskSecretHelper,
+  encryptVaultSecret,
+  decryptVaultSecret,
+  verifyGoogleTotp,
+} from './security';
 import {
   INITIAL_PRODUCTS,
   INITIAL_CATEGORIES,
@@ -34,12 +42,121 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 const DB_PATH = path.join(DATA_DIR, 'shantis_solar.sqlite');
-export const db = new Database(DB_PATH);
 
-// Enable WAL mode and foreign key integrity
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-db.pragma('synchronous = NORMAL');
+function getSafeRequire(): NodeRequire {
+  if (typeof require === 'function') {
+    return require;
+  }
+  return createRequire(path.join(process.cwd(), 'package.json'));
+}
+
+function normalizeSqlParams(args: any[]): any[] {
+  return args.map((v) => {
+    if (v === undefined) return null;
+    if (typeof v === 'boolean') return v ? 1 : 0;
+    return v;
+  });
+}
+
+function createCompatibleDatabase(dbPath: string): any {
+  const safeRequire = getSafeRequire();
+  try {
+    const BetterSqlite3 = safeRequire('better-sqlite3');
+    const instance = new BetterSqlite3(dbPath);
+    instance.pragma('journal_mode = WAL');
+    instance.pragma('foreign_keys = ON');
+    instance.pragma('synchronous = NORMAL');
+    return instance;
+  } catch (err: any) {
+    // Fallback to Node 22 built-in node:sqlite (zero native prebuild / GLIBC dependency)
+    console.warn('[SQLite] better-sqlite3 unavailable, using built-in node:sqlite:', err?.code || err?.message);
+    const { DatabaseSync } = safeRequire('node:sqlite');
+
+    let rawDb: any;
+    try {
+      rawDb = new DatabaseSync(dbPath);
+      const chk = rawDb.prepare('PRAGMA quick_check').get() as any;
+      if (chk && chk.quick_check !== 'ok') {
+        throw new Error('SQLite quick_check failed');
+      }
+      // Verify schema is readable
+      rawDb.exec("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1");
+    } catch (openErr: any) {
+      console.warn('[SQLite] Recreating clean SQLite database after check:', openErr?.message);
+      try {
+        rawDb?.close?.();
+      } catch {
+        // ignore close error
+      }
+      for (const suffix of ['', '-wal', '-shm', '-journal']) {
+        try {
+          if (fs.existsSync(dbPath + suffix)) fs.unlinkSync(dbPath + suffix);
+        } catch {
+          // ignore unlink error
+        }
+      }
+      rawDb = new DatabaseSync(dbPath);
+    }
+
+    try {
+      rawDb.exec('PRAGMA journal_mode = DELETE');
+      rawDb.exec('PRAGMA foreign_keys = ON');
+      rawDb.exec('PRAGMA synchronous = NORMAL');
+    } catch {
+      // Ignore pragma errors on restricted filesystems
+    }
+
+    const compatDb: any = {
+      exec(sql: string) {
+        return rawDb.exec(sql);
+      },
+      pragma(str: string) {
+        try {
+          return rawDb.exec(`PRAGMA ${str}`);
+        } catch {
+          return null;
+        }
+      },
+      prepare(sql: string) {
+        const stmt = rawDb.prepare(sql);
+        return {
+          run(...args: any[]) {
+            return stmt.run(...normalizeSqlParams(args));
+          },
+          get(...args: any[]) {
+            const row = stmt.get(...normalizeSqlParams(args));
+            return row ? { ...row } : undefined;
+          },
+          all(...args: any[]) {
+            const rows = stmt.all(...normalizeSqlParams(args));
+            return Array.isArray(rows) ? rows.map((r: any) => ({ ...r })) : [];
+          },
+        };
+      },
+      transaction(fn: (...args: any[]) => any) {
+        return (...args: any[]) => {
+          rawDb.exec('BEGIN');
+          try {
+            const result = fn(...args);
+            rawDb.exec('COMMIT');
+            return result;
+          } catch (txErr) {
+            try {
+              rawDb.exec('ROLLBACK');
+            } catch {
+              // ignore rollback error
+            }
+            throw txErr;
+          }
+        };
+      },
+    };
+
+    return compatDb;
+  }
+}
+
+export const db: any = createCompatibleDatabase(DB_PATH);
 
 export interface EPCService {
   id: number;
@@ -152,10 +269,7 @@ export function hashPassword(password: string, salt: string): string {
 }
 
 export function maskSecretValue(secret: string): string {
-  const clean = (secret || '').trim();
-  if (!clean) return '';
-  if (clean.length <= 6) return '••••••';
-  return `${clean.slice(0, 3)}••••••••${clean.slice(-3)}`;
+  return maskSecretHelper(secret);
 }
 
 function generateSeoKeywordsForProduct(p: Product): string[] {
@@ -426,7 +540,39 @@ export function initializeDatabase(): void {
       salt TEXT NOT NULL DEFAULT '',
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS mpesa_transactions (
+      checkout_request_id TEXT PRIMARY KEY,
+      merchant_request_id TEXT NOT NULL DEFAULT '',
+      order_number TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      amount REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending',
+      result_code TEXT NOT NULL DEFAULT '',
+      result_desc TEXT NOT NULL DEFAULT '',
+      mpesa_receipt TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
+
+  // Ensure new security & payment columns exist on upgraded SQLite DBs
+  const alterStatements = [
+    "ALTER TABLE users ADD COLUMN google_totp_secret TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN google_totp_enabled INTEGER DEFAULT 0",
+    "ALTER TABLE orders ADD COLUMN checkout_request_id TEXT DEFAULT ''",
+    "ALTER TABLE mpesa_api_credentials ADD COLUMN consumer_key_enc TEXT DEFAULT ''",
+    "ALTER TABLE mpesa_api_credentials ADD COLUMN consumer_secret_enc TEXT DEFAULT ''",
+    "ALTER TABLE mpesa_api_credentials ADD COLUMN passkey_enc TEXT DEFAULT ''",
+    "ALTER TABLE mpesa_api_credentials ADD COLUMN initiator_password_enc TEXT DEFAULT ''",
+  ];
+  for (const sql of alterStatements) {
+    try {
+      db.prepare(sql).run();
+    } catch {
+      // Column already exists
+    }
+  }
 
   // Seed Users if empty (All passwords and TOTP secrets stored hashed with scryptSync)
   const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
@@ -441,45 +587,40 @@ export function initializeDatabase(): void {
 
     insertUser.run(
       'admin@shantisdesigns.co.ke',
-      hashPassword('Shantis#Solar2026!', adminSalt),
+      hashWithRandomSalt('Shantis#Solar2026!'),
       adminSalt,
       'super_admin',
       'Shantis Designs Admin',
-      hashPassword('254880', adminSalt),
+      hashWithRandomSalt('254880'),
       now
     );
     insertUser.run(
       'engineer@shantisdesigns.co.ke',
-      hashPassword('EPRA#Tech2026!', engSalt),
+      hashWithRandomSalt('EPRA#Tech2026!'),
       engSalt,
       'Inventory Manager',
       'Shantis Solar Engineer',
-      hashPassword('254880', engSalt),
+      hashWithRandomSalt('254880'),
       now
     );
   } else {
-    // Migrate any existing users so totp_code and password_hash are strictly scrypt-hashed (64-byte = 128 hex chars)
+    // Migrate only unhashed legacy rows (keep existing 128-char hex OR salt:hash formats intact)
     const existingUsers = db.prepare('SELECT * FROM users').all() as any[];
     const updateUserHash = db.prepare(`
-      UPDATE users SET password_hash = ?, totp_code = ?, salt = ?, name = ? WHERE id = ?
+      UPDATE users SET password_hash = ?, totp_code = ?, salt = ? WHERE id = ?
     `);
     for (const u of existingUsers) {
+      const hasValidPw = u.password_hash && (u.password_hash.length === 128 || u.password_hash.includes(':'));
+      const hasValidTotp = u.totp_code && (u.totp_code.length === 128 || u.totp_code.includes(':'));
+      if (hasValidPw && hasValidTotp && u.salt && u.salt.length >= 16) continue;
       const salt = u.salt && u.salt.length >= 16 ? u.salt : crypto.randomBytes(16).toString('hex');
-      const pwHash =
-        u.password_hash && u.password_hash.length === 128
-          ? u.password_hash
-          : hashPassword(String(u.password_hash || 'Shantis#Solar2026!'), salt);
-      const totpHash =
-        u.totp_code && u.totp_code.length === 128
-          ? u.totp_code
-          : hashPassword(String(u.totp_code || '254880'), salt);
-      const cleanName =
-        u.email === 'admin@shantisdesigns.co.ke'
-          ? 'Shantis Designs Admin'
-          : u.email === 'engineer@shantisdesigns.co.ke'
-          ? 'Shantis Solar Engineer'
-          : u.name;
-      updateUserHash.run(pwHash, totpHash, salt, cleanName, u.id);
+      const pwHash = hasValidPw
+        ? u.password_hash
+        : hashWithRandomSalt(String(u.password_hash || 'Shantis#Solar2026!'));
+      const totpHash = hasValidTotp
+        ? u.totp_code
+        : hashWithRandomSalt(String(u.totp_code || '254880'));
+      updateUserHash.run(pwHash, totpHash, salt, u.id);
     }
   }
 
@@ -790,11 +931,11 @@ export function initializeDatabase(): void {
 
   // Seed or migrate Reviews to match live Google Business Profile (https://g.page/r/CVAYv1cTmiLaEAE/review)
   const revCount = (db.prepare('SELECT COUNT(*) as count FROM reviews').get() as { count: number }).count;
-  const hasTeenNetwork = db
-    .prepare("SELECT COUNT(*) as count FROM reviews WHERE author_name = 'Teen Network Magazine Show'")
+  const hasTonnyBrian = db
+    .prepare("SELECT COUNT(*) as count FROM reviews WHERE author_name = 'Tonny Brian'")
     .get() as { count: number };
 
-  if (revCount === 0 || hasTeenNetwork.count === 0) {
+  if (revCount < 5 || hasTonnyBrian.count === 0) {
     db.prepare('DELETE FROM reviews').run();
     const insertRev = db.prepare(`
       INSERT INTO reviews (
@@ -1051,6 +1192,7 @@ export const SqlRepository = {
       payment_method: r.payment_method,
       status: r.status,
       mpesa_receipt: r.mpesa_receipt || undefined,
+      checkout_request_id: r.checkout_request_id || undefined,
       created_at: r.created_at,
     }));
   },
@@ -1109,29 +1251,132 @@ export const SqlRepository = {
   verifyUserCredentials(email: string, passwordPlain: string) {
     const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim()) as any;
     if (!user) return null;
-    const computed = hashPassword(passwordPlain, user.salt);
-    if (computed !== user.password_hash) return null;
+    if (!verifyScryptSecret(passwordPlain, user.password_hash, user.salt)) return null;
     return user;
   },
 
-  verifyUserTotp(userId: number, totpPlain: string): boolean {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+  getUserById(userId: number | string) {
+    return (db.prepare('SELECT * FROM users WHERE id = ?').get(Number(userId)) as any) || null;
+  },
+
+  verifyUserTotp(userId: number | string, totpPlain: string): boolean {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(Number(userId)) as any;
     if (!user) return false;
-    const computed = hashPassword(totpPlain.trim(), user.salt);
-    return computed === user.totp_code;
+    const clean = totpPlain.trim();
+    if (user.google_totp_enabled && user.google_totp_secret) {
+      if (verifyGoogleTotp(user.google_totp_secret, clean)) return true;
+    }
+    return verifyScryptSecret(clean, user.totp_code, user.salt);
+  },
+
+  createUser(params: {
+    email: string;
+    name: string;
+    role: string;
+    password: string;
+    totpCode?: string;
+  }) {
+    const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(params.email.trim());
+    if (existing) {
+      throw new Error('A user with this email address already exists.');
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+    const pwHash = hashWithRandomSalt(params.password.trim());
+    const totpHash = hashWithRandomSalt((params.totpCode || '254880').trim());
+    db.prepare(`
+      INSERT INTO users (email, password_hash, salt, role, name, totp_code, google_totp_secret, google_totp_enabled, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, '', 0, ?)
+    `).run(
+      params.email.trim().toLowerCase(),
+      pwHash,
+      salt,
+      params.role.trim(),
+      params.name.trim(),
+      totpHash,
+      new Date().toISOString()
+    );
+    return this.getUsersSummary();
+  },
+
+  updateUser(
+    id: number | string,
+    params: {
+      email?: string;
+      name?: string;
+      role?: string;
+      password?: string;
+      totpCode?: string;
+      google_totp_enabled?: boolean;
+      google_totp_secret?: string;
+    }
+  ) {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(Number(id)) as any;
+    if (!user) return null;
+
+    const nextEmail = params.email ? params.email.trim().toLowerCase() : user.email;
+    const nextName = params.name ? params.name.trim() : user.name;
+    const nextRole = params.role ? params.role.trim() : user.role;
+    const nextPwHash =
+      params.password && params.password.trim().length >= 6
+        ? hashWithRandomSalt(params.password.trim())
+        : user.password_hash;
+    const nextTotpCode =
+      params.totpCode && params.totpCode.trim().length >= 4
+        ? hashWithRandomSalt(params.totpCode.trim())
+        : user.totp_code;
+    const nextGoogleEnabled =
+      typeof params.google_totp_enabled === 'boolean'
+        ? params.google_totp_enabled
+          ? 1
+          : 0
+        : user.google_totp_enabled || 0;
+    const nextGoogleSecret =
+      params.google_totp_secret !== undefined ? params.google_totp_secret : user.google_totp_secret || '';
+
+    db.prepare(`
+      UPDATE users
+      SET email = ?, name = ?, role = ?, password_hash = ?, totp_code = ?,
+          google_totp_enabled = ?, google_totp_secret = ?
+      WHERE id = ?
+    `).run(
+      nextEmail,
+      nextName,
+      nextRole,
+      nextPwHash,
+      nextTotpCode,
+      nextGoogleEnabled,
+      nextGoogleSecret,
+      user.id
+    );
+
+    db.prepare('UPDATE sessions SET email = ?, name = ?, role = ? WHERE user_id = ?').run(
+      nextEmail,
+      nextName,
+      nextRole,
+      user.id
+    );
+
+    return {
+      email: nextEmail,
+      name: nextName,
+      role: nextRole,
+      users: this.getUsersSummary(),
+    };
+  },
+
+  deleteUser(id: number | string) {
+    db.prepare('DELETE FROM sessions WHERE user_id = ?').run(Number(id));
+    db.prepare('DELETE FROM users WHERE id = ?').run(Number(id));
+    return this.getUsersSummary();
   },
 
   updateUserPassword(email: string, newPasswordPlain: string, newTotpPlain?: string) {
     const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim()) as any;
     if (!user) return null;
-    const newSalt = crypto.randomBytes(16).toString('hex');
-    const newPwHash = hashPassword(newPasswordPlain, newSalt);
-    const newTotpHash = newTotpPlain
-      ? hashPassword(newTotpPlain.trim(), newSalt)
-      : user.totp_code;
-    db.prepare('UPDATE users SET password_hash = ?, salt = ?, totp_code = ? WHERE id = ?').run(
+    const newPwHash = hashWithRandomSalt(newPasswordPlain);
+    const newTotpHash = newTotpPlain ? hashWithRandomSalt(newTotpPlain.trim()) : user.totp_code;
+    db.prepare('UPDATE users SET password_hash = ?, totp_code = ? WHERE id = ?').run(
       newPwHash,
-      newSalt,
       newTotpHash,
       user.id
     );
@@ -1145,35 +1390,58 @@ export const SqlRepository = {
   },
 
   getUsersSummary() {
-    const rows = db.prepare('SELECT id, email, role, name, password_hash, totp_code, salt, created_at FROM users ORDER BY id ASC').all() as any[];
+    const rows = db
+      .prepare(
+        `SELECT id, email, role, name, password_hash, totp_code, salt,
+                google_totp_enabled, google_totp_secret, created_at
+         FROM users ORDER BY id ASC`
+      )
+      .all() as any[];
     return rows.map((u) => ({
-      id: u.id,
+      id: String(u.id),
       email: u.email,
       role: u.role,
       name: u.name,
       password_hash: u.password_hash,
       totp_code_hash: u.totp_code,
+      google_totp_enabled: Boolean(u.google_totp_enabled && u.google_totp_secret),
       salt: u.salt,
       created_at: u.created_at,
     }));
   },
 
-  getMpesaCredentials() {
+  getMpesaCredentials(includeRuntimeSecrets = false) {
     const row = db.prepare('SELECT * FROM mpesa_api_credentials WHERE id = 1').get() as any;
+    const envKey = (process.env.MPESA_CONSUMER_KEY || '').trim();
+    const envSecret = (process.env.MPESA_CONSUMER_SECRET || '').trim();
+    const envPasskey = (process.env.MPESA_PASSKEY || '').trim();
+
+    const decKey = row?.consumer_key_enc ? decryptVaultSecret(row.consumer_key_enc) : envKey;
+    const decSecret = row?.consumer_secret_enc ? decryptVaultSecret(row.consumer_secret_enc) : envSecret;
+    const decPasskey = row?.passkey_enc ? decryptVaultSecret(row.passkey_enc) : envPasskey;
+    const hasKeys = Boolean(decKey && decSecret && decPasskey);
+
     if (!row) {
       return {
-        shortcode: '4108955',
-        environment: 'production',
-        callback_url: 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
-        consumer_key_masked: '',
+        shortcode: process.env.MPESA_SHORTCODE || '4108955',
+        environment: process.env.MPESA_ENV || 'production',
+        callback_url: process.env.MPESA_CALLBACK_URL || 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+        consumer_key_masked: maskSecretValue(envKey),
         consumer_key_hash: '',
-        consumer_secret_masked: '',
+        consumer_secret_masked: maskSecretValue(envSecret),
         consumer_secret_hash: '',
-        passkey_masked: '',
+        passkey_masked: maskSecretValue(envPasskey),
         passkey_hash: '',
         initiator_password_hash: '',
-        has_keys: false,
+        has_keys: hasKeys,
         updated_at: new Date().toISOString(),
+        ...(includeRuntimeSecrets
+          ? {
+              runtime_consumer_key: decKey,
+              runtime_consumer_secret: decSecret,
+              runtime_passkey: decPasskey,
+            }
+          : {}),
       };
     }
     return {
@@ -1187,8 +1455,15 @@ export const SqlRepository = {
       passkey_masked: row.passkey_masked,
       passkey_hash: row.passkey_hash,
       initiator_password_hash: row.initiator_password_hash,
-      has_keys: Boolean(row.consumer_key_hash && row.consumer_secret_hash),
+      has_keys: hasKeys,
       updated_at: row.updated_at,
+      ...(includeRuntimeSecrets
+        ? {
+            runtime_consumer_key: decKey,
+            runtime_consumer_secret: decSecret,
+            runtime_passkey: decPasskey,
+          }
+        : {}),
     };
   },
 
@@ -1211,30 +1486,34 @@ export const SqlRepository = {
       'https://shantisdesigns.co.ke/api/payments/mpesa/callback'
     ).trim();
 
-    const consumerKeyMasked = params.consumerKey?.trim()
-      ? maskSecretValue(params.consumerKey.trim())
-      : current?.consumer_key_masked || '';
-    const consumerKeyHash = params.consumerKey?.trim()
-      ? hashPassword(params.consumerKey.trim(), salt)
-      : current?.consumer_key_hash || '';
+    const cleanKey = params.consumerKey?.trim();
+    const consumerKeyMasked = cleanKey ? maskSecretValue(cleanKey) : current?.consumer_key_masked || '';
+    const consumerKeyHash = cleanKey ? hashPassword(cleanKey, salt) : current?.consumer_key_hash || '';
+    const consumerKeyEnc = cleanKey ? encryptVaultSecret(cleanKey) : current?.consumer_key_enc || '';
 
-    const consumerSecretMasked = params.consumerSecret?.trim()
-      ? maskSecretValue(params.consumerSecret.trim())
+    const cleanSecret = params.consumerSecret?.trim();
+    const consumerSecretMasked = cleanSecret
+      ? maskSecretValue(cleanSecret)
       : current?.consumer_secret_masked || '';
-    const consumerSecretHash = params.consumerSecret?.trim()
-      ? hashPassword(params.consumerSecret.trim(), salt)
+    const consumerSecretHash = cleanSecret
+      ? hashPassword(cleanSecret, salt)
       : current?.consumer_secret_hash || '';
+    const consumerSecretEnc = cleanSecret
+      ? encryptVaultSecret(cleanSecret)
+      : current?.consumer_secret_enc || '';
 
-    const passkeyMasked = params.passkey?.trim()
-      ? maskSecretValue(params.passkey.trim())
-      : current?.passkey_masked || '';
-    const passkeyHash = params.passkey?.trim()
-      ? hashPassword(params.passkey.trim(), salt)
-      : current?.passkey_hash || '';
+    const cleanPasskey = params.passkey?.trim();
+    const passkeyMasked = cleanPasskey ? maskSecretValue(cleanPasskey) : current?.passkey_masked || '';
+    const passkeyHash = cleanPasskey ? hashPassword(cleanPasskey, salt) : current?.passkey_hash || '';
+    const passkeyEnc = cleanPasskey ? encryptVaultSecret(cleanPasskey) : current?.passkey_enc || '';
 
-    const initiatorPasswordHash = params.initiatorPassword?.trim()
-      ? hashPassword(params.initiatorPassword.trim(), salt)
+    const cleanInit = params.initiatorPassword?.trim();
+    const initiatorPasswordHash = cleanInit
+      ? hashPassword(cleanInit, salt)
       : current?.initiator_password_hash || '';
+    const initiatorPasswordEnc = cleanInit
+      ? encryptVaultSecret(cleanInit)
+      : current?.initiator_password_enc || '';
 
     const updatedAt = new Date().toISOString();
 
@@ -1250,6 +1529,10 @@ export const SqlRepository = {
           passkey_masked = ?,
           passkey_hash = ?,
           initiator_password_hash = ?,
+          consumer_key_enc = ?,
+          consumer_secret_enc = ?,
+          passkey_enc = ?,
+          initiator_password_enc = ?,
           salt = ?,
           updated_at = ?
       WHERE id = 1
@@ -1264,10 +1547,103 @@ export const SqlRepository = {
       passkeyMasked,
       passkeyHash,
       initiatorPasswordHash,
+      consumerKeyEnc,
+      consumerSecretEnc,
+      passkeyEnc,
+      initiatorPasswordEnc,
       salt,
       updatedAt
     );
 
-    return this.getMpesaCredentials();
+    return this.getMpesaCredentials(false);
+  },
+
+  upsertMpesaTransaction(tx: {
+    checkoutRequestId: string;
+    merchantRequestId?: string;
+    orderNumber?: string;
+    phone?: string;
+    amount?: number;
+    status: string;
+    resultCode?: string;
+    resultDesc?: string;
+    mpesaReceipt?: string;
+  }) {
+    const existing = db
+      .prepare('SELECT * FROM mpesa_transactions WHERE checkout_request_id = ?')
+      .get(tx.checkoutRequestId) as any;
+    const now = new Date().toISOString();
+    if (!existing) {
+      db.prepare(
+        `INSERT INTO mpesa_transactions (
+          checkout_request_id, merchant_request_id, order_number, phone, amount,
+          status, result_code, result_desc, mpesa_receipt, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run(
+        tx.checkoutRequestId,
+        tx.merchantRequestId || '',
+        tx.orderNumber || '',
+        tx.phone || '',
+        Number(tx.amount || 0),
+        tx.status,
+        tx.resultCode || '',
+        tx.resultDesc || '',
+        tx.mpesaReceipt || '',
+        now,
+        now
+      );
+    } else {
+      db.prepare(
+        `UPDATE mpesa_transactions
+         SET status = ?,
+             result_code = COALESCE(NULLIF(?, ''), result_code),
+             result_desc = COALESCE(NULLIF(?, ''), result_desc),
+             mpesa_receipt = COALESCE(NULLIF(?, ''), mpesa_receipt),
+             updated_at = ?
+         WHERE checkout_request_id = ?`
+      ).run(
+        tx.status,
+        tx.resultCode || '',
+        tx.resultDesc || '',
+        tx.mpesaReceipt || '',
+        now,
+        tx.checkoutRequestId
+      );
+    }
+  },
+
+  getMpesaTransaction(checkoutRequestId: string) {
+    return (
+      (db
+        .prepare('SELECT * FROM mpesa_transactions WHERE checkout_request_id = ?')
+        .get(checkoutRequestId) as any) || null
+    );
+  },
+
+  updateOrderByCheckoutId(checkoutRequestId: string, status: string, mpesaReceipt?: string | null) {
+    db.prepare(
+      'UPDATE orders SET status = ?, mpesa_receipt = COALESCE(?, mpesa_receipt) WHERE checkout_request_id = ?'
+    ).run(status, mpesaReceipt || null, checkoutRequestId);
+  },
+
+  updateOrderByNumber(orderNumber: string, status: string, mpesaReceipt?: string | null) {
+    db.prepare(
+      'UPDATE orders SET status = ?, mpesa_receipt = COALESCE(?, mpesa_receipt) WHERE order_number = ?'
+    ).run(status, mpesaReceipt || null, orderNumber);
+  },
+
+  getAuditLogs() {
+    const rows = db.prepare('SELECT * FROM audit_logs ORDER BY id DESC LIMIT 200').all() as any[];
+    return rows.map((r) => ({
+      id: `aud-${r.id}`,
+      user_id: r.actor,
+      user_name: r.actor,
+      user_role: 'admin',
+      action: r.action,
+      resource_type: 'system',
+      details: r.details,
+      ip_address: r.ip_address || '127.0.0.1',
+      timestamp: String(r.created_at || '').replace('T', ' ').slice(0, 19),
+    }));
   },
 };

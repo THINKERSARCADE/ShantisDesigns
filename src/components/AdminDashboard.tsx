@@ -64,20 +64,20 @@ import {
   Sliders,
   Radio,
   CheckSquare,
-  QrCode
+  QrCode,
+  LogOut,
+  UserPlus,
+  Shield
 } from 'lucide-react';
+import QRCode from 'qrcode';
 import { StorageService } from '../services/storage';
 import { ImageGenService, GeneratedSolarAsset } from '../services/imageGen';
 import { DashboardCharts } from './DashboardCharts';
 import { MediaSelectorModal } from './MediaSelectorModal';
 import { 
-  canAccessAdminDashboard, 
-  generateCurrentTotpCode, 
-  verifyTotpCode, 
   buildThirtyDaySeries, 
   calculateChannelBreakdown, 
-  reorderPartners, 
-  generateCsrfToken 
+  reorderPartners 
 } from '../utils/dashboardLogic';
 
 interface AdminDashboardProps {
@@ -111,23 +111,64 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDataUpdated,
   onNavigateFrontend
 }) => {
-  // --- SECURITY & RBAC STATE ---
-  const [activeRole, setActiveRole] = useState<UserRole>('admin');
-  const [is2faAuthenticated, setIs2faAuthenticated] = useState(false);
+  // --- REAL SQL SESSION AUTHENTICATION & GOOGLE 2FA STATE ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    google_totp_enabled?: boolean;
+  } | null>(null);
+  const [authStep, setAuthStep] = useState<'credentials' | 'totp'>('credentials');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [pendingTempToken, setPendingTempToken] = useState('');
+  const [pendingUserMeta, setPendingUserMeta] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    google2faEnabled: boolean;
+  } | null>(null);
   const [totpInput, setTotpInput] = useState('');
-  const [totpError, setTotpError] = useState('');
-  const [csrfToken] = useState(() => generateCsrfToken());
+  const [authError, setAuthError] = useState('');
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
+  const [adminNotice, setAdminNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const showNotice = (type: 'success' | 'error', text: string) => {
+    setAdminNotice({ type, text });
+    setTimeout(() => {
+      setAdminNotice((prev) => (prev?.text === text ? null : prev));
+    }, 5500);
+  };
 
   // --- SESSION INACTIVITY TIMER (15 Mins = 900s) ---
   const [secondsRemaining, setSecondsRemaining] = useState(900);
 
+  const performLogout = async (reason?: string) => {
+    await StorageService.logoutAdmin();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setAuthStep('credentials');
+    setLoginPassword('');
+    setPendingTempToken('');
+    setPendingUserMeta(null);
+    setTotpInput('');
+    setDbUsers([]);
+    setMpesaConfigSummary(null);
+    setDbAuditLogs([]);
+    setSecondsRemaining(900);
+    if (reason) setAuthError(reason);
+    onDataUpdated();
+  };
+
   useEffect(() => {
-    if (!isOpen || !is2faAuthenticated) return;
+    if (!isOpen || !isAuthenticated) return;
     const interval = setInterval(() => {
       setSecondsRemaining(prev => {
         if (prev <= 1) {
-          setIs2faAuthenticated(false);
-          alert('Session expired due to 15 minutes of inactivity. Please re-authenticate with 2FA.');
+          void performLogout('Session expired due to 15 minutes of inactivity. Please log in again.');
           return 900;
         }
         return prev - 1;
@@ -143,11 +184,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       window.removeEventListener('mousemove', resetTimer);
       window.removeEventListener('keydown', resetTimer);
     };
-  }, [isOpen, is2faAuthenticated]);
+  }, [isOpen, isAuthenticated]);
 
   // Active Menu Section
   const [activeSection, setActiveSection] = useState<
-    'overview' | 'homepage_studio' | 'products' | 'projects' | 'blog_posts' | 'about_editor' | 'media_library' | 'partners' | 'woocommerce_sync' | 'reviews_scraper' | 'leads_orders' | 'audit_logs'
+    'overview' | 'homepage_studio' | 'products' | 'projects' | 'blog_posts' | 'about_editor' | 'media_library' | 'partners' | 'security_users' | 'woocommerce_sync' | 'reviews_scraper' | 'leads_orders' | 'audit_logs'
   >('overview');
 
   // Media Selector Modal State
@@ -298,12 +339,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [scrapeSuccessMsg, setScrapeSuccessMsg] = useState('');
   const [isSyncingWc, setIsSyncingWc] = useState(false);
 
-  // M-Pesa Verification & Custom API Keys (Hashed SQLite Storage) State
+  // M-Pesa Verification & Custom API Keys State
   const [verifyingOrderId, setVerifyingOrderId] = useState<number | null>(null);
   const [mpesaConfigSummary, setMpesaConfigSummary] = useState<{
     shortcode: string;
     environment: string;
     callback_url: string;
+    has_keys?: boolean;
     consumer_key_masked: string;
     consumer_key_hash: string;
     consumer_secret_masked: string;
@@ -316,7 +358,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [mpesaForm, setMpesaForm] = useState({
     shortcode: '4089912',
     environment: 'production' as 'sandbox' | 'production',
-    callbackUrl: 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
+    callbackUrl: 'https://solarsolutions.shantisdesigns.co.ke/api/payments/mpesa/callback',
     consumerKey: '',
     consumerSecret: '',
     passkey: '',
@@ -325,7 +367,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isSavingMpesa, setIsSavingMpesa] = useState(false);
   const [mpesaSaveMsg, setMpesaSaveMsg] = useState('');
 
-  // SQLite Users & Hashed Password Manager State
+  // Database Users, Credential Editor & Google 2FA State
   const [dbUsers, setDbUsers] = useState<
     Array<{
       id: string;
@@ -334,33 +376,107 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       role: string;
       password_hash: string;
       totp_code_hash: string;
+      google_totp_enabled?: boolean;
       created_at: string;
     }>
   >([]);
-  const [passwordForm, setPasswordForm] = useState({
-    email: 'admin@shantisdesigns.co.ke',
-    newPassword: '',
-    newTotpCode: '',
+  const [dbAuditLogs, setDbAuditLogs] = useState<AuditLogEntry[]>([]);
+
+  const [newUserForm, setNewUserForm] = useState({
+    name: '',
+    email: '',
+    role: 'admin',
+    password: '',
+    totpCode: '',
   });
-  const [isSavingPassword, setIsSavingPassword] = useState(false);
-  const [passwordSaveMsg, setPasswordSaveMsg] = useState('');
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editUserForm, setEditUserForm] = useState({
+    name: '',
+    email: '',
+    role: 'admin',
+    password: '',
+    totpCode: '',
+  });
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+  const [userMgmtMsg, setUserMgmtMsg] = useState('');
+  const [userMgmtErr, setUserMgmtErr] = useState('');
+
+  // Google 2FA Setup QR State
+  const [google2faTargetId, setGoogle2faTargetId] = useState<string>('');
+  const [google2faSetupData, setGoogle2faSetupData] = useState<{
+    userId: string;
+    email: string;
+    secret: string;
+    otpauthUrl: string;
+    qrDataUrl: string;
+  } | null>(null);
+  const [google2faVerifyCode, setGoogle2faVerifyCode] = useState('');
+  const [google2faMsg, setGoogle2faMsg] = useState('');
+  const [google2faErr, setGoogle2faErr] = useState('');
+  const [isSettingUpGoogle2fa, setIsSettingUpGoogle2fa] = useState(false);
+
+  const loadProtectedAdminData = async () => {
+    const [cfg, usersList, logsList] = await Promise.all([
+      StorageService.getMpesaConfig(),
+      StorageService.getUsers(),
+      StorageService.fetchAuditLogs(),
+    ]);
+    if (cfg) {
+      setMpesaConfigSummary(cfg);
+      setMpesaForm((prev) => ({
+        ...prev,
+        shortcode: cfg.shortcode || '4089912',
+        environment: cfg.environment === 'sandbox' ? 'sandbox' : 'production',
+        callbackUrl: cfg.callback_url || 'https://solarsolutions.shantisdesigns.co.ke/api/payments/mpesa/callback',
+      }));
+    }
+    if (Array.isArray(usersList)) setDbUsers(usersList);
+    if (Array.isArray(logsList)) setDbAuditLogs(logsList);
+  };
+
+  useEffect(() => {
+    StorageService.registerAuthExpiredHandler(() => {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAuthStep('credentials');
+      setAuthError('Your admin session expired. Please sign in again.');
+    });
+    StorageService.registerPersistenceErrorHandler((msg) => {
+      showNotice('error', msg);
+    });
+    return () => {
+      StorageService.registerAuthExpiredHandler(null);
+      StorageService.registerPersistenceErrorHandler(null);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
-    StorageService.getMpesaConfig().then((cfg) => {
-      if (cfg) {
-        setMpesaConfigSummary(cfg);
-        setMpesaForm((prev) => ({
-          ...prev,
-          shortcode: cfg.shortcode || '4089912',
-          environment: (cfg.environment === 'sandbox' ? 'sandbox' : 'production'),
-          callbackUrl: cfg.callback_url || 'https://shantisdesigns.co.ke/api/payments/mpesa/callback',
-        }));
+    let mounted = true;
+    setIsCheckingSession(true);
+    setAuthError('');
+
+    StorageService.checkSession().then(async (session) => {
+      if (!mounted) return;
+      if (session.authenticated && session.user) {
+        setIsAuthenticated(true);
+        setCurrentUser(session.user);
+        setGoogle2faTargetId(String(session.user.id || ''));
+        await loadProtectedAdminData();
+        onDataUpdated();
+      } else {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setAuthStep('credentials');
       }
+      setIsCheckingSession(false);
     });
-    StorageService.getUsers().then((list) => {
-      if (Array.isArray(list)) setDbUsers(list);
-    });
+
+    return () => {
+      mounted = false;
+    };
   }, [isOpen]);
 
   const handleSaveMpesaCredentials = async (e: React.FormEvent) => {
@@ -386,59 +502,205 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         passkey: '',
         initiatorPassword: '',
       }));
-      setMpesaSaveMsg('M-Pesa API custom keys & secret key hashed (scrypt-64) and saved to SQLite database!');
-      setTimeout(() => setMpesaSaveMsg(''), 5000);
+      setMpesaSaveMsg(
+        res.config.has_keys
+          ? 'Live M-Pesa Daraja API credentials encrypted & saved to SQL database! Live STK Push Checkout is now active.'
+          : 'M-Pesa settings updated in SQL database (Live keys still incomplete; storefront will fall back to WhatsApp Checkout).'
+      );
+      await loadProtectedAdminData();
+      setTimeout(() => setMpesaSaveMsg(''), 6000);
+    } else if (res.error) {
+      showNotice('error', res.error);
     }
   };
 
-  const handleSaveUserPassword = async (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!passwordForm.newPassword || passwordForm.newPassword.length < 6) return;
-    setIsSavingPassword(true);
-    setPasswordSaveMsg('');
-    const res = await StorageService.changeAdminPassword({
-      email: passwordForm.email,
-      newPassword: passwordForm.newPassword,
-      newTotpCode: passwordForm.newTotpCode || undefined,
-    });
-    setIsSavingPassword(false);
-    if (res.success) {
-      if (Array.isArray(res.users)) setDbUsers(res.users);
-      setPasswordForm((prev) => ({ ...prev, newPassword: '', newTotpCode: '' }));
-      setPasswordSaveMsg(`Password for ${passwordForm.email} hashed with scrypt + salt and updated in SQLite!`);
-      setTimeout(() => setPasswordSaveMsg(''), 5000);
+    setUserMgmtErr('');
+    setUserMgmtMsg('');
+    setIsCreatingUser(true);
+    const res = await StorageService.createUser(newUserForm);
+    setIsCreatingUser(false);
+    if (res.error) {
+      setUserMgmtErr(res.error);
+      return;
     }
+    if (Array.isArray(res.users)) setDbUsers(res.users);
+    setNewUserForm({ name: '', email: '', role: 'admin', password: '', totpCode: '' });
+    setUserMgmtMsg('New user registered and salted password/code hashed in SQL database.');
+    await loadProtectedAdminData();
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUserId) return;
+    setUserMgmtErr('');
+    setUserMgmtMsg('');
+    setIsUpdatingUser(true);
+    const payload: Record<string, string> = {
+      name: editUserForm.name,
+      email: editUserForm.email,
+      role: editUserForm.role,
+    };
+    if (editUserForm.password.trim()) payload.password = editUserForm.password.trim();
+    if (editUserForm.totpCode.trim()) payload.totpCode = editUserForm.totpCode.trim();
+
+    const res = await StorageService.updateUser(editingUserId, payload);
+    setIsUpdatingUser(false);
+    if (res.error) {
+      setUserMgmtErr(res.error);
+      return;
+    }
+    if (Array.isArray(res.users)) setDbUsers(res.users);
+    if (currentUser && String(currentUser.id) === String(editingUserId)) {
+      setCurrentUser((prev) =>
+        prev ? { ...prev, name: editUserForm.name, email: editUserForm.email, role: editUserForm.role } : prev
+      );
+    }
+    setEditingUserId(null);
+    setUserMgmtMsg('User username, email, role, password & security code updated in SQL database.');
+    await loadProtectedAdminData();
+  };
+
+  const handleDeleteUser = async (id: string, email: string) => {
+    if (!confirm(`Permanently delete user account "${email}"?`)) return;
+    setUserMgmtErr('');
+    setUserMgmtMsg('');
+    const res = await StorageService.deleteUser(id);
+    if (res.error) {
+      setUserMgmtErr(res.error);
+      return;
+    }
+    if (Array.isArray(res.users)) setDbUsers(res.users);
+    setUserMgmtMsg(`Deleted user "${email}" from SQL database.`);
+    await loadProtectedAdminData();
+  };
+
+  const handleGenerateGoogle2faQr = async (targetId?: string) => {
+    const uid = targetId || google2faTargetId || currentUser?.id;
+    setGoogle2faErr('');
+    setGoogle2faMsg('');
+    setIsSettingUpGoogle2fa(true);
+    const setup = await StorageService.setupGoogle2FA(uid);
+    if (setup.error || !setup.otpauthUrl || !setup.secret) {
+      setIsSettingUpGoogle2fa(false);
+      setGoogle2faErr(setup.error || 'Failed to generate Google 2FA secret.');
+      return;
+    }
+    try {
+      const qrDataUrl = await QRCode.toDataURL(setup.otpauthUrl, {
+        width: 220,
+        margin: 1,
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+      setGoogle2faSetupData({
+        userId: String(setup.userId || uid || ''),
+        email: setup.email || '',
+        secret: setup.secret,
+        otpauthUrl: setup.otpauthUrl,
+        qrDataUrl,
+      });
+      setGoogle2faVerifyCode('');
+    } catch {
+      setGoogle2faErr('Failed to render QR code image.');
+    } finally {
+      setIsSettingUpGoogle2fa(false);
+    }
+  };
+
+  const handleEnableGoogle2fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!google2faSetupData) return;
+    setGoogle2faErr('');
+    setGoogle2faMsg('');
+    setIsSettingUpGoogle2fa(true);
+    const res = await StorageService.enableGoogle2FA({
+      userId: google2faSetupData.userId,
+      code: google2faVerifyCode.trim(),
+      secret: google2faSetupData.secret,
+    });
+    setIsSettingUpGoogle2fa(false);
+    if (res.error) {
+      setGoogle2faErr(res.error);
+      return;
+    }
+    if (Array.isArray(res.users)) setDbUsers(res.users);
+    if (currentUser && String(currentUser.id) === String(google2faSetupData.userId)) {
+      setCurrentUser((prev) => (prev ? { ...prev, google_totp_enabled: true } : prev));
+    }
+    setGoogle2faMsg(`Google Two-Factor Authentication is now ACTIVE for ${google2faSetupData.email}!`);
+    setGoogle2faSetupData(null);
+    setGoogle2faVerifyCode('');
+    await loadProtectedAdminData();
+  };
+
+  const handleDisableGoogle2fa = async (userId: string, email: string) => {
+    setGoogle2faErr('');
+    setGoogle2faMsg('');
+    const res = await StorageService.disableGoogle2FA(userId);
+    if (res.error) {
+      setGoogle2faErr(res.error);
+      return;
+    }
+    if (Array.isArray(res.users)) setDbUsers(res.users);
+    if (currentUser && String(currentUser.id) === String(userId)) {
+      setCurrentUser((prev) => (prev ? { ...prev, google_totp_enabled: false } : prev));
+    }
+    setGoogle2faMsg(`Google Two-Factor Authentication disabled for ${email}. Static 6-digit recovery code remains required.`);
+    await loadProtectedAdminData();
   };
 
   if (!isOpen) return null;
 
-  // --- 2FA & SQL DATABASE AUTHENTICATION VERIFICATION ---
+  // --- REAL 2-STEP DATABASE LOGIN & 2FA AUTHENTICATION ---
+  const handleLoginStep1 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setIsAuthSubmitting(true);
+    const res = await StorageService.loginAdmin(loginEmail.trim(), loginPassword);
+    setIsAuthSubmitting(false);
+
+    if (res.error || !res.tempToken) {
+      setAuthError(res.error || 'Invalid email or password.');
+      return;
+    }
+
+    setPendingTempToken(res.tempToken);
+    setPendingUserMeta({
+      name: res.name || 'User',
+      email: res.email || loginEmail.trim(),
+      role: res.role || 'Admin',
+      google2faEnabled: Boolean(res.google2faEnabled),
+    });
+    setTotpInput('');
+    setAuthStep('totp');
+  };
+
   const handleVerify2fa = async (e: React.FormEvent) => {
     e.preventDefault();
-    const expected = generateCurrentTotpCode();
-    if (verifyTotpCode(totpInput, expected) || totpInput.trim() === '254880') {
-      // Authenticate against Node.js SQLite users & sessions table
-      const loginRes = await StorageService.loginAdmin(
-        activeRole === 'engineer' ? 'engineer@shantisdesigns.co.ke' : 'admin@shantisdesigns.co.ke',
-        activeRole === 'engineer' ? 'EPRA#Tech2026!' : 'Shantis#Solar2026!'
-      );
-      if (loginRes.tempToken) {
-        await StorageService.verifyAdmin2FA(loginRes.tempToken, totpInput.trim() || '254880');
-      }
-
-      setIs2faAuthenticated(true);
-      setTotpError('');
-      StorageService.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: activeRole,
-        action: '2FA_SUCCESS',
-        resourceType: 'security',
-        details: '2FA token & SQL session verified successfully'
-      });
-    } else {
-      setTotpError('Invalid 6-digit TOTP code. (Enter 254880 or 482910)');
+    if (!pendingTempToken) {
+      setAuthStep('credentials');
+      return;
     }
+    setAuthError('');
+    setIsAuthSubmitting(true);
+    const res = await StorageService.verifyAdmin2FA(pendingTempToken, totpInput.trim());
+    setIsAuthSubmitting(false);
+
+    if (res.error || !res.authenticated || !res.user) {
+      setAuthError(res.error || 'Invalid 6-digit security or Google Authenticator code.');
+      return;
+    }
+
+    setIsAuthenticated(true);
+    setCurrentUser(res.user);
+    setGoogle2faTargetId(String(res.user.id || ''));
+    setLoginPassword('');
+    setPendingTempToken('');
+    setTotpInput('');
+    setSecondsRemaining(900);
+    await loadProtectedAdminData();
+    onDataUpdated();
   };
 
   // --- MEDIA SELECTOR CALLBACK ---
@@ -483,7 +745,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const totalSales = paidOrders.reduce((sum, o) => sum + o.total, 0);
   const mpesaOrders = orders.filter(o => o.payment_method === 'mpesa_daraja');
   const lowStockProducts = products.filter(p => p.stock <= 10 || p.stock_status === 'outofstock');
-  const auditLogs = StorageService.getAuditLogs();
+  const auditLogs = dbAuditLogs.length > 0 ? dbAuditLogs : StorageService.getAuditLogs();
 
   // Chart analytics calculations
   const timeSeriesData = buildThirtyDaySeries(orders, leads);
@@ -570,20 +832,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // --- M-PESA DARAJA VERIFY TRANSACTION ---
-  const handleVerifyMpesa = (orderId: number) => {
-    setVerifyingOrderId(orderId);
-    setTimeout(() => {
-      StorageService.updateOrderStatus(orderId, 'paid', `QKN${Math.floor(100000 + Math.random() * 900000)}`);
+  const handleVerifyMpesa = async (order: Order) => {
+    setVerifyingOrderId(order.id);
+    try {
+      if (order.payment_method === 'mpesa_daraja') {
+        if (!order.checkout_request_id) {
+          showNotice('error', 'Cannot verify M-Pesa order without a valid Safaricom CheckoutRequestID.');
+          return;
+        }
+        const statusRes = await StorageService.checkMpesaStatus(order.checkout_request_id);
+        await loadProtectedAdminData();
+        onDataUpdated();
+        if (statusRes.status === 'paid') {
+          showNotice('success', `Safaricom Daraja verified Receipt ${statusRes.receipt || 'Confirmed'} for Order #${order.order_number}.`);
+        } else if (statusRes.status === 'declined') {
+          showNotice('error', statusRes.resultDesc || 'Safaricom Daraja declined or cancelled this M-Pesa transaction.');
+        } else {
+          showNotice('error', statusRes.resultDesc || 'Safaricom Daraja still shows transaction pending customer PIN or callback confirmation.');
+        }
+      } else {
+        const res = await StorageService.updateOrderStatus(
+          order.id,
+          'paid',
+          order.mpesa_receipt || 'WHATSAPP-CONFIRMED'
+        );
+        if (!res.ok) {
+          showNotice('error', res.error || 'Failed to update order status in database.');
+          return;
+        }
+        await loadProtectedAdminData();
+        onDataUpdated();
+        showNotice('success', `WhatsApp order #${order.order_number} marked as paid in SQL database.`);
+      }
+    } finally {
       setVerifyingOrderId(null);
-      onDataUpdated();
-      alert('Safaricom Daraja API Verification Successful!\n\nTransaction result code 0: Paid & Reconciled in database.');
-    }, 1200);
+    }
   };
 
   // --- PARTNER REORDERING ---
-  const handleMovePartner = (fromIndex: number, toIndex: number) => {
+  const handleMovePartner = async (fromIndex: number, toIndex: number) => {
     const reordered = reorderPartners(partners, fromIndex, toIndex);
-    StorageService.savePartners(reordered);
+    const res = await StorageService.savePartners(reordered);
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save partner order to database.');
+      return;
+    }
     onDataUpdated();
   };
 
@@ -592,16 +885,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     e.preventDefault();
     StorageService.saveHomepageDraft(draftConfig);
     setHomepageState(StorageService.getHomepageConfig());
-    setHomepageSaveSuccess('Homepage draft saved! Click "Publish to Live Storefront" when ready.');
-    setTimeout(() => setHomepageSaveSuccess(''), 3000);
+    setHomepageSaveSuccess('Homepage draft staged! Click "Publish to Live Storefront" to persist to SQL database.');
+    setTimeout(() => setHomepageSaveSuccess(''), 3500);
   };
 
-  const handlePublishHomepage = () => {
-    const published = StorageService.publishHomepageDraft();
+  const handlePublishHomepage = async () => {
+    const published = await StorageService.publishHomepageDraft();
+    if (!published) {
+      showNotice('error', 'Failed to publish homepage configuration to SQL database.');
+      return;
+    }
     setHomepageState(StorageService.getHomepageConfig());
     setDraftConfig(published);
     onDataUpdated();
-    alert(`Successfully published homepage template "${published.template_id}" to live storefront!`);
+    showNotice('success', `Published homepage template "${published.template_id}" to live SQL database!`);
   };
 
   // --- WOOCOMMERCE SYNC ---
@@ -610,81 +907,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setTimeout(() => {
       setIsSyncingWc(false);
       StorageService.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: activeRole,
+        userId: currentUser?.id || 'USR-ADMIN',
+        userName: currentUser?.name || 'Shantis Designs Admin',
+        userRole: (currentUser?.role?.toLowerCase() as AuditLogEntry['user_role']) || 'admin',
         action: 'FORCE_WOOCOMMERCE_SYNC',
         resourceType: 'woocommerce',
-        details: 'Forced manual 2-way REST API synchronization with WordPress store'
+        details: 'Verified live catalog synchronization with SQL database'
       });
       onDataUpdated();
-    }, 1400);
+    }, 1000);
   };
 
   // --- SAVE PRODUCT HANDLER ---
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const category = categories.find(c => c.id === Number(productForm.categoryId));
     const salePriceNum = productForm.salePrice === '' || productForm.salePrice === null ? null : Number(productForm.salePrice);
     const slug = productForm.slug || productForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const permalink = productForm.permalink || `https://shantisdesigns.co.ke/shop/${slug}/`;
 
-    if (editingProduct) {
-      StorageService.updateProduct({
-        ...editingProduct,
-        name: productForm.title,
-        title: productForm.title,
-        slug,
-        permalink,
-        url: permalink,
-        sku: productForm.sku,
-        category_id: Number(productForm.categoryId),
-        category_name: category?.name || 'Solar Equipment',
-        price: Number(productForm.price),
-        regular_price: Number(productForm.regularPrice || productForm.price),
-        sale_price: salePriceNum,
-        stock: Number(productForm.stock),
-        stock_status: productForm.stockStatus,
-        product_type: productForm.productType,
-        shortDescription: productForm.shortDescription,
-        short_description: productForm.shortDescription,
-        description: productForm.description,
-        image_url: productForm.imageUrl,
-        image: productForm.imageUrl,
-        featured: productForm.featured
-      });
-    } else {
-      StorageService.addProduct({
-        name: productForm.title,
-        title: productForm.title,
-        slug,
-        permalink,
-        url: permalink,
-        sku: productForm.sku || `SD-${Date.now().toString().slice(-6)}`,
-        category_id: Number(productForm.categoryId),
-        category_name: category?.name || 'Solar Equipment',
-        price: Number(productForm.price),
-        regular_price: Number(productForm.regularPrice || productForm.price),
-        sale_price: salePriceNum,
-        stock: Number(productForm.stock),
-        stock_status: productForm.stockStatus,
-        product_type: productForm.productType,
-        shortDescription: productForm.shortDescription,
-        short_description: productForm.shortDescription,
-        description: productForm.description,
-        image_url: productForm.imageUrl,
-        image: productForm.imageUrl,
-        featured: productForm.featured
-      });
+    const res = editingProduct
+      ? await StorageService.updateProduct({
+          ...editingProduct,
+          name: productForm.title,
+          title: productForm.title,
+          slug,
+          permalink,
+          url: permalink,
+          sku: productForm.sku,
+          category_id: Number(productForm.categoryId),
+          category_name: category?.name || 'Solar Equipment',
+          price: Number(productForm.price),
+          regular_price: Number(productForm.regularPrice || productForm.price),
+          sale_price: salePriceNum,
+          stock: Number(productForm.stock),
+          stock_status: productForm.stockStatus,
+          product_type: productForm.productType,
+          shortDescription: productForm.shortDescription,
+          short_description: productForm.shortDescription,
+          description: productForm.description,
+          image_url: productForm.imageUrl,
+          image: productForm.imageUrl,
+          featured: productForm.featured
+        })
+      : await StorageService.addProduct({
+          name: productForm.title,
+          title: productForm.title,
+          slug,
+          permalink,
+          url: permalink,
+          sku: productForm.sku || `SD-${Date.now().toString().slice(-6)}`,
+          category_id: Number(productForm.categoryId),
+          category_name: category?.name || 'Solar Equipment',
+          price: Number(productForm.price),
+          regular_price: Number(productForm.regularPrice || productForm.price),
+          sale_price: salePriceNum,
+          stock: Number(productForm.stock),
+          stock_status: productForm.stockStatus,
+          product_type: productForm.productType,
+          shortDescription: productForm.shortDescription,
+          short_description: productForm.shortDescription,
+          description: productForm.description,
+          image_url: productForm.imageUrl,
+          image: productForm.imageUrl,
+          featured: productForm.featured
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save product to SQL database.');
+      return;
     }
 
     setActiveDrawer('none');
     setEditingProduct(null);
     onDataUpdated();
+    showNotice('success', 'Product saved to SQL database.');
   };
 
   // --- SAVE PROJECT HANDLER ---
-  const handleSaveProject = (e: React.FormEvent) => {
+  const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
     const slug = projectForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const mergedGallery =
@@ -695,138 +996,157 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       mergedGallery.unshift(projectForm.imageUrl);
     }
 
-    if (editingProject) {
-      StorageService.updateProject({
-        ...editingProject,
-        title: projectForm.title,
-        slug,
-        client: projectForm.client,
-        location: projectForm.location,
-        category: projectForm.category,
-        category_name: projectForm.categoryName,
-        system_size: projectForm.systemSize,
-        panels_count: projectForm.panelsCount,
-        inverter_specs: projectForm.inverterSpecs,
-        battery_specs: projectForm.batterySpecs,
-        image_url: projectForm.imageUrl,
-        gallery: mergedGallery,
-        completion_date: projectForm.completionDate,
-        kplc_savings: projectForm.kplcSavings,
-        description: projectForm.description,
-        featured: projectForm.featured
-      });
-    } else {
-      StorageService.addProject({
-        title: projectForm.title,
-        slug,
-        client: projectForm.client,
-        location: projectForm.location,
-        category: projectForm.category,
-        category_name: projectForm.categoryName,
-        system_size: projectForm.systemSize,
-        panels_count: projectForm.panelsCount,
-        inverter_specs: projectForm.inverterSpecs,
-        battery_specs: projectForm.batterySpecs,
-        image_url: projectForm.imageUrl,
-        gallery: mergedGallery,
-        completion_date: projectForm.completionDate,
-        kplc_savings: projectForm.kplcSavings,
-        description: projectForm.description,
-        featured: projectForm.featured
-      });
+    const res = editingProject
+      ? await StorageService.updateProject({
+          ...editingProject,
+          title: projectForm.title,
+          slug,
+          client: projectForm.client,
+          location: projectForm.location,
+          category: projectForm.category,
+          category_name: projectForm.categoryName,
+          system_size: projectForm.systemSize,
+          panels_count: projectForm.panelsCount,
+          inverter_specs: projectForm.inverterSpecs,
+          battery_specs: projectForm.batterySpecs,
+          image_url: projectForm.imageUrl,
+          gallery: mergedGallery,
+          completion_date: projectForm.completionDate,
+          kplc_savings: projectForm.kplcSavings,
+          description: projectForm.description,
+          featured: projectForm.featured
+        })
+      : await StorageService.addProject({
+          title: projectForm.title,
+          slug,
+          client: projectForm.client,
+          location: projectForm.location,
+          category: projectForm.category,
+          category_name: projectForm.categoryName,
+          system_size: projectForm.systemSize,
+          panels_count: projectForm.panelsCount,
+          inverter_specs: projectForm.inverterSpecs,
+          battery_specs: projectForm.batterySpecs,
+          image_url: projectForm.imageUrl,
+          gallery: mergedGallery,
+          completion_date: projectForm.completionDate,
+          kplc_savings: projectForm.kplcSavings,
+          description: projectForm.description,
+          featured: projectForm.featured
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save project to SQL database.');
+      return;
     }
+
     setActiveDrawer('none');
     setEditingProject(null);
     onDataUpdated();
+    showNotice('success', 'Project saved to SQL database.');
   };
 
   // --- SAVE BLOG HANDLER ---
-  const handleSavePost = (e: React.FormEvent) => {
+  const handleSavePost = async (e: React.FormEvent) => {
     e.preventDefault();
     const slug = postForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const tagsArray = postForm.tags.split(',').map(t => t.trim()).filter(Boolean);
 
-    if (editingArticle) {
-      StorageService.updateArticle({
-        ...editingArticle,
-        title: postForm.title,
-        slug,
-        category: postForm.category,
-        read_time: postForm.readTime,
-        excerpt: postForm.excerpt || postForm.content.slice(0, 160),
-        content: postForm.content,
-        meta_description: postForm.metaDescription || postForm.excerpt || postForm.content.slice(0, 160),
-        author: postForm.author,
-        image_url: postForm.imageUrl,
-        tags: tagsArray
-      });
-    } else {
-      StorageService.addArticle({
-        title: postForm.title,
-        slug,
-        category: postForm.category,
-        read_time: postForm.readTime,
-        excerpt: postForm.excerpt || postForm.content.slice(0, 160),
-        content: postForm.content,
-        meta_description: postForm.metaDescription || postForm.excerpt || postForm.content.slice(0, 160),
-        author: postForm.author,
-        image_url: postForm.imageUrl,
-        tags: tagsArray
-      });
+    const res = editingArticle
+      ? await StorageService.updateArticle({
+          ...editingArticle,
+          title: postForm.title,
+          slug,
+          category: postForm.category,
+          read_time: postForm.readTime,
+          excerpt: postForm.excerpt || postForm.content.slice(0, 160),
+          content: postForm.content,
+          meta_description: postForm.metaDescription || postForm.excerpt || postForm.content.slice(0, 160),
+          author: postForm.author,
+          image_url: postForm.imageUrl,
+          tags: tagsArray
+        })
+      : await StorageService.addArticle({
+          title: postForm.title,
+          slug,
+          category: postForm.category,
+          read_time: postForm.readTime,
+          excerpt: postForm.excerpt || postForm.content.slice(0, 160),
+          content: postForm.content,
+          meta_description: postForm.metaDescription || postForm.excerpt || postForm.content.slice(0, 160),
+          author: postForm.author,
+          image_url: postForm.imageUrl,
+          tags: tagsArray
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save article to SQL database.');
+      return;
     }
+
     setActiveDrawer('none');
     setEditingArticle(null);
     onDataUpdated();
+    showNotice('success', 'Article saved to SQL database.');
   };
 
   // --- SAVE PARTNER HANDLER ---
-  const handleSavePartner = (e: React.FormEvent) => {
+  const handleSavePartner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingPartner) {
-      StorageService.updatePartner({
-        ...editingPartner,
-        name: partnerForm.name,
-        logo_url: partnerForm.logoUrl,
-        category: partnerForm.category,
-        active: partnerForm.active,
-        website_url: partnerForm.websiteUrl
-      });
-    } else {
-      StorageService.addPartner({
-        name: partnerForm.name,
-        logo_url: partnerForm.logoUrl,
-        category: partnerForm.category,
-        active: partnerForm.active,
-        website_url: partnerForm.websiteUrl
-      });
+    const res = editingPartner
+      ? await StorageService.updatePartner({
+          ...editingPartner,
+          name: partnerForm.name,
+          logo_url: partnerForm.logoUrl,
+          category: partnerForm.category,
+          active: partnerForm.active,
+          website_url: partnerForm.websiteUrl
+        })
+      : await StorageService.addPartner({
+          name: partnerForm.name,
+          logo_url: partnerForm.logoUrl,
+          category: partnerForm.category,
+          active: partnerForm.active,
+          website_url: partnerForm.websiteUrl
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save partner to SQL database.');
+      return;
     }
+
     setShowPartnerForm(false);
     setEditingPartner(null);
     onDataUpdated();
+    showNotice('success', 'Partner saved to SQL database.');
   };
 
   // --- SAVE CATEGORY HANDLER ---
-  const handleSaveCategory = (e: React.FormEvent) => {
+  const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     const slug = catForm.slug || catForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    if (editingCategory) {
-      StorageService.updateCategory({
-        ...editingCategory,
-        name: catForm.name,
-        slug,
-        description: catForm.description,
-        image_url: catForm.imageUrl,
-        imageUrl: catForm.imageUrl,
-      });
-    } else {
-      StorageService.addCategory({
-        name: catForm.name,
-        slug,
-        description: catForm.description,
-        image_url: catForm.imageUrl,
-        imageUrl: catForm.imageUrl,
-      });
+    const res = editingCategory
+      ? await StorageService.updateCategory({
+          ...editingCategory,
+          name: catForm.name,
+          slug,
+          description: catForm.description,
+          image_url: catForm.imageUrl,
+          imageUrl: catForm.imageUrl,
+        })
+      : await StorageService.addCategory({
+          name: catForm.name,
+          slug,
+          description: catForm.description,
+          image_url: catForm.imageUrl,
+          imageUrl: catForm.imageUrl,
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save category to SQL database.');
+      return;
     }
+
     setEditingCategory(null);
     setCatForm({
       name: '',
@@ -835,13 +1155,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       imageUrl: 'https://shantisdesigns.co.ke/wp-content/uploads/2026/11/Horay-N-Type-Solar-Panels-1.png',
     });
     onDataUpdated();
+    showNotice('success', 'Category saved to SQL database.');
   };
 
   // --- SAVE ABOUT US PAGE HANDLER ---
-  const handleSaveAboutUs = (e: React.FormEvent) => {
+  const handleSaveAboutUs = async (e: React.FormEvent) => {
     e.preventDefault();
-    StorageService.updateAboutData(aboutForm);
-    setAboutSaveMsg('About Us page content & gallery saved to SQLite database!');
+    const res = await StorageService.updateAboutData(aboutForm);
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save About Us page to SQL database.');
+      return;
+    }
+    setAboutSaveMsg('About Us page content & gallery saved to SQL database!');
     setTimeout(() => setAboutSaveMsg(''), 3500);
     onDataUpdated();
   };
@@ -850,55 +1175,65 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSyncGbpReviews = async () => {
     setIsSyncingGbp(true);
     setGbpSyncMsg('');
-    await StorageService.syncGoogleBusinessReviews(gbpUrl);
-    setIsSyncingGbp(false);
-    setGbpSyncMsg('Successfully synced live customer reviews & owner replies from Google Business Profile (mpd=~13542450485038602063) into SQLite!');
-    setTimeout(() => setGbpSyncMsg(''), 5000);
-    onDataUpdated();
+    try {
+      await StorageService.syncGoogleBusinessReviews(gbpUrl);
+      setGbpSyncMsg('Successfully synced live customer reviews & owner replies from Google Business Profile into SQL database!');
+      setTimeout(() => setGbpSyncMsg(''), 5000);
+      onDataUpdated();
+    } catch (err: any) {
+      showNotice('error', err?.message || 'Failed to sync Google Business reviews.');
+    } finally {
+      setIsSyncingGbp(false);
+    }
   };
 
-  const handleSaveReview = (e: React.FormEvent) => {
+  const handleSaveReview = async (e: React.FormEvent) => {
     e.preventDefault();
     const kwArray = reviewForm.keywords.split(',').map(k => k.trim()).filter(Boolean);
     const photo = reviewForm.authorPhoto || '';
 
-    if (editingReview) {
-      StorageService.updateReview({
-        ...editingReview,
-        author_name: reviewForm.authorName,
-        author_photo: photo,
-        reviewer_badge: reviewForm.reviewerBadge,
-        rating: Number(reviewForm.rating),
-        time_ago: reviewForm.timeAgo,
-        location: reviewForm.location,
-        text: reviewForm.text,
-        likes_count: Number(reviewForm.likesCount),
-        owner_reply: reviewForm.ownerReply,
-        owner_reply_time: reviewForm.ownerReplyTime,
-        keywords: kwArray,
-        verified: true,
-        google_review_url: gbpUrl,
-      });
-    } else {
-      StorageService.addReview({
-        author_name: reviewForm.authorName,
-        author_photo: photo,
-        reviewer_badge: reviewForm.reviewerBadge,
-        rating: Number(reviewForm.rating),
-        time_ago: reviewForm.timeAgo,
-        location: reviewForm.location,
-        text: reviewForm.text,
-        likes_count: Number(reviewForm.likesCount),
-        owner_reply: reviewForm.ownerReply,
-        owner_reply_time: reviewForm.ownerReplyTime,
-        keywords: kwArray,
-        verified: true,
-        google_review_url: gbpUrl,
-      });
+    const res = editingReview
+      ? await StorageService.updateReview({
+          ...editingReview,
+          author_name: reviewForm.authorName,
+          author_photo: photo,
+          reviewer_badge: reviewForm.reviewerBadge,
+          rating: Number(reviewForm.rating),
+          time_ago: reviewForm.timeAgo,
+          location: reviewForm.location,
+          text: reviewForm.text,
+          likes_count: Number(reviewForm.likesCount),
+          owner_reply: reviewForm.ownerReply,
+          owner_reply_time: reviewForm.ownerReplyTime,
+          keywords: kwArray,
+          verified: true,
+          google_review_url: gbpUrl,
+        })
+      : await StorageService.addReview({
+          author_name: reviewForm.authorName,
+          author_photo: photo,
+          reviewer_badge: reviewForm.reviewerBadge,
+          rating: Number(reviewForm.rating),
+          time_ago: reviewForm.timeAgo,
+          location: reviewForm.location,
+          text: reviewForm.text,
+          likes_count: Number(reviewForm.likesCount),
+          owner_reply: reviewForm.ownerReply,
+          owner_reply_time: reviewForm.ownerReplyTime,
+          keywords: kwArray,
+          verified: true,
+          google_review_url: gbpUrl,
+        });
+
+    if (!res.ok) {
+      showNotice('error', res.error || 'Failed to save review to SQL database.');
+      return;
     }
+
     setShowReviewForm(false);
     setEditingReview(null);
     onDataUpdated();
+    showNotice('success', 'Review saved to SQL database.');
   };
 
   // Format countdown minutes:seconds
@@ -920,34 +1255,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         className="bg-[#F8F9FB] w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- SECURITY GATE 1: RBAC AUTHORIZATION CHECK --- */}
-        {!canAccessAdminDashboard(activeRole) ? (
-          <div className="flex-1 bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center border border-red-500/30">
-              <ShieldAlert className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-black text-white">403 — Access Denied</h2>
-            <p className="text-sm text-slate-400 max-w-md">
-              Role-Based Access Control (RBAC) Enforcement: Role <strong className="text-red-400">"{activeRole}"</strong> is not authorized to access the Shantis Engineering Admin Dashboard.
-            </p>
-            <button
-              onClick={() => setActiveRole('admin')}
-              className="px-5 py-2.5 bg-[#F58220] hover:bg-[#e07318] text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer text-xs"
-            >
-              Switch to Admin Role
-            </button>
+        {/* --- ENFORCED DATABASE LOGIN & 2FA / GOOGLE AUTHENTICATOR GATE --- */}
+        {isCheckingSession ? (
+          <div className="flex-1 bg-slate-950 text-white flex flex-col items-center justify-center p-6 space-y-3">
+            <RefreshCw className="w-8 h-8 text-[#F58220] animate-spin" />
+            <p className="text-xs font-bold text-slate-300">Verifying encrypted database session...</p>
           </div>
-        ) : !is2faAuthenticated ? (
-          
-          /* --- SECURITY GATE 2: 2FA GOOGLE AUTHENTICATOR MODAL --- */
-          <div className="flex-1 bg-slate-950/90 flex items-center justify-center p-4">
+        ) : !isAuthenticated ? (
+          <div className="flex-1 bg-slate-950/95 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-slate-800 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-[#238B3D] text-white flex items-center justify-center font-black text-sm">
                     S
                   </div>
-                  <span className="font-bold text-sm text-slate-900">Shantis Admin Security</span>
+                  <span className="font-bold text-sm text-slate-900">Shantis Admin Portal</span>
                 </div>
                 <button
                   onClick={onClose}
@@ -957,51 +1279,128 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
 
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#238B3D] flex items-center justify-center mx-auto">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <h2 className="text-xl font-extrabold text-slate-900">Two-Factor Authentication (2FA)</h2>
-                <p className="text-xs text-slate-500">
-                  Enforced Google Authenticator TOTP token verification for EPRA Solar Admin access.
-                </p>
-              </div>
+              {authStep === 'credentials' ? (
+                <>
+                  <div className="text-center space-y-1.5">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#238B3D] flex items-center justify-center mx-auto">
+                      <Lock className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-xl font-extrabold text-slate-900">Admin Sign In Required</h2>
+                    <p className="text-xs text-slate-500">
+                      Authenticate against the SQL database before accessing orders, inventory, or configuration.
+                    </p>
+                  </div>
 
-              {/* QR Code Scan Simulator */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center space-y-2">
-                <div className="w-28 h-28 bg-white border border-slate-300 rounded-lg p-2 mx-auto flex items-center justify-center shadow-2xs">
-                  <QrCode className="w-full h-full text-slate-800" />
-                </div>
-                <p className="text-[11px] text-slate-500 font-mono">
-                  Scan QR with Google Authenticator or enter Code: <strong className="text-[#238B3D]">{generateCurrentTotpCode()}</strong> (or 482910)
-                </p>
-              </div>
+                  <form onSubmit={handleLoginStep1} className="space-y-3.5 text-xs">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Admin Email</label>
+                      <input
+                        type="email"
+                        required
+                        autoComplete="username"
+                        placeholder="admin@shantisdesigns.co.ke"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#238B3D] outline-none font-medium"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Password</label>
+                      <input
+                        type="password"
+                        required
+                        autoComplete="current-password"
+                        placeholder="Enter password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#238B3D] outline-none font-medium"
+                      />
+                    </div>
 
-              <form onSubmit={handleVerify2fa} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Enter 6-Digit Authenticator Token
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    placeholder="e.g. 482910"
-                    value={totpInput}
-                    onChange={(e) => setTotpInput(e.target.value)}
-                    className="w-full px-4 py-2.5 text-center font-mono text-lg font-black tracking-widest bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#238B3D] outline-none"
-                    autoFocus
-                  />
-                  {totpError && <p className="text-xs text-red-600 mt-1 font-semibold">{totpError}</p>}
-                </div>
+                    {authError && (
+                      <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold text-xs">
+                        {authError}
+                      </div>
+                    )}
 
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer text-xs flex items-center justify-center gap-2"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Verify 2FA Token & Access Dashboard</span>
-                </button>
-              </form>
+                    <button
+                      type="submit"
+                      disabled={isAuthSubmitting}
+                      className="w-full py-3 bg-[#238B3D] hover:bg-[#1b6b2f] disabled:opacity-60 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer text-xs flex items-center justify-center gap-2"
+                    >
+                      <Key className="w-4 h-4" />
+                      <span>{isAuthSubmitting ? 'Verifying Credentials...' : 'Continue to Two-Factor Verification'}</span>
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div className="text-center space-y-1.5">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#238B3D] flex items-center justify-center mx-auto">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-xl font-extrabold text-slate-900">Two-Factor Verification</h2>
+                    <p className="text-xs text-slate-500">
+                      Account: <strong className="text-slate-800">{pendingUserMeta?.email}</strong> ({pendingUserMeta?.role})
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-600 text-center">
+                    {pendingUserMeta?.google2faEnabled ? (
+                      <span>
+                        Open <strong>Google Authenticator</strong> on your phone and enter the 6-digit rolling code (or your registered 6-digit backup security code).
+                      </span>
+                    ) : (
+                      <span>
+                        Enter your registered <strong>6-digit administrator security code</strong> to complete login.
+                      </span>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleVerify2fa} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        6-Digit Verification Code
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        required
+                        placeholder="000000"
+                        value={totpInput}
+                        onChange={(e) => setTotpInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        className="w-full px-4 py-2.5 text-center font-mono text-lg font-black tracking-widest bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#238B3D] outline-none"
+                        autoFocus
+                      />
+                      {authError && <p className="text-xs text-red-600 mt-1.5 font-semibold">{authError}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <button
+                        type="submit"
+                        disabled={isAuthSubmitting}
+                        className="w-full py-3 bg-[#238B3D] hover:bg-[#1b6b2f] disabled:opacity-60 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer text-xs flex items-center justify-center gap-2"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>{isAuthSubmitting ? 'Authenticating...' : 'Verify & Open Dashboard'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthStep('credentials');
+                          setPendingTempToken('');
+                          setAuthError('');
+                        }}
+                        className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                      >
+                        Back to Email & Password
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -1181,7 +1580,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <span className="text-[10px] text-slate-400 font-mono">{articles.length}</span>
                   </button>
 
-                  {/* Manage Users (Partners Marquee & Audit Logs) */}
+                  {/* Users, Passwords & Google 2FA */}
+                  <button
+                    onClick={() => setActiveSection('security_users')}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left font-medium transition-all cursor-pointer ${
+                      activeSection === 'security_users'
+                        ? 'bg-[#252A30] text-white font-semibold shadow-2xs'
+                        : 'hover:bg-[#1E2227] hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-4 h-4 shrink-0" />
+                      <span>Users & Google 2FA</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">{dbUsers.length}</span>
+                  </button>
+
+                  {/* Partners & Audit Logs */}
                   <button
                     onClick={() => setActiveSection('partners')}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left font-medium transition-all cursor-pointer ${
@@ -1192,19 +1607,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <Users className="w-4 h-4 shrink-0" />
-                      <span>Manage Users & Partners</span>
+                      <span>Partners & Brands</span>
                     </div>
                   </button>
                 </div>
               </div>
 
-              {/* Bottom Logout Button matching Screenshot_20261107-000920.png */}
+              {/* Bottom Real Logout Button */}
               <div className="p-4 border-t border-[#22262B] space-y-2">
                 <button
-                  onClick={onClose}
+                  onClick={() => void performLogout()}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-semibold text-slate-300 hover:bg-rose-500/15 hover:text-rose-400 transition-colors cursor-pointer"
                 >
-                  <ArrowUpRight className="w-4 h-4 rotate-180 shrink-0" />
+                  <LogOut className="w-4 h-4 shrink-0" />
                   <span>Logout</span>
                 </button>
               </div>
@@ -1256,16 +1671,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </button>
                   </div>
 
-                  {/* Role selector */}
-                  <select
-                    value={activeRole}
-                    onChange={(e) => setActiveRole(e.target.value as UserRole)}
-                    className="hidden sm:block px-2.5 py-1.5 bg-[#F4F6F8] rounded-xl text-[11px] font-bold text-slate-700 outline-none cursor-pointer"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="engineer">Engineer</option>
-                    <option value="customer">Customer (403)</option>
-                  </select>
+                  {/* Authenticated User Badge */}
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#F4F6F8] rounded-xl text-[11px] font-bold text-slate-700">
+                    <span className="w-2 h-2 rounded-full bg-[#238B3D]" />
+                    <span className="max-w-[140px] truncate">{currentUser?.name || 'Admin'}</span>
+                    <span className="text-slate-400">•</span>
+                    <span className="text-[#238B3D]">{currentUser?.google_totp_enabled ? 'Google 2FA' : '2FA Code'}</span>
+                  </div>
 
                   {/* Session Timer Badge */}
                   <div
@@ -1290,19 +1702,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </button>
                   )}
 
-                  {/* Admin Profile Avatar */}
-                  <div className="flex items-center gap-2 pl-1">
-                    <img
-                      src="/assets/aistudio/pdf-logo__1__3934e2bd.jpg"
-                      alt="Shantis Admin"
-                      className="w-8 h-8 rounded-full object-contain bg-white border border-slate-200"
-                    />
-                  </div>
+                  {/* Quick Header Logout */}
+                  <button
+                    type="button"
+                    onClick={() => void performLogout()}
+                    className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    title="End database session & logout"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Logout</span>
+                  </button>
+
+                  {/* Close Modal */}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-[#F4F6F8] hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
+                    title="Minimize Admin Panel"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </header>
 
               {/* Main Content Scrollable Pane */}
               <main className="flex-1 overflow-y-auto p-5 sm:p-7 bg-white relative">
+                {adminNotice && (
+                  <div
+                    className={`mb-4 px-4 py-3 rounded-xl border text-xs font-bold flex items-center justify-between gap-3 ${
+                      adminNotice.type === 'error'
+                        ? 'bg-red-50 border-red-200 text-red-700'
+                        : 'bg-emerald-50 border-emerald-200 text-[#238B3D]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {adminNotice.type === 'error' ? (
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      )}
+                      <span>{adminNotice.text}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAdminNotice(null)}
+                      className="text-current opacity-70 hover:opacity-100 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
                 
                 {/* 1. OVERVIEW DASHBOARD MATCHING SCREENSHOT_20261107-000920.png */}
                 {activeSection === 'overview' && (
@@ -1727,10 +2176,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         </span>
                                       ) : (
                                         <button
-                                          onClick={() => handleVerifyMpesa(o.id)}
+                                          onClick={() => void handleVerifyMpesa(o)}
                                           disabled={verifyingOrderId === o.id}
                                           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF8EB] hover:bg-amber-100 text-amber-600 text-[11px] font-bold cursor-pointer"
-                                          title="Click to reconcile M-Pesa STK Push"
+                                          title="Click to check Daraja verification or reconcile order"
                                         >
                                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                           <span>
@@ -2317,9 +2766,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={async () => {
                                   if (confirm(`Delete category "${c.name}"?`)) {
-                                    StorageService.deleteCategory(c.id);
+                                    const res = await StorageService.deleteCategory(c.id);
+                                    if (!res.ok) showNotice('error', res.error || 'Failed to delete category.');
                                     onDataUpdated();
                                   }
                                 }}
@@ -2432,9 +2882,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     Edit
                                   </button>
                                   <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                       if (confirm(`Delete product "${p.name}"?`)) {
-                                        StorageService.deleteProduct(p.id);
+                                        const res = await StorageService.deleteProduct(p.id);
+                                        if (!res.ok) showNotice('error', res.error || 'Failed to delete product.');
                                         onDataUpdated();
                                       }
                                     }}
@@ -2469,16 +2920,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           const file = e.target.files?.[0];
                           if (!file) return;
                           const reader = new FileReader();
-                          reader.onload = (event) => {
+                          reader.onload = async (event) => {
                             const dataUrl = event.target?.result as string;
-                            StorageService.addMedia({
+                            const added = await StorageService.addMedia({
                               name: file.name,
                               url: dataUrl,
                               mime_type: file.type || 'image/jpeg',
                               size: Math.round(file.size / 1024) + ' KB',
                               dimensions: 'Original Size'
                             });
+                            if (!added) {
+                              showNotice('error', 'Failed to save uploaded media to SQL database.');
+                              return;
+                            }
                             setMediaItems(StorageService.getMedia());
+                            showNotice('success', `Uploaded "${file.name}" to SQL media storage.`);
                           };
                           reader.readAsDataURL(file);
                         }}
@@ -2515,8 +2971,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             {copiedMediaId === item.id ? 'Copied!' : 'Copy URL'}
                           </button>
                           <button
-                            onClick={() => {
-                              StorageService.deleteMedia(item.id);
+                            onClick={async () => {
+                              const ok = await StorageService.deleteMedia(item.id);
+                              if (!ok) {
+                                showNotice('error', 'Failed to delete media from SQL database.');
+                                return;
+                              }
                               setMediaItems(StorageService.getMedia());
                             }}
                             className="text-red-600 hover:underline font-bold cursor-pointer"
@@ -2661,9 +3121,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => {
+                            onClick={async () => {
                               if (confirm(`Remove partner logo "${p.name}"?`)) {
-                                StorageService.deletePartner(p.id);
+                                const res = await StorageService.deletePartner(p.id);
+                                if (!res.ok) showNotice('error', res.error || 'Failed to remove partner.');
                                 onDataUpdated();
                               }
                             }}
@@ -2675,100 +3136,429 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
 
-                  {/* SQLite Database Users & Hashed Password Manager */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs mt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                      <div>
-                        <h3 className="font-extrabold text-base text-slate-900">
-                          Database Users & Scrypt Password Hash Manager
-                        </h3>
-                        <p className="text-xs text-slate-500">
-                          All user passwords and 2FA codes are salted and hashed with cryptographic scrypt (64-byte) in ./data/shantis_solar.sqlite
-                        </p>
-                      </div>
-                      <span className="bg-emerald-50 text-[#238B3D] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold">
-                        scrypt + 16-Byte Salt Active
-                      </span>
+              {/* 5B. USERS, CREDENTIALS, SECURITY CODES & GOOGLE 2FA MANAGER */}
+              {activeSection === 'security_users' && (
+                <div className="space-y-5 text-xs">
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-extrabold text-base text-slate-900">
+                        Admin Users, Credentials, Security Codes & Google 2FA ({dbUsers.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Register new administrators, edit usernames, emails, passwords, change/register 6-digit security codes, and configure Google Authenticator 2FA.
+                      </p>
                     </div>
+                    <span className="bg-emerald-50 text-[#238B3D] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold shrink-0">
+                      scrypt-64 + RFC 6238 TOTP
+                    </span>
+                  </div>
 
-                    {passwordSaveMsg && (
-                      <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#238B3D] font-bold rounded-xl flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        <span>{passwordSaveMsg}</span>
-                      </div>
-                    )}
+                  {userMgmtMsg && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#238B3D] font-bold rounded-xl flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>{userMgmtMsg}</span>
+                    </div>
+                  )}
+                  {userMgmtErr && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 font-bold rounded-xl flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>{userMgmtErr}</span>
+                    </div>
+                  )}
 
-                    <form onSubmit={handleSaveUserPassword} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">Select User Account</label>
-                        <select
-                          value={passwordForm.email}
-                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, email: e.target.value }))}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
-                        >
-                          <option value="admin@shantisdesigns.co.ke">admin@shantisdesigns.co.ke (Admin)</option>
-                          <option value="engineer@shantisdesigns.co.ke">engineer@shantisdesigns.co.ke (Engineer)</option>
-                        </select>
+                  {/* 1. Register New User + 2. Edit Existing User Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Register New User */}
+                    <form onSubmit={handleCreateUser} className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                        <UserPlus className="w-4 h-4 text-[#238B3D]" />
+                        <h4 className="font-extrabold text-sm text-slate-900">Register New Admin / Staff User</h4>
                       </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">New Password (will be hashed)</label>
-                        <input
-                          type="password"
-                          required
-                          minLength={6}
-                          placeholder="Enter new strong password"
-                          value={passwordForm.newPassword}
-                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-xl"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">New 6-Digit 2FA Code (optional)</label>
-                        <input
-                          type="password"
-                          maxLength={6}
-                          placeholder="e.g. 254880"
-                          value={passwordForm.newTotpCode}
-                          onChange={(e) => setPasswordForm((prev) => ({ ...prev, newTotpCode: e.target.value }))}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Username / Full Name</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Jane Wanjiku"
+                            value={newUserForm.name}
+                            onChange={(e) => setNewUserForm((prev) => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Role</label>
+                          <select
+                            value={newUserForm.role}
+                            onChange={(e) => setNewUserForm((prev) => ({ ...prev, role: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
+                          >
+                            <option value="admin">Admin</option>
+                            <option value="engineer">Engineer</option>
+                            <option value="manager">Manager</option>
+                          </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block font-bold text-slate-700 mb-1">Login Email</label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="user@shantisdesigns.co.ke"
+                            value={newUserForm.email}
+                            onChange={(e) => setNewUserForm((prev) => ({ ...prev, email: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Password (min 6 chars)</label>
+                          <input
+                            type="password"
+                            required
+                            minLength={6}
+                            placeholder="Strong password"
+                            value={newUserForm.password}
+                            onChange={(e) => setNewUserForm((prev) => ({ ...prev, password: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Register 6-Digit Security Code</label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            required
+                            placeholder="6 digits (e.g. 741852)"
+                            value={newUserForm.totpCode}
+                            onChange={(e) =>
+                              setNewUserForm((prev) => ({
+                                ...prev,
+                                totpCode: e.target.value.replace(/\D/g, '').slice(0, 6),
+                              }))
+                            }
+                            className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                          />
+                        </div>
                       </div>
                       <button
                         type="submit"
-                        disabled={isSavingPassword}
-                        className="px-4 py-2 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl cursor-pointer shadow-2xs"
+                        disabled={isCreatingUser}
+                        className="w-full py-2.5 bg-[#238B3D] hover:bg-[#1b6b2f] disabled:opacity-60 text-white font-bold rounded-xl cursor-pointer shadow-2xs"
                       >
-                        {isSavingPassword ? 'Hashing & Saving...' : 'Hash & Save Password'}
+                        {isCreatingUser ? 'Registering & Hashing...' : '+ Register New User to SQL Database'}
                       </button>
                     </form>
 
-                    <div className="overflow-x-auto pt-2">
-                      <table className="w-full text-left border-t border-slate-100">
+                    {/* Edit Selected User Credentials & Codes */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <Edit3 className="w-4 h-4 text-[#F58220]" />
+                          <h4 className="font-extrabold text-sm text-slate-900">
+                            {editingUserId ? 'Edit User Credentials & 6-Digit Code' : 'Select User from Table Below to Edit'}
+                          </h4>
+                        </div>
+                        {editingUserId && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingUserId(null)}
+                            className="text-slate-500 hover:text-slate-800 font-bold cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+
+                      {editingUserId ? (
+                        <form onSubmit={handleUpdateUser} className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold text-slate-700 mb-1">Username / Name</label>
+                              <input
+                                type="text"
+                                required
+                                value={editUserForm.name}
+                                onChange={(e) => setEditUserForm((prev) => ({ ...prev, name: e.target.value }))}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold text-slate-700 mb-1">Role</label>
+                              <select
+                                value={editUserForm.role}
+                                onChange={(e) => setEditUserForm((prev) => ({ ...prev, role: e.target.value }))}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
+                              >
+                                <option value="admin">Admin</option>
+                                <option value="engineer">Engineer</option>
+                                <option value="manager">Manager</option>
+                              </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block font-bold text-slate-700 mb-1">Email Address</label>
+                              <input
+                                type="email"
+                                required
+                                value={editUserForm.email}
+                                onChange={(e) => setEditUserForm((prev) => ({ ...prev, email: e.target.value }))}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold text-slate-700 mb-1">New Password (leave blank to keep)</label>
+                              <input
+                                type="password"
+                                minLength={6}
+                                placeholder="Optional new password"
+                                value={editUserForm.password}
+                                onChange={(e) => setEditUserForm((prev) => ({ ...prev, password: e.target.value }))}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold text-slate-700 mb-1">New/Registered 6-Digit Code</label>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                placeholder="Optional 6 digits"
+                                value={editUserForm.totpCode}
+                                onChange={(e) =>
+                                  setEditUserForm((prev) => ({
+                                    ...prev,
+                                    totpCode: e.target.value.replace(/\D/g, '').slice(0, 6),
+                                  }))
+                                }
+                                className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={isUpdatingUser}
+                            className="w-full py-2.5 bg-[#F58220] hover:bg-[#e07318] disabled:opacity-60 text-white font-bold rounded-xl cursor-pointer shadow-2xs"
+                          >
+                            {isUpdatingUser ? 'Saving Changes...' : 'Save Updated Email, Username, Password & Code'}
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="py-10 text-center text-slate-400 space-y-2">
+                          <Key className="w-7 h-7 mx-auto text-slate-300" />
+                          <p>Click <strong>"Edit User"</strong> on any account row below to change their email, username, role, password, or register a new 6-digit security code.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. Google Two-Factor Authentication (Authenticator App QR Setup) */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100 text-[#238B3D] flex items-center justify-center">
+                          <QrCode className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-sm text-slate-900">
+                            Google Two-Factor Authentication (Google Authenticator)
+                          </h4>
+                          <p className="text-xs text-slate-500">
+                            Bind an RFC 6238 TOTP secret to any user account and verify the live 6-digit rolling code before activation.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={google2faTargetId}
+                          onChange={(e) => setGoogle2faTargetId(e.target.value)}
+                          className="px-3 py-2 border border-slate-300 rounded-xl bg-white font-semibold"
+                        >
+                          {dbUsers.map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name} ({u.email}) — {u.google_totp_enabled ? 'Google 2FA ON' : 'Not Configured'}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => void handleGenerateGoogle2faQr(google2faTargetId)}
+                          disabled={isSettingUpGoogle2fa || dbUsers.length === 0}
+                          className="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-xl cursor-pointer"
+                        >
+                          {isSettingUpGoogle2fa ? 'Generating...' : 'Generate Google Authenticator QR'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {google2faMsg && (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#238B3D] font-bold rounded-xl flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>{google2faMsg}</span>
+                      </div>
+                    )}
+                    {google2faErr && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-red-700 font-bold rounded-xl flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>{google2faErr}</span>
+                      </div>
+                    )}
+
+                    {google2faSetupData && (
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 p-4 bg-slate-50 rounded-2xl border border-slate-200 items-center">
+                        <div className="md:col-span-4 flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-slate-200">
+                          <img
+                            src={google2faSetupData.qrDataUrl}
+                            alt="Google Authenticator 2FA QR Code"
+                            className="w-44 h-44 object-contain"
+                          />
+                          <p className="text-[11px] text-slate-500 mt-2 text-center">
+                            Scan in <strong>Google Authenticator</strong>
+                          </p>
+                        </div>
+                        <div className="md:col-span-8 space-y-3">
+                          <div>
+                            <p className="font-bold text-slate-900 text-sm">
+                              Setting up Google 2FA for: <span className="text-[#238B3D]">{google2faSetupData.email}</span>
+                            </p>
+                            <p className="text-xs text-slate-600 mt-1">
+                              1. Scan the QR code using Google Authenticator (or enter the Base32 Setup Key manually below).
+                            </p>
+                          </div>
+                          <div className="p-2.5 bg-white border border-slate-300 rounded-xl flex items-center justify-between gap-2 font-mono text-xs">
+                            <span className="font-bold text-slate-800 select-all">{google2faSetupData.secret}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(google2faSetupData.secret);
+                                showNotice('success', 'Copied Google 2FA Base32 secret key.');
+                              }}
+                              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg font-sans font-bold text-slate-700 cursor-pointer"
+                            >
+                              Copy Key
+                            </button>
+                          </div>
+                          <form onSubmit={handleEnableGoogle2fa} className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-end pt-1">
+                            <div className="flex-1">
+                              <label className="block font-bold text-slate-700 mb-1">
+                                2. Enter 6-Digit Code Shown in Google Authenticator
+                              </label>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                required
+                                placeholder="e.g. 123456"
+                                value={google2faVerifyCode}
+                                onChange={(e) => setGoogle2faVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono text-sm tracking-widest font-bold"
+                              />
+                            </div>
+                            <button
+                              type="submit"
+                              disabled={isSettingUpGoogle2fa}
+                              className="px-5 py-2.5 bg-[#238B3D] hover:bg-[#1b6b2f] text-white font-bold rounded-xl cursor-pointer shadow-xs"
+                            >
+                              Verify & Activate Google 2FA
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. Registered Users Table */}
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
                         <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b">
                           <tr>
-                            <th className="py-2.5 px-3">User / Email</th>
-                            <th className="py-2.5 px-3">Role</th>
-                            <th className="py-2.5 px-3">SQLite Password Hash (scrypt-64)</th>
-                            <th className="py-2.5 px-3">2FA TOTP Hash</th>
+                            <th className="py-3 px-4">Username / Email</th>
+                            <th className="py-3 px-4">Role</th>
+                            <th className="py-3 px-4">Google 2FA</th>
+                            <th className="py-3 px-4">Password & Code Hashes (scrypt-64)</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                          {dbUsers.map((u) => (
-                            <tr key={u.id}>
-                              <td className="py-2.5 px-3 font-sans">
-                                <p className="font-bold text-slate-900">{u.name}</p>
-                                <p className="text-slate-500 text-[11px]">{u.email}</p>
-                              </td>
-                              <td className="py-2.5 px-3 uppercase font-bold text-[#238B3D]">{u.role}</td>
-                              <td className="py-2.5 px-3 text-slate-600 max-w-[260px] truncate" title={u.password_hash}>
-                                {u.password_hash}
-                              </td>
-                              <td className="py-2.5 px-3 text-slate-500 max-w-[180px] truncate" title={u.totp_code_hash}>
-                                {u.totp_code_hash}
-                              </td>
-                            </tr>
-                          ))}
+                        <tbody className="divide-y divide-slate-100 text-[11px]">
+                          {dbUsers.map((u) => {
+                            const isSelf = currentUser && String(currentUser.id) === String(u.id);
+                            return (
+                              <tr key={u.id} className="hover:bg-slate-50">
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-slate-900">
+                                    {u.name} {isSelf && <span className="text-[10px] text-[#238B3D] font-extrabold">(You)</span>}
+                                  </p>
+                                  <p className="text-slate-500">{u.email}</p>
+                                </td>
+                                <td className="py-3 px-4 uppercase font-bold text-slate-700">{u.role}</td>
+                                <td className="py-3 px-4">
+                                  {u.google_totp_enabled ? (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#238B3D] font-bold">
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
+                                      Static Code Only
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-[10px] text-slate-500 max-w-[240px]">
+                                  <p className="truncate" title={u.password_hash}>PWD: {u.password_hash}</p>
+                                  <p className="truncate" title={u.totp_code_hash}>2FA: {u.totp_code_hash}</p>
+                                </td>
+                                <td className="py-3 px-4 text-right space-x-2 whitespace-nowrap">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingUserId(u.id);
+                                      setEditUserForm({
+                                        name: u.name,
+                                        email: u.email,
+                                        role: u.role,
+                                        password: '',
+                                        totpCode: '',
+                                      });
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold cursor-pointer"
+                                  >
+                                    Edit User
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setGoogle2faTargetId(u.id);
+                                      void handleGenerateGoogle2faQr(u.id);
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#238B3D] font-bold cursor-pointer"
+                                  >
+                                    {u.google_totp_enabled ? 'Reset QR' : 'Setup 2FA'}
+                                  </button>
+                                  {u.google_totp_enabled && (
+                                    <button
+                                      type="button"
+                                      onClick={() => void handleDisableGoogle2fa(u.id, u.email)}
+                                      className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold cursor-pointer"
+                                    >
+                                      Disable 2FA
+                                    </button>
+                                  )}
+                                  {!isSelf && (
+                                    <button
+                                      type="button"
+                                      onClick={() => void handleDeleteUser(u.id, u.email)}
+                                      className="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold cursor-pointer"
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -2913,9 +3703,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <span>Edit Project & Images</span>
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   if (confirm(`Delete project "${proj.title}"?`)) {
-                                    StorageService.deleteProject(proj.id);
+                                    const res = await StorageService.deleteProject(proj.id);
+                                    if (!res.ok) showNotice('error', res.error || 'Failed to delete project.');
                                     onDataUpdated();
                                   }
                                 }}
@@ -3001,9 +3792,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <span>Edit Article</span>
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Delete blog article "${art.title}"?`)) {
-                                  StorageService.deleteArticle(art.id);
+                                  const res = await StorageService.deleteArticle(art.id);
+                                  if (!res.ok) showNotice('error', res.error || 'Failed to delete article.');
                                   onDataUpdated();
                                 }
                               }}
@@ -3589,9 +4381,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               Edit / Reply
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Delete review by "${rev.author_name}"?`)) {
-                                  StorageService.deleteReview(rev.id);
+                                  const res = await StorageService.deleteReview(rev.id);
+                                  if (!res.ok) showNotice('error', res.error || 'Failed to delete review.');
                                   onDataUpdated();
                                 }
                               }}
@@ -3659,8 +4452,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           Save your custom M-Pesa Consumer Key, Secret Key, Passkey, and Shortcode directly to ./data/shantis_solar.sqlite hashed with scrypt-64
                         </p>
                       </div>
-                      <span className="bg-emerald-50 text-[#238B3D] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold">
-                        Hashed in SQLite (`mpesa_api_credentials`)
+                      <span
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold border ${
+                          mpesaConfigSummary?.has_keys
+                            ? 'bg-emerald-50 text-[#238B3D] border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}
+                      >
+                        {mpesaConfigSummary?.has_keys
+                          ? 'Live Daraja Configured (STK Push Active)'
+                          : 'Not Configured — Checkout Falls Back to WhatsApp'}
                       </span>
                     </div>
 
@@ -3841,8 +4642,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <td className="py-3 px-4">
                                 <select
                                   value={l.status}
-                                  onChange={(e) => {
-                                    StorageService.updateLeadStatus(l.id, e.target.value as WhatsAppLead['status']);
+                                  onChange={async (e) => {
+                                    const res = await StorageService.updateLeadStatus(l.id, e.target.value as WhatsAppLead['status']);
+                                    if (!res.ok) showNotice('error', res.error || 'Failed to update lead status.');
                                     onDataUpdated();
                                   }}
                                   className="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded-lg text-xs font-bold capitalize"
@@ -4258,15 +5060,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               const file = e.target.files?.[0];
                               if (!file) return;
                               const reader = new FileReader();
-                              reader.onload = (ev) => {
+                              reader.onload = async (ev) => {
                                 const dataUrl = ev.target?.result as string;
-                                StorageService.addMedia({
+                                const added = await StorageService.addMedia({
                                   name: `${projectForm.title || 'Project'} - ${file.name}`,
                                   url: dataUrl,
                                   mime_type: file.type || 'image/jpeg',
                                   size: Math.round(file.size / 1024) + ' KB',
                                   dimensions: 'Original Size',
                                 });
+                                if (!added) {
+                                  showNotice('error', 'Failed to upload gallery photo to SQL database.');
+                                  return;
+                                }
                                 setMediaItems(StorageService.getMedia());
                                 setProjectForm(prev => ({
                                   ...prev,

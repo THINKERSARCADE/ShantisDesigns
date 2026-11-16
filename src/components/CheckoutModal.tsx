@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, Order } from '../types';
-import { 
-  X, 
-  ShieldCheck, 
-  Smartphone, 
-  MessageCircle, 
-  CheckCircle2, 
-  Loader2, 
+import {
+  X,
+  ShieldCheck,
+  Smartphone,
+  MessageCircle,
+  CheckCircle2,
+  Loader2,
   AlertCircle,
-  Truck,
-  Building
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { MpesaDarajaService } from '../services/mpesaDaraja';
 import { StorageService } from '../services/storage';
@@ -25,7 +25,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
   onClose,
   items,
-  onOrderCompleted
+  onOrderCompleted,
 }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -33,10 +33,57 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'mpesa_daraja' | 'whatsapp'>('mpesa_daraja');
 
-  // STK Push Dispatch States
-  const [stkStatus, setStkStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
+  // Gateway configuration availability
+  const [mpesaConfigured, setMpesaConfigured] = useState<boolean | null>(null);
+  const [mpesaShortcode, setMpesaShortcode] = useState<string>('');
+
+  // Strict M-Pesa Daraja verification states
+  const [stkStatus, setStkStatus] = useState<
+    'idle' | 'processing' | 'awaiting_verification' | 'success' | 'failed'
+  >('idle');
+  const [pendingCheckoutId, setPendingCheckoutId] = useState<string>('');
+  const [pendingOrderNumber, setPendingOrderNumber] = useState<string>('');
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmittingWhatsapp, setIsSubmittingWhatsapp] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      stopPolling();
+      return;
+    }
+
+    let active = true;
+    setErrorMessage('');
+    setStkStatus('idle');
+    setPendingCheckoutId('');
+    setPendingOrderNumber('');
+    setStatusMessage('');
+
+    StorageService.getMpesaPublicStatus().then((info) => {
+      if (!active) return;
+      setMpesaConfigured(info.configured);
+      setMpesaShortcode(info.shortcode || '');
+      if (!info.configured) {
+        setPaymentMethod('whatsapp');
+      }
+    });
+
+    return () => {
+      active = false;
+      stopPolling();
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -44,6 +91,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const price = item.product.sale_price || item.product.price;
     return sum + price * item.quantity;
   }, 0);
+
+  const buildOrderItems = () =>
+    items.map((i, idx) => ({
+      id: idx + 1,
+      order_id: 0,
+      product_id: i.product.id,
+      product_name: i.product.name,
+      product_image: i.product.image_url,
+      quantity: i.quantity,
+      price: i.product.sale_price || i.product.price,
+    }));
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -67,112 +125,170 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     return true;
   };
 
-  // 1. WhatsApp Checkout Flow
-  const handleWhatsAppCheckout = () => {
+  // 1. WhatsApp Checkout Flow (Saved to SQL DB before opening WhatsApp)
+  const handleWhatsAppCheckout = async () => {
     if (!validateForm()) return;
-
-    const cleanPhone = MpesaDarajaService.formatKenyanPhone(phone);
-    
-    // Create Order in DB
-    const newOrder = StorageService.addOrder({
-      customer_name: name,
-      customer_phone: cleanPhone,
-      customer_location: location,
-      customer_notes: notes,
-      total: total,
-      status: 'pending',
-      payment_method: 'whatsapp',
-      items: items.map((i, idx) => ({
-        id: idx + 1,
-        order_id: 0,
-        product_id: i.product.id,
-        product_name: i.product.name,
-        product_image: i.product.image_url,
-        quantity: i.quantity,
-        price: i.product.sale_price || i.product.price
-      }))
-    });
-
-    // Create deep link and log lead
-    const { url } = MpesaDarajaService.createWhatsAppCheckout(
-      items,
-      {
-        name,
-        phone: cleanPhone,
-        location,
-        notes: `Order Ref: ${newOrder.order_number}. ${notes}`
-      }
-    );
-
-    setCompletedOrder(newOrder);
-    onOrderCompleted(newOrder);
-    window.open(url, '_blank');
-  };
-
-  // 2. Live M-Pesa Daraja STK Push Flow
-  const handleInitiateMpesa = async () => {
-    if (!validateForm()) return;
-    setStkStatus('processing');
+    stopPolling();
+    setIsSubmittingWhatsapp(true);
     setErrorMessage('');
 
     const cleanPhone = MpesaDarajaService.formatKenyanPhone(phone);
-    const orderRef = `SHN-${Date.now()}`;
-    let receiptCode = '';
-    let checkoutRequestId = `ws_CO_${Date.now()}`;
-    let orderStatus: Order['status'] = 'pending';
 
     try {
-      const stkRes = await fetch('/api/payments/mpesa/stkpush', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          amount: total,
-          orderNumber: orderRef
-        })
+      const newOrder = await StorageService.addOrder({
+        customer_name: name,
+        customer_phone: cleanPhone,
+        customer_location: location,
+        customer_notes: notes,
+        total,
+        status: 'pending',
+        payment_method: 'whatsapp',
+        items: buildOrderItems(),
       });
-      if (stkRes.ok) {
-        const data = await stkRes.json();
-        if (data.checkoutRequestId) checkoutRequestId = data.checkoutRequestId;
-        if (data.receipt) {
-          receiptCode = data.receipt;
-          orderStatus = 'paid';
-        }
-      }
-    } catch {
-      // Order is still recorded in SQLite pending M-Pesa callback verification
-    }
 
-    const newOrder = StorageService.addOrder({
+      const { url } = MpesaDarajaService.createWhatsAppCheckout(items, {
+        name,
+        phone: cleanPhone,
+        location,
+        notes: `Order Ref: ${newOrder.order_number}. ${notes}`,
+      });
+
+      setCompletedOrder(newOrder);
+      onOrderCompleted(newOrder);
+      window.open(url, '_blank');
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Unable to save WhatsApp order to SQL database. Please retry.');
+    } finally {
+      setIsSubmittingWhatsapp(false);
+    }
+  };
+
+  const handleVerifiedPaidOrder = (orderNum: string, receipt?: string, serverOrder?: Order | null) => {
+    stopPolling();
+    const cleanPhone = MpesaDarajaService.formatKenyanPhone(phone);
+    const finalizedOrder: Order = serverOrder || {
+      id: Date.now(),
+      order_number: orderNum || pendingOrderNumber || `SHN-${Date.now()}`,
       customer_name: name,
       customer_phone: cleanPhone,
       customer_email: '',
       customer_location: location,
       customer_notes: notes,
-      total: total,
-      status: orderStatus,
+      total,
+      status: 'paid',
       payment_method: 'mpesa_daraja',
-      mpesa_receipt: receiptCode || undefined,
-      checkout_request_id: checkoutRequestId,
-      items: items.map((i, idx) => ({
-        id: idx + 1,
-        order_id: 0,
-        product_id: i.product.id,
-        product_name: i.product.name,
-        product_image: i.product.image_url,
-        quantity: i.quantity,
-        price: i.product.sale_price || i.product.price
-      }))
+      mpesa_receipt: receipt || undefined,
+      checkout_request_id: pendingCheckoutId,
+      created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      items: buildOrderItems(),
+    };
+    setCompletedOrder(finalizedOrder);
+    setStkStatus('success');
+    onOrderCompleted(finalizedOrder);
+  };
+
+  const pollVerificationStatus = async (checkoutId: string, orderNum: string) => {
+    const res = await StorageService.checkMpesaStatus(checkoutId);
+    if (res.status === 'paid') {
+      handleVerifiedPaidOrder(res.orderNumber || orderNum, res.receipt, res.order);
+      return true;
+    }
+    if (res.status === 'declined') {
+      stopPolling();
+      setStkStatus('failed');
+      setErrorMessage(
+        res.resultDesc ||
+          res.error ||
+          'M-Pesa transaction was declined or cancelled. No purchase was completed.'
+      );
+      return true;
+    }
+    if (res.resultDesc) {
+      setStatusMessage(res.resultDesc);
+    }
+    return false;
+  };
+
+  // 2. Live M-Pesa Daraja STK Push Flow — Never completes until Safaricom verifies Paid
+  const handleInitiateMpesa = async () => {
+    if (!mpesaConfigured) {
+      setPaymentMethod('whatsapp');
+      setErrorMessage(
+        'M-Pesa gateway configuration is not available on this store. Please checkout via WhatsApp.'
+      );
+      return;
+    }
+
+    if (!validateForm()) return;
+
+    stopPolling();
+    setStkStatus('processing');
+    setErrorMessage('');
+    setStatusMessage('Sending STK Push request to Safaricom M-Pesa...');
+
+    const cleanPhone = MpesaDarajaService.formatKenyanPhone(phone);
+
+    const res = await StorageService.initiateMpesaStkPush({
+      phone: cleanPhone,
+      amount: total,
+      customerName: name,
+      customerLocation: location,
+      items: buildOrderItems(),
     });
 
-    setCompletedOrder(newOrder);
-    setStkStatus('success');
-    onOrderCompleted(newOrder);
+    if (!res.success) {
+      if (res.status === 'unconfigured' || res.configured === false) {
+        setMpesaConfigured(false);
+        setPaymentMethod('whatsapp');
+        setStkStatus('idle');
+        setErrorMessage(
+          res.error ||
+            'M-Pesa configuration is not available. Please complete your purchase using Checkout via WhatsApp.'
+        );
+        return;
+      }
+      setStkStatus('failed');
+      setErrorMessage(
+        res.error || 'Safaricom M-Pesa declined the STK Push initiation. Please retry or use WhatsApp Checkout.'
+      );
+      return;
+    }
+
+    if (res.status === 'pending_verification' && res.checkoutRequestId) {
+      const checkoutId = res.checkoutRequestId;
+      const orderNum = res.orderNumber || '';
+      setPendingCheckoutId(checkoutId);
+      setPendingOrderNumber(orderNum);
+      setStkStatus('awaiting_verification');
+      setStatusMessage(
+        res.message || 'Check your phone and enter your M-Pesa PIN. Waiting for Safaricom confirmation...'
+      );
+
+      let attempts = 0;
+      const maxAttempts = 40; // ~2 minutes at 3s intervals
+
+      pollTimerRef.current = setInterval(async () => {
+        attempts += 1;
+        const finished = await pollVerificationStatus(checkoutId, orderNum);
+        if (finished) return;
+
+        if (attempts >= maxAttempts) {
+          stopPolling();
+          setStkStatus('failed');
+          setErrorMessage(
+            'M-Pesa confirmation timed out before Safaricom verified your payment. Click "Re-check M-Pesa Status" if you already entered your PIN, or complete your order via WhatsApp.'
+          );
+        }
+      }, 3000);
+    } else {
+      setStkStatus('failed');
+      setErrorMessage('Unexpected M-Pesa gateway response. Please use Checkout via WhatsApp.');
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      <div 
+      <div
         className="relative bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200 max-h-[95vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -185,12 +301,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 Express Single-Page Checkout
               </h3>
               <p className="text-[11px] text-slate-500">
-                Safe & Encrypted • Safaricom Daraja STK Push & WhatsApp Direct
+                Safe & Encrypted • Safaricom Daraja Verification & WhatsApp Direct
               </p>
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              stopPolling();
+              onClose();
+            }}
             className="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors cursor-pointer"
             aria-label="Close checkout"
           >
@@ -200,8 +319,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         {/* Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
-          
-          {/* Order Success Screen */}
+          {/* Order Success Screen (Only reached after WhatsApp DB confirmation or Daraja Verified Paid!) */}
           {completedOrder ? (
             <div className="text-center py-6 space-y-4">
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-[#238B3D] flex items-center justify-center mx-auto shadow-inner">
@@ -209,7 +327,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
               <div>
                 <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                  {completedOrder.status === 'paid' ? 'Payment Confirmed' : 'STK Push Dispatched'}
+                  {completedOrder.status === 'paid'
+                    ? 'M-Pesa Payment Verified & Confirmed'
+                    : 'WhatsApp Order Recorded'}
                 </span>
                 <h3 className="text-xl font-extrabold text-slate-900 mt-2">
                   Asante! Your Solar Order is Confirmed
@@ -219,29 +339,32 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </p>
               </div>
 
-              {completedOrder.mpesa_receipt && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-sm mx-auto text-left text-xs space-y-1.5 font-mono">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-sm mx-auto text-left text-xs space-y-1.5 font-mono">
+                {completedOrder.mpesa_receipt && (
                   <div className="text-emerald-700 font-bold flex items-center justify-between">
                     <span>M-PESA RECEIPT:</span>
                     <span>{completedOrder.mpesa_receipt}</span>
                   </div>
-                  <div className="text-slate-600 flex items-center justify-between">
-                    <span>Amount Paid:</span>
-                    <span className="font-bold text-slate-900">KES {completedOrder.total.toLocaleString()}</span>
-                  </div>
-                  <div className="text-slate-600 flex items-center justify-between">
-                    <span>Customer:</span>
-                    <span>{completedOrder.customer_name}</span>
-                  </div>
-                  <div className="text-slate-600 flex items-center justify-between">
-                    <span>Destination:</span>
-                    <span>{completedOrder.customer_location}</span>
-                  </div>
+                )}
+                <div className="text-slate-600 flex items-center justify-between">
+                  <span>Order Total:</span>
+                  <span className="font-bold text-slate-900">
+                    KES {completedOrder.total.toLocaleString()}
+                  </span>
                 </div>
-              )}
+                <div className="text-slate-600 flex items-center justify-between">
+                  <span>Customer:</span>
+                  <span>{completedOrder.customer_name}</span>
+                </div>
+                <div className="text-slate-600 flex items-center justify-between">
+                  <span>Destination:</span>
+                  <span>{completedOrder.customer_location}</span>
+                </div>
+              </div>
 
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Our engineering team has received your order and will contact you on <strong className="text-slate-800">{completedOrder.customer_phone}</strong> to coordinate shipping and optional site installation.
+                Our engineering team has received your order and will contact you on{' '}
+                <strong className="text-slate-800">{completedOrder.customer_phone}</strong> to coordinate shipping and optional site installation.
               </p>
 
               <div className="pt-2">
@@ -255,10 +378,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           ) : (
             <>
+              {/* M-Pesa Unconfigured Notice */}
+              {mpesaConfigured === false && (
+                <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="font-extrabold">
+                      M-Pesa Automatic STK Push Configuration Not Available
+                    </p>
+                    <p className="text-[11px] text-amber-800">
+                      Automated Safaricom M-Pesa Daraja keys are not configured on this store yet. Please complete your order via <strong>Checkout with WhatsApp</strong> below so our sales desk can process payment directly.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Error Notice */}
               {errorMessage && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -266,9 +404,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               {/* Order Items Summary Snippet */}
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between text-xs">
                 <div>
-                  <span className="text-slate-500 font-medium">Ordering ({items.length} solar items):</span>
+                  <span className="text-slate-500 font-medium">
+                    Ordering ({items.length} solar items):
+                  </span>
                   <p className="font-bold text-slate-800 line-clamp-1">
-                    {items.map(i => `${i.product.name} (x${i.quantity})`).join(', ')}
+                    {items.map((i) => `${i.product.name} (x${i.quantity})`).join(', ')}
                   </p>
                 </div>
                 <div className="text-right shrink-0 ml-3">
@@ -295,21 +435,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
+                      disabled={stkStatus === 'awaiting_verification' || stkStatus === 'processing'}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white disabled:opacity-60"
                       required
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Phone Number (M-Pesa registered) *
+                      Phone Number (M-Pesa / WhatsApp) *
                     </label>
                     <input
                       type="tel"
                       placeholder="07XX XXX XXX or 254..."
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
+                      disabled={stkStatus === 'awaiting_verification' || stkStatus === 'processing'}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white disabled:opacity-60"
                       required
                     />
                   </div>
@@ -325,7 +467,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       placeholder="Nairobi / Mombasa / Kisumu / Meru / Nakuru"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
+                      disabled={stkStatus === 'awaiting_verification' || stkStatus === 'processing'}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white disabled:opacity-60"
                       required
                     />
                   </div>
@@ -339,7 +482,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       placeholder="Delivery instructions or site details"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white"
+                      disabled={stkStatus === 'awaiting_verification' || stkStatus === 'processing'}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-hidden focus:border-[#F58220] focus:bg-white disabled:opacity-60"
                     />
                   </div>
                 </div>
@@ -352,37 +496,58 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  
-                  {/* M-Pesa Option */}
+                  {/* M-Pesa Option (Locked when unconfigured) */}
                   <label
-                    onClick={() => setPaymentMethod('mpesa_daraja')}
-                    className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
-                      paymentMethod === 'mpesa_daraja'
-                        ? 'border-[#238B3D] bg-emerald-50/50 ring-2 ring-[#238B3D]/20 shadow-xs'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    onClick={() => {
+                      if (mpesaConfigured === false) {
+                        setErrorMessage(
+                          'M-Pesa Daraja gateway is not configured on this server. Please checkout with WhatsApp.'
+                        );
+                        setPaymentMethod('whatsapp');
+                        return;
+                      }
+                      setPaymentMethod('mpesa_daraja');
+                    }}
+                    className={`p-3.5 rounded-xl border flex items-start gap-3 transition-all ${
+                      mpesaConfigured === false
+                        ? 'border-slate-200 bg-slate-100 opacity-70 cursor-not-allowed'
+                        : paymentMethod === 'mpesa_daraja'
+                        ? 'border-[#238B3D] bg-emerald-50/50 ring-2 ring-[#238B3D]/20 shadow-xs cursor-pointer'
+                        : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'
                     }`}
                   >
                     <input
                       type="radio"
                       name="paymentMethod"
-                      checked={paymentMethod === 'mpesa_daraja'}
-                      onChange={() => setPaymentMethod('mpesa_daraja')}
+                      disabled={mpesaConfigured === false || stkStatus === 'awaiting_verification'}
+                      checked={paymentMethod === 'mpesa_daraja' && mpesaConfigured !== false}
+                      onChange={() => {
+                        if (mpesaConfigured !== false) setPaymentMethod('mpesa_daraja');
+                      }}
                       className="mt-1 text-[#238B3D] focus:ring-[#238B3D]"
                     />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <Smartphone className="w-4 h-4 text-[#238B3D]" />
-                        <span className="text-xs font-bold text-slate-900">Lipa na M-Pesa (Daraja)</span>
+                        <span className="text-xs font-bold text-slate-900">
+                          Lipa na M-Pesa (Daraja)
+                        </span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Instant STK Push prompt to your phone (Paybill 522533 / Account 7865521 or Till 4108955).
+                        {mpesaConfigured === null
+                          ? 'Checking M-Pesa gateway status...'
+                          : mpesaConfigured === false
+                          ? 'Unavailable (Daraja API not configured) — Use WhatsApp Checkout.'
+                          : `Live STK Push verification required (${mpesaShortcode || 'Daraja'}).`}
                       </p>
                     </div>
                   </label>
 
                   {/* WhatsApp Option */}
                   <label
-                    onClick={() => setPaymentMethod('whatsapp')}
+                    onClick={() => {
+                      if (stkStatus !== 'awaiting_verification') setPaymentMethod('whatsapp');
+                    }}
                     className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
                       paymentMethod === 'whatsapp'
                         ? 'border-[#F58220] bg-orange-50/50 ring-2 ring-[#F58220]/20 shadow-xs'
@@ -392,6 +557,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <input
                       type="radio"
                       name="paymentMethod"
+                      disabled={stkStatus === 'awaiting_verification'}
                       checked={paymentMethod === 'whatsapp'}
                       onChange={() => setPaymentMethod('whatsapp')}
                       className="mt-1 text-[#F58220] focus:ring-[#F58220]"
@@ -399,55 +565,114 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <div>
                       <div className="flex items-center gap-1.5">
                         <MessageCircle className="w-4 h-4 text-[#F58220]" />
-                        <span className="text-xs font-bold text-slate-900">WhatsApp Direct Order</span>
+                        <span className="text-xs font-bold text-slate-900">
+                          Checkout with WhatsApp
+                        </span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Chat directly with our solar sales team with pre-filled cart.
+                        Direct WhatsApp checkout with instant order reference saved to database.
                       </p>
                     </div>
                   </label>
-
                 </div>
               </div>
 
-              {stkStatus === 'processing' && (
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
+              {/* Awaiting Strict Safaricom Daraja Verification Banner */}
+              {(stkStatus === 'processing' || stkStatus === 'awaiting_verification') && (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2.5">
                   <Loader2 className="w-6 h-6 animate-spin text-[#238B3D] mx-auto" />
-                  <p className="text-xs font-bold text-emerald-900">
-                    Dispatching Lipa na M-Pesa Daraja STK Push to {phone}...
+                  <p className="text-xs font-extrabold text-emerald-900">
+                    {stkStatus === 'processing'
+                      ? `Connecting to Safaricom M-Pesa Daraja for ${phone}...`
+                      : `Awaiting M-Pesa PIN & Confirmation for ${pendingOrderNumber || 'your order'}...`}
                   </p>
-                  <p className="text-[11px] text-emerald-700">
-                    Please enter your M-Pesa PIN on your phone when prompted.
-                  </p>
+                  <p className="text-[11px] text-emerald-700">{statusMessage}</p>
+                  {stkStatus === 'awaiting_verification' && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => pollVerificationStatus(pendingCheckoutId, pendingOrderNumber)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-emerald-300 text-emerald-800 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-emerald-100"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Check Status Now</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          stopPolling();
+                          setStkStatus('idle');
+                          setPaymentMethod('whatsapp');
+                        }}
+                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[11px] font-bold cursor-pointer hover:bg-slate-800"
+                      >
+                        Cancel & Switch to WhatsApp Checkout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Failed / Declined Recovery Controls */}
+              {stkStatus === 'failed' && pendingCheckoutId && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => pollVerificationStatus(pendingCheckoutId, pendingOrderNumber)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Re-check M-Pesa Status</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStkStatus('idle');
+                      setPaymentMethod('whatsapp');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#F58220] text-white rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Checkout via WhatsApp Instead</span>
+                  </button>
                 </div>
               )}
 
               {/* Action Buttons */}
               <div className="pt-2">
-                {paymentMethod === 'mpesa_daraja' ? (
+                {paymentMethod === 'mpesa_daraja' && mpesaConfigured ? (
                   <button
                     onClick={handleInitiateMpesa}
-                    disabled={stkStatus === 'processing'}
+                    disabled={
+                      stkStatus === 'processing' || stkStatus === 'awaiting_verification'
+                    }
                     className="w-full bg-[#238B3D] hover:bg-[#1b7030] disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Smartphone className="w-4 h-4" />
-                    <span>Pay KES {total.toLocaleString()} via M-Pesa STK Push</span>
+                    <span>
+                      {stkStatus === 'awaiting_verification'
+                        ? 'Verifying M-Pesa Payment...'
+                        : `Pay KES ${total.toLocaleString()} via M-Pesa STK Push`}
+                    </span>
                   </button>
                 ) : (
                   <button
                     onClick={handleWhatsAppCheckout}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    disabled={isSubmittingWhatsapp || stkStatus === 'awaiting_verification'}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>Confirm & Checkout via WhatsApp</span>
+                    <span>
+                      {isSubmittingWhatsapp
+                        ? 'Saving Order to Database...'
+                        : 'Confirm & Checkout via WhatsApp'}
+                    </span>
                   </button>
                 )}
               </div>
             </>
           )}
-
         </div>
-
       </div>
     </div>
   );

@@ -106,7 +106,7 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                 Reviews about Shantis Designs Solar Solutions
               </h2>
               <p className="text-xs sm:text-sm text-slate-400">
-                5.0 ★ (5) • Solar energy equipment supplier • Luthuli avenue, Munyu Lane, Nairobi
+                {avgRating} ★ ({reviews.length || 5}) • Solar energy equipment supplier • Luthuli avenue, Munyu Lane, Nairobi
               </p>
             </div>
 
@@ -121,7 +121,7 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-xs text-slate-400 font-semibold">(5)</p>
+                <p className="text-xs text-slate-400 font-semibold">({reviews.length || 5})</p>
               </div>
 
               {/* Histogram Bars matching Google Reviews screenshot */}
@@ -212,6 +212,17 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                 }`}
               >
                 batteries {keywordCounts.batteries || 2}
+              </button>
+
+              <button
+                onClick={() => setSelectedKeyword(selectedKeyword === 'panel' ? 'all' : 'panel')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                  selectedKeyword === 'panel'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50'
+                    : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800'
+                }`}
+              >
+                panels {keywordCounts.panels || 2}
               </button>
             </div>
 
@@ -305,9 +316,15 @@ export const GoogleReviewsSection: React.FC<GoogleReviewsSectionProps> = ({ revi
                   </div>
 
                   {/* Review Body Text */}
-                  <p className="text-sm text-slate-200 leading-relaxed">
-                    {rev.text}
-                  </p>
+                  {rev.text ? (
+                    <p className="text-sm text-slate-200 leading-relaxed">
+                      {rev.text}
+                    </p>
+                  ) : (
+                    <p className="text-xs italic text-slate-400">
+                      Rated {rev.rating || 5}/5 stars on Google Business Profile
+                    </p>
+                  )}
 
                   {/* Heart Likes Counter */}
                   <div className="flex items-center gap-2 pt-1">

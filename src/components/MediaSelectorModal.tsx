@@ -32,11 +32,11 @@ export const MediaSelectorModal: React.FC<MediaSelectorModalProps> = ({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
       const sizeKb = Math.round(file.size / 1024) + ' KB';
 
-      const newMedia = StorageService.addMedia({
+      const newMedia = await StorageService.addMedia({
         name: file.name,
         url: dataUrl,
         mime_type: file.type || 'image/jpeg',
@@ -44,9 +44,10 @@ export const MediaSelectorModal: React.FC<MediaSelectorModalProps> = ({
         dimensions: 'Original Size'
       });
 
-      const updated = StorageService.getMedia();
-      setMediaItems(updated);
-      setSelectedUrl(newMedia.url);
+      if (newMedia) {
+        setMediaItems(StorageService.getMedia());
+        setSelectedUrl(newMedia.url);
+      }
     };
     reader.readAsDataURL(file);
   };

@@ -79,22 +79,22 @@ export const Hero: React.FC<HeroProps> = ({
               }}
               className="flex-1 bg-linear-to-br from-[#1b6b30] to-[#238B3D] text-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-3 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer"
             >
-              <div className="relative z-10 space-y-1.5 max-w-[60%]">
+              <div className="relative z-10 space-y-1.5 min-w-0 flex-1">
                 <span className="inline-block text-[10px] font-black uppercase tracking-wider text-amber-300">
                   DOYIN WATER PUMPS
                 </span>
-                <h3 className="text-lg sm:text-xl font-black leading-tight">
+                <h3 className="text-base xl:text-xl font-black leading-tight">
                   High Quality
                 </h3>
                 <p className="text-xs text-emerald-100 font-semibold">Discount</p>
                 <div className="pt-1">
                   <span className="text-xs text-white/70 line-through block">Kes 61,350</span>
-                  <span className="text-xl sm:text-2xl font-black text-amber-300">
+                  <span className="text-lg xl:text-2xl font-black text-amber-300 whitespace-nowrap">
                     Kes 46,000
                   </span>
                 </div>
               </div>
-              <div className="w-28 h-28 shrink-0 flex items-center justify-center relative z-10">
+              <div className="w-20 h-20 xl:w-28 xl:h-28 shrink-0 flex items-center justify-center relative z-10">
                 <img
                   src="https://shantisdesigns.co.ke/wp-content/uploads/2025/12/4SD10-Submersible-Deep-Well-Borehole-Pump-50Hz-450x450.avif"
                   alt="Doyin Water Pumps"
@@ -112,23 +112,23 @@ export const Hero: React.FC<HeroProps> = ({
               }}
               className="flex-1 bg-linear-to-br from-[#1e3a8a] to-[#0284c7] text-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-3 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer"
             >
-              <div className="relative z-10 space-y-1.5 max-w-[60%]">
+              <div className="relative z-10 space-y-1.5 min-w-0 flex-1">
                 <span className="inline-block text-[10px] font-black uppercase tracking-wider text-sky-200">
                   Shantis Designs
                 </span>
-                <h3 className="text-lg sm:text-xl font-black leading-tight uppercase">
+                <h3 className="text-base xl:text-xl font-black leading-tight uppercase">
                   SOLAR PANELS
                 </h3>
                 <div className="pt-2">
                   <span className="inline-block bg-[#F58220] text-white text-[11px] font-black px-2.5 py-1 rounded shadow-2xs mb-1">
                     Buy Now
                   </span>
-                  <p className="text-xl font-black text-amber-300">
+                  <p className="text-lg xl:text-xl font-black text-amber-300 whitespace-nowrap">
                     Kes 1,210
                   </p>
                 </div>
               </div>
-              <div className="w-28 h-28 shrink-0 flex items-center justify-center relative z-10">
+              <div className="w-20 h-20 xl:w-28 xl:h-28 shrink-0 flex items-center justify-center relative z-10">
                 <img
                   src="https://shantisdesigns.co.ke/wp-content/uploads/2026/11/Horay-N-Type-Solar-Panels-1.png"
                   alt="Shantis Designs Solar Panels"
@@ -229,14 +229,14 @@ export const Hero: React.FC<HeroProps> = ({
               }}
               className="flex-1 bg-linear-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-3 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer border border-slate-700/60"
             >
-              <div className="relative z-10 space-y-1.5 max-w-[60%]">
+              <div className="relative z-10 space-y-1.5 min-w-0 flex-1">
                 <span className="inline-block bg-[#238B3D] text-white text-[10px] font-black uppercase px-2 py-0.5 rounded">
                   Lithium Valley
                 </span>
-                <h3 className="text-base sm:text-lg font-black text-white leading-tight">
+                <h3 className="text-sm xl:text-lg font-black text-white leading-tight">
                   Starting from
                 </h3>
-                <p className="text-xl sm:text-2xl font-black text-amber-400">
+                <p className="text-lg xl:text-2xl font-black text-amber-400 whitespace-nowrap">
                   Kes 25,000.00
                 </p>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 group-hover:underline">
@@ -244,7 +244,7 @@ export const Hero: React.FC<HeroProps> = ({
                   <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
-              <div className="w-28 h-28 shrink-0 flex items-center justify-center relative z-10">
+              <div className="w-20 h-20 xl:w-28 xl:h-28 shrink-0 flex items-center justify-center relative z-10">
                 <img
                   src="https://shantisdesigns.co.ke/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-18-at-18.33.16.jpeg"
                   alt="Lithium Valley"
@@ -262,22 +262,22 @@ export const Hero: React.FC<HeroProps> = ({
               }}
               className="flex-1 bg-linear-to-br from-emerald-950 to-emerald-800 text-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-3 relative overflow-hidden group hover:shadow-md transition-all cursor-pointer border border-emerald-700/50"
             >
-              <div className="relative z-10 space-y-1.5 max-w-[60%]">
+              <div className="relative z-10 space-y-1.5 min-w-0 flex-1">
                 <span className="inline-block bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded">
                   ECOFLOW
                 </span>
-                <h3 className="text-base sm:text-lg font-black text-white leading-tight">
+                <h3 className="text-sm xl:text-lg font-black text-white leading-tight">
                   Power Backup
                 </h3>
                 <p className="text-[11px] text-emerald-200 font-semibold">Discount</p>
                 <div>
                   <span className="text-xs text-white/60 line-through block">Kes 36,350</span>
-                  <span className="text-xl sm:text-2xl font-black text-amber-300">
+                  <span className="text-lg xl:text-2xl font-black text-amber-300 whitespace-nowrap">
                     Kes 27,250
                   </span>
                 </div>
               </div>
-              <div className="w-28 h-28 shrink-0 flex items-center justify-center relative z-10">
+              <div className="w-20 h-20 xl:w-28 xl:h-28 shrink-0 flex items-center justify-center relative z-10">
                 <img
                   src="https://shantisdesigns.co.ke/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-06-at-20.46.50.jpeg"
                   alt="EcoFlow Power Backup"

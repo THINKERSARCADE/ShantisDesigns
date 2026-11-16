@@ -7204,15 +7204,16 @@ export const INITIAL_PARTNERS: Partner[] = [
 ];
 
 export const GOOGLE_BUSINESS_PROFILE_URL = 'https://g.page/r/CVAYv1cTmiLaEAE/review';
+export const GOOGLE_MAPS_PROFILE_URL = 'https://maps.app.goo.gl/Jw2tJXriD5dFEi568';
 
 export const INITIAL_REVIEWS: GoogleReview[] = [
   {
     "id": 1,
     "author_name": "Teen Network Magazine Show",
-    "author_photo": "https://shantisdesigns.co.ke/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-20-at-08.33.51.jpeg",
+    "author_photo": "https://lh3.googleusercontent.com/a-/ALV-UjWIhGzRAXVcKAyDC5HMmLMp-R4vO9HZrXz_tD-o0QP7bDyMfuHx=s120-c-rp-mo-br100",
     "rating": 5,
     "time_ago": "a week ago",
-    "text": "We had a ranch project in Timau and they delivered quality work with the best market batteries, inverters and panels. You are the best one may need, Looking forward to working with you on more projects.",
+    "text": "We had a ranch project in Timau and they delivered quality work with the best market batteries, inverters and panels. You are the best one may need, Looking forward to working with you on another project.",
     "location": "Timau, Meru / Laikipia",
     "verified": true,
     "reviewer_badge": "1 review",
@@ -7224,8 +7225,24 @@ export const INITIAL_REVIEWS: GoogleReview[] = [
   },
   {
     "id": 2,
+    "author_name": "Tonny Brian",
+    "author_photo": "https://lh3.googleusercontent.com/a-/ALV-UjX_wLKUnqVlLCkFpKQM2cA9Uq7mSKAvOqUXBreKVA0MphEiSD0OvA=s120-c-rp-mo-br100",
+    "rating": 5,
+    "time_ago": "Edited a week ago",
+    "text": "I recently sourced solar equipment and backup components from Shantis Designs Solar Solutions along Munyu Lane, and I am thoroughly impressed. Their team is knowledgeable, professional, and took the time to help me pick the right inverter and battery setup for my specific power needs. The product quality is top-notch, and their pricing is very competitive for Nairobi CBD. If you are looking for reliable solar panels, batteries, or complete home/commercial backup systems, this is definitely the go-to shop. Highly recommended",
+    "location": "Munyu Lane, Nairobi CBD",
+    "verified": true,
+    "reviewer_badge": "1 review",
+    "likes_count": 2,
+    "owner_reply": "",
+    "owner_reply_time": "",
+    "keywords": ["inverter", "batteries", "panels"],
+    "google_review_url": GOOGLE_BUSINESS_PROFILE_URL
+  },
+  {
+    "id": 3,
     "author_name": "Gerishon Ngugi",
-    "author_photo": "",
+    "author_photo": "https://lh3.googleusercontent.com/a/ACg8ocKv5xgPa4JQUcJ7WaKowoG2Vh8Je6jcaWT5rqJlcVdMkczBmg=s120-c-rp-mo-br100",
     "rating": 5,
     "time_ago": "a month ago",
     "text": "Great team of experts for your solar installations who you can trust 👍",
@@ -7233,9 +7250,41 @@ export const INITIAL_REVIEWS: GoogleReview[] = [
     "verified": true,
     "reviewer_badge": "3 reviews",
     "likes_count": 2,
-    "owner_reply": "Thank you for trusting in Shantis Designs Solar Solutions, We appreciate your support and look forward to serving you again!",
+    "owner_reply": "Thank you for Trusting in Shantis Designs Solar Solutions for your solar and equipment needs",
     "owner_reply_time": "a week ago",
     "keywords": ["solar installations"],
+    "google_review_url": GOOGLE_BUSINESS_PROFILE_URL
+  },
+  {
+    "id": 4,
+    "author_name": "Ramadhan Otieno",
+    "author_photo": "https://lh3.googleusercontent.com/a-/ALV-UjXmq2TdYzNt8Uw71QfNT_Jh6ZwDc4C-ZSoIuv1JCeM0r6FkZ5L1=s120-c-rp-mo-br100",
+    "rating": 5,
+    "time_ago": "2 days ago",
+    "text": "A good service",
+    "location": "Kenya",
+    "verified": true,
+    "reviewer_badge": "3 reviews",
+    "likes_count": 1,
+    "owner_reply": "",
+    "owner_reply_time": "",
+    "keywords": [],
+    "google_review_url": GOOGLE_BUSINESS_PROFILE_URL
+  },
+  {
+    "id": 5,
+    "author_name": "mugambi wanjau",
+    "author_photo": "https://lh3.googleusercontent.com/a-/ALV-UjXV5ORQGFKHNDNg-Hv_ooqcGFxbf9xJBelme-EwVMGjC3b5su3uFQ=s120-c-rp-mo-br100",
+    "rating": 5,
+    "time_ago": "a month ago",
+    "text": "",
+    "location": "Kenya",
+    "verified": true,
+    "reviewer_badge": "1 review",
+    "likes_count": 1,
+    "owner_reply": "Thank you for Trusting in Shantis Designs Solar Solutions for your solar and equipment needs",
+    "owner_reply_time": "a week ago",
+    "keywords": [],
     "google_review_url": GOOGLE_BUSINESS_PROFILE_URL
   }
 ];

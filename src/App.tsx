@@ -373,7 +373,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 pb-16 lg:pb-0 selection:bg-[#F58220] selection:text-white">
+    <div className="min-h-screen w-full max-w-full overflow-x-clip flex flex-col bg-slate-50 pb-16 lg:pb-0 selection:bg-[#F58220] selection:text-white">
       {/* Dynamic SEO JSON-LD Schema & Meta Manager */}
       <SeoSchema
         products={products}

@@ -86,7 +86,7 @@ export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
 
 export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [];
 
-// Live in-memory state hydrated from the Node.js SQLite server (/api/bootstrap)
+// Live in-memory state hydrated strictly from the Node.js SQL server (/api/bootstrap)
 interface LiveSqlCache {
   isConnected: boolean;
   products: Product[];
@@ -121,35 +121,116 @@ const sqlCache: LiveSqlCache = {
   auditLogs: INITIAL_AUDIT_LOGS,
 };
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    typeof sessionStorage !== 'undefined'
+let onAuthExpiredCallback: (() => void) | null = null;
+let onPersistenceErrorCallback: ((message: string) => void) | null = null;
+
+function getSessionToken(): string {
+  try {
+    return typeof sessionStorage !== 'undefined'
       ? sessionStorage.getItem('shantis_sql_session_token') || ''
       : '';
+  } catch {
+    return '';
+  }
+}
+
+function setSessionToken(token: string | null): void {
+  try {
+    if (typeof sessionStorage === 'undefined') return;
+    if (token) {
+      sessionStorage.setItem('shantis_sql_session_token', token);
+    } else {
+      sessionStorage.removeItem('shantis_sql_session_token');
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getSessionToken();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
-function apiFetch(path: string, options: RequestInit = {}) {
-  if (typeof fetch === 'undefined') return Promise.resolve(null);
-  return fetch(path, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...(options.headers || {}),
-    },
-  }).catch(() => null);
+async function apiFetch(path: string, options: RequestInit = {}): Promise<Response | null> {
+  if (typeof fetch === 'undefined') return null;
+  try {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+    if (res.status === 401) {
+      setSessionToken(null);
+      if (onAuthExpiredCallback) onAuthExpiredCallback();
+    }
+    return res;
+  } catch {
+    return null;
+  }
+}
+
+async function persistToSql<T = any>(
+  path: string,
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  body?: unknown,
+  onSuccess?: (data: T) => void
+): Promise<{ ok: boolean; data?: T; error?: string }> {
+  const res = await apiFetch(path, {
+    method,
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+
+  if (!res) {
+    const msg = 'Cannot reach database server. Your change was not saved.';
+    if (onPersistenceErrorCallback) onPersistenceErrorCallback(msg);
+    return { ok: false, error: msg };
+  }
+
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+
+  if (!res.ok) {
+    const msg =
+      data?.error ||
+      (res.status === 401
+        ? 'Your admin session has expired. Please log in again to save changes.'
+        : `Database error (HTTP ${res.status}). Change was not saved.`);
+    if (onPersistenceErrorCallback) onPersistenceErrorCallback(msg);
+    return { ok: false, error: msg };
+  }
+
+  if (onSuccess && data) {
+    onSuccess(data as T);
+  }
+  return { ok: true, data: data as T };
 }
 
 export class StorageService {
+  static registerAuthExpiredHandler(cb: (() => void) | null): void {
+    onAuthExpiredCallback = cb;
+  }
+
+  static registerPersistenceErrorHandler(cb: ((msg: string) => void) | null): void {
+    onPersistenceErrorCallback = cb;
+  }
+
   /**
-   * Bootstraps the entire application state from the Node.js + SQLite backend (`GET /api/bootstrap`).
-   * The website requires the Node.js Express server to be running.
+   * Bootstraps the entire application state from the Node.js + SQL server (`GET /api/bootstrap`).
+   * Passes Bearer token when authenticated so orders/leads hydrate from SQL DB only for verified sessions.
    */
   static async bootstrapFromSql(): Promise<{
     live: boolean;
+    authenticated?: boolean;
     products: Product[];
     categories: Category[];
     projects: Project[];
@@ -164,7 +245,10 @@ export class StorageService {
   }> {
     try {
       const res = await fetch('/api/bootstrap', {
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          ...getAuthHeaders(),
+        },
       });
       if (!res.ok) {
         sqlCache.isConnected = false;
@@ -194,6 +278,7 @@ export class StorageService {
 
       return {
         live: true,
+        authenticated: Boolean(data.authenticated),
         products: sqlCache.products,
         categories: sqlCache.categories,
         projects: sqlCache.projects,
@@ -213,7 +298,7 @@ export class StorageService {
   }
 
   /**
-   * Returns a Node.js SQLite media proxy URL so images are cached as binary BLOBs in SQLite and served by Express.
+   * Returns a Node.js SQLite media proxy URL so images are cached as binary BLOBs and served by Express.
    */
   static getSqlMediaUrl(originalUrl: string): string {
     if (!originalUrl) return '';
@@ -221,11 +306,44 @@ export class StorageService {
     return `/api/media-proxy?url=${encodeURIComponent(originalUrl)}`;
   }
 
-  // --- SQL AUTHENTICATION & 2FA ---
+  // --- SQL AUTHENTICATION, USER MANAGEMENT & GOOGLE 2FA ---
+  static async checkSession(): Promise<{ authenticated: boolean; user?: any }> {
+    const token = getSessionToken();
+    if (!token) return { authenticated: false };
+    try {
+      const res = await fetch('/api/auth/session', {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        setSessionToken(null);
+        return { authenticated: false };
+      }
+      const data = await res.json();
+      if (!data?.authenticated) {
+        setSessionToken(null);
+        return { authenticated: false };
+      }
+      return { authenticated: true, user: data.user };
+    } catch {
+      return { authenticated: false };
+    }
+  }
+
   static async loginAdmin(
     email: string,
     password: string
-  ): Promise<{ requires2FA?: boolean; tempToken?: string; role?: string; name?: string; error?: string }> {
+  ): Promise<{
+    requires2FA?: boolean;
+    tempToken?: string;
+    role?: string;
+    name?: string;
+    email?: string;
+    google2faEnabled?: boolean;
+    error?: string;
+  }> {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -256,12 +374,34 @@ export class StorageService {
       if (!res.ok) {
         return { error: data.error || '2FA verification failed' };
       }
-      if (data.token && typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('shantis_sql_session_token', data.token);
+      if (data.token) {
+        setSessionToken(data.token);
       }
       return data;
     } catch {
       return { error: 'Cannot reach Node.js SQL Authentication Server.' };
+    }
+  }
+
+  static async logoutAdmin(): Promise<void> {
+    const token = getSessionToken();
+    try {
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch {
+      // always clear local session even if offline
+    } finally {
+      setSessionToken(null);
+      sqlCache.orders = [];
+      sqlCache.leads = [];
+      sqlCache.auditLogs = [];
     }
   }
 
@@ -278,40 +418,144 @@ export class StorageService {
     return [];
   }
 
+  static async createUser(params: {
+    name: string;
+    email: string;
+    role: string;
+    password: string;
+    totpCode?: string;
+  }): Promise<{ success?: boolean; users?: any[]; error?: string }> {
+    const res = await persistToSql<{ success?: boolean; users?: any[] }>(
+      '/api/auth/users',
+      'POST',
+      params
+    );
+    if (!res.ok) return { error: res.error };
+    return { success: true, users: res.data?.users || [] };
+  }
+
+  static async updateUser(
+    id: string,
+    params: {
+      email?: string;
+      name?: string;
+      role?: string;
+      password?: string;
+      totpCode?: string;
+    }
+  ): Promise<{ success?: boolean; email?: string; users?: any[]; error?: string }> {
+    const res = await persistToSql<{ success?: boolean; email?: string; users?: any[] }>(
+      `/api/auth/users/${encodeURIComponent(id)}`,
+      'PUT',
+      params
+    );
+    if (!res.ok) return { error: res.error };
+    return { success: true, email: res.data?.email, users: res.data?.users || [] };
+  }
+
+  static async deleteUser(id: string): Promise<{ success?: boolean; users?: any[]; error?: string }> {
+    const res = await persistToSql<{ success?: boolean; users?: any[] }>(
+      `/api/auth/users/${encodeURIComponent(id)}`,
+      'DELETE'
+    );
+    if (!res.ok) return { error: res.error };
+    return { success: true, users: res.data?.users || [] };
+  }
+
   static async changeAdminPassword(params: {
     email: string;
     newPassword: string;
     newTotpCode?: string;
   }): Promise<{ success?: boolean; updated?: any; users?: any[]; error?: string }> {
+    const res = await persistToSql<{ success?: boolean; updated?: any; users?: any[] }>(
+      '/api/auth/change-password',
+      'POST',
+      params
+    );
+    if (!res.ok) return { error: res.error || 'Failed to update password hash' };
+    return { success: true, ...res.data };
+  }
+
+  static async setupGoogle2FA(userId?: string): Promise<{
+    userId?: string;
+    email?: string;
+    secret?: string;
+    otpauthUrl?: string;
+    error?: string;
+  }> {
+    const res = await persistToSql<{
+      userId: string;
+      email: string;
+      secret: string;
+      otpauthUrl: string;
+    }>('/api/auth/2fa/setup', 'POST', userId ? { userId } : {});
+    if (!res.ok) return { error: res.error };
+    return res.data || {};
+  }
+
+  static async enableGoogle2FA(params: {
+    userId?: string;
+    code: string;
+    secret?: string;
+  }): Promise<{ enabled?: boolean; users?: any[]; error?: string }> {
+    const res = await persistToSql<{ enabled?: boolean; users?: any[] }>(
+      '/api/auth/2fa/enable',
+      'POST',
+      params
+    );
+    if (!res.ok) return { error: res.error };
+    return { enabled: Boolean(res.data?.enabled), users: res.data?.users || [] };
+  }
+
+  static async disableGoogle2FA(userId?: string): Promise<{
+    enabled?: boolean;
+    users?: any[];
+    error?: string;
+  }> {
+    const res = await persistToSql<{ enabled?: boolean; users?: any[] }>(
+      '/api/auth/2fa/disable',
+      'POST',
+      userId ? { userId } : {}
+    );
+    if (!res.ok) return { error: res.error };
+    return { enabled: Boolean(res.data?.enabled), users: res.data?.users || [] };
+  }
+
+  // --- M-PESA DARAJA API CREDENTIALS & LIVE VERIFICATION ---
+  static async getMpesaPublicStatus(): Promise<{
+    configured: boolean;
+    shortcode?: string;
+    environment?: string;
+  }> {
     try {
-      const res = await apiFetch('/api/auth/change-password', {
-        method: 'POST',
-        body: JSON.stringify(params),
+      const res = await fetch('/api/payments/mpesa/config', {
+        headers: { Accept: 'application/json', ...getAuthHeaders() },
       });
-      if (!res) return { error: 'Failed to reach server' };
+      if (!res.ok) return { configured: false };
       const data = await res.json();
-      if (!res.ok) return { error: data.error || 'Failed to update password hash' };
-      this.addAuditLog({
-        userId: 'USR-SHANTIS-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'PASSWORD_HASH_UPDATED',
-        resourceType: 'security',
-        details: `Updated salted scrypt password hash for ${params.email} in SQLite`,
-      });
-      return data;
+      if (data?.config) {
+        return {
+          configured: Boolean(data.config.has_keys),
+          shortcode: data.config.shortcode,
+          environment: data.config.environment,
+        };
+      }
+      return {
+        configured: Boolean(data?.configured),
+        shortcode: data?.shortcode,
+        environment: data?.environment,
+      };
     } catch {
-      return { error: 'Network error while updating password hash' };
+      return { configured: false };
     }
   }
 
-  // --- M-PESA DARAJA API CREDENTIALS (HASHED IN SQLITE) ---
   static async getMpesaConfig(): Promise<any> {
     try {
       const res = await apiFetch('/api/payments/mpesa/config');
       if (res && res.ok) {
         const data = await res.json();
-        return data.config;
+        return data.config || null;
       }
     } catch {
       // ignore
@@ -328,25 +572,95 @@ export class StorageService {
     passkey?: string;
     initiatorPassword?: string;
   }): Promise<{ success?: boolean; config?: any; error?: string }> {
+    const res = await persistToSql<{ success?: boolean; config?: any }>(
+      '/api/payments/mpesa/config',
+      'POST',
+      params
+    );
+    if (!res.ok) return { error: res.error || 'Failed to save M-Pesa config' };
+    return { success: true, config: res.data?.config };
+  }
+
+  static async initiateMpesaStkPush(params: {
+    phone: string;
+    amount: number;
+    customerName: string;
+    customerEmail?: string;
+    customerLocation: string;
+    items: any[];
+  }): Promise<{
+    success: boolean;
+    configured?: boolean;
+    status: 'pending_verification' | 'unconfigured' | 'declined';
+    checkoutRequestId?: string;
+    merchantRequestId?: string;
+    orderNumber?: string;
+    message?: string;
+    error?: string;
+  }> {
     try {
-      const res = await apiFetch('/api/payments/mpesa/config', {
+      const res = await fetch('/api/payments/mpesa/stkpush', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
-      if (!res) return { error: 'Failed to reach server' };
-      const data = await res.json();
-      if (!res.ok) return { error: data.error || 'Failed to save M-Pesa config' };
-      this.addAuditLog({
-        userId: 'USR-SHANTIS-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'MPESA_API_KEYS_HASHED',
-        resourceType: 'payment',
-        details: `Saved hashed M-Pesa API custom keys & secret key for shortcode ${data.config?.shortcode || ''} in SQLite`,
-      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        return {
+          success: false,
+          configured: data?.configured ?? false,
+          status: data?.status === 'unconfigured' ? 'unconfigured' : 'declined',
+          error:
+            data?.error ||
+            'M-Pesa payment configuration is unavailable. Please complete your order via WhatsApp.',
+        };
+      }
       return data;
     } catch {
-      return { error: 'Network error while saving M-Pesa API keys' };
+      return {
+        success: false,
+        configured: true,
+        status: 'declined',
+        error: 'Unable to reach payment verification server. Please retry or checkout via WhatsApp.',
+      };
+    }
+  }
+
+  static async checkMpesaStatus(checkoutRequestId: string): Promise<{
+    status: 'pending' | 'paid' | 'declined';
+    receipt?: string;
+    resultCode?: string;
+    resultDesc?: string;
+    orderNumber?: string;
+    order?: Order | null;
+    error?: string;
+  }> {
+    try {
+      const res = await fetch(
+        `/api/payments/mpesa/status/${encodeURIComponent(checkoutRequestId)}`,
+        { headers: { Accept: 'application/json' } }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && res.status !== 200) {
+        return {
+          status: 'declined',
+          error: data?.error || data?.resultDesc || 'Payment verification failed.',
+          resultDesc: data?.resultDesc,
+        };
+      }
+      return {
+        status: data.status === 'paid' ? 'paid' : data.status === 'declined' ? 'declined' : 'pending',
+        receipt: data.receipt,
+        resultCode: data.resultCode,
+        resultDesc: data.resultDesc,
+        orderNumber: data.orderNumber,
+        order: data.order || null,
+      };
+    } catch {
+      return {
+        status: 'pending',
+        resultDesc: 'Checking M-Pesa confirmation status...',
+      };
     }
   }
 
@@ -362,30 +676,42 @@ export class StorageService {
     sqlCache.homepageDraft = draft;
   }
 
-  static publishHomepageDraft(): HomepageConfig {
+  static async publishHomepageDraft(): Promise<HomepageConfig | null> {
     const published: HomepageConfig = {
       ...sqlCache.homepageDraft,
       updated_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
     };
-    sqlCache.homepagePublished = published;
-    sqlCache.homepageDraft = published;
-    apiFetch('/api/settings/homepage_config', {
-      method: 'PUT',
-      body: JSON.stringify(published),
-    });
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'PUBLISHED_HOMEPAGE',
-      resourceType: 'homepage',
-      details: `Published homepage template "${published.template_id}" to SQL database`,
-    });
-    return published;
+    const res = await persistToSql<{ homepageConfig?: HomepageConfig }>(
+      '/api/settings/homepage_config',
+      'PUT',
+      published,
+      (data) => {
+        const saved = data.homepageConfig || published;
+        sqlCache.homepagePublished = saved;
+        sqlCache.homepageDraft = saved;
+      }
+    );
+    if (!res.ok) return null;
+    return sqlCache.homepagePublished;
   }
 
   // --- AUDIT LOGS ---
   static getAuditLogs(): AuditLogEntry[] {
+    return sqlCache.auditLogs;
+  }
+
+  static async fetchAuditLogs(): Promise<AuditLogEntry[]> {
+    try {
+      const res = await apiFetch('/api/audit-logs');
+      if (res && res.ok) {
+        const data = await res.json();
+        const logs = Array.isArray(data.logs) ? data.logs : [];
+        sqlCache.auditLogs = logs;
+        return logs;
+      }
+    } catch {
+      // ignore
+    }
     return sqlCache.auditLogs;
   }
 
@@ -405,7 +731,7 @@ export class StorageService {
       action: params.action,
       resource_type: params.resourceType,
       details: params.details,
-      ip_address: '197.232.61.104',
+      ip_address: 'server-verified',
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
     };
     sqlCache.auditLogs = [newEntry, ...sqlCache.auditLogs];
@@ -421,61 +747,45 @@ export class StorageService {
     sqlCache.products = products;
   }
 
-  static addProduct(product: Omit<Product, 'id'>): Product {
+  static async addProduct(product: Omit<Product, 'id'>): Promise<{ ok: boolean; product?: Product; error?: string }> {
     const products = this.getProducts();
     const newId = products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
     const newProduct: Product = { ...product, id: newId };
-    sqlCache.products = [newProduct, ...products];
 
-    apiFetch('/api/products', {
-      method: 'POST',
-      body: JSON.stringify(newProduct),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'ADD_PRODUCT',
-      resourceType: 'product',
-      details: `Created product "${newProduct.name}" (SKU: ${newProduct.sku}) in SQL`,
-    });
-
-    return newProduct;
+    const res = await persistToSql<{ products?: Product[] }>(
+      '/api/products',
+      'POST',
+      newProduct,
+      (data) => {
+        if (Array.isArray(data.products)) sqlCache.products = data.products;
+      }
+    );
+    if (!res.ok) return { ok: false, error: res.error };
+    return { ok: true, product: newProduct };
   }
 
-  static updateProduct(product: Product): void {
-    sqlCache.products = sqlCache.products.map((p) => (p.id === product.id ? product : p));
-    apiFetch(`/api/products/${product.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(product),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'UPDATE_PRODUCT',
-      resourceType: 'product',
-      details: `Updated product "${product.name}" (Stock: ${product.stock}, Price: KES ${product.price}) in SQL`,
-    });
+  static async updateProduct(product: Product): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ products?: Product[] }>(
+      `/api/products/${product.id}`,
+      'PUT',
+      product,
+      (data) => {
+        if (Array.isArray(data.products)) sqlCache.products = data.products;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deleteProduct(id: number): void {
-    const prod = sqlCache.products.find((p) => p.id === id);
-    sqlCache.products = sqlCache.products.filter((p) => p.id !== id);
-    apiFetch(`/api/products/${id}`, { method: 'DELETE' });
-
-    if (prod) {
-      this.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'DELETE_PRODUCT',
-        resourceType: 'product',
-        details: `Deleted product "${prod.name}" (SKU: ${prod.sku}) from SQL`,
-      });
-    }
+  static async deleteProduct(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ products?: Product[] }>(
+      `/api/products/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.products)) sqlCache.products = data.products;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- MEDIA LIBRARY ---
@@ -483,24 +793,37 @@ export class StorageService {
     return sqlCache.media;
   }
 
-  static addMedia(item: Omit<MediaItem, 'id' | 'uploaded_at'>): MediaItem {
+  static async addMedia(
+    item: Omit<MediaItem, 'id' | 'uploaded_at'>
+  ): Promise<MediaItem | null> {
     const newId = 'med-' + Date.now();
     const newItem: MediaItem = {
       ...item,
       id: newId,
       uploaded_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
     };
-    sqlCache.media = [newItem, ...sqlCache.media];
-    apiFetch('/api/media', {
-      method: 'POST',
-      body: JSON.stringify(newItem),
-    });
-    return newItem;
+    const res = await persistToSql<{ media?: MediaItem[] }>(
+      '/api/media',
+      'POST',
+      newItem,
+      (data) => {
+        if (Array.isArray(data.media)) sqlCache.media = data.media;
+      }
+    );
+    if (!res.ok) return null;
+    return sqlCache.media.find((m) => m.id === newId) || newItem;
   }
 
-  static deleteMedia(id: string): void {
-    sqlCache.media = sqlCache.media.filter((m) => m.id !== id);
-    apiFetch(`/api/media/${id}`, { method: 'DELETE' });
+  static async deleteMedia(id: string): Promise<boolean> {
+    const res = await persistToSql<{ media?: MediaItem[] }>(
+      `/api/media/${encodeURIComponent(id)}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.media)) sqlCache.media = data.media;
+      }
+    );
+    return res.ok;
   }
 
   // --- PROJECTS ---
@@ -512,61 +835,44 @@ export class StorageService {
     sqlCache.projects = projects;
   }
 
-  static addProject(project: Omit<Project, 'id'>): Project {
+  static async addProject(project: Omit<Project, 'id'>): Promise<{ ok: boolean; project?: Project; error?: string }> {
     const projects = this.getProjects();
     const newId = projects.length > 0 ? Math.max(...projects.map((p) => p.id)) + 1 : 1;
     const newProject: Project = { ...project, id: newId };
-    sqlCache.projects = [newProject, ...projects];
-
-    apiFetch('/api/projects', {
-      method: 'POST',
-      body: JSON.stringify(newProject),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'ADD_PROJECT',
-      resourceType: 'project',
-      details: `Created project "${newProject.title}" (${newProject.system_size}) in SQL`,
-    });
-
-    return newProject;
+    const res = await persistToSql<{ projects?: Project[] }>(
+      '/api/projects',
+      'POST',
+      newProject,
+      (data) => {
+        if (Array.isArray(data.projects)) sqlCache.projects = data.projects;
+      }
+    );
+    if (!res.ok) return { ok: false, error: res.error };
+    return { ok: true, project: newProject };
   }
 
-  static updateProject(project: Project): void {
-    sqlCache.projects = sqlCache.projects.map((p) => (p.id === project.id ? project : p));
-    apiFetch(`/api/projects/${project.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(project),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'UPDATE_PROJECT',
-      resourceType: 'project',
-      details: `Updated project "${project.title}" in SQL`,
-    });
+  static async updateProject(project: Project): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ projects?: Project[] }>(
+      `/api/projects/${project.id}`,
+      'PUT',
+      project,
+      (data) => {
+        if (Array.isArray(data.projects)) sqlCache.projects = data.projects;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deleteProject(id: number): void {
-    const proj = sqlCache.projects.find((p) => p.id === id);
-    sqlCache.projects = sqlCache.projects.filter((p) => p.id !== id);
-    apiFetch(`/api/projects/${id}`, { method: 'DELETE' });
-
-    if (proj) {
-      this.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'DELETE_PROJECT',
-        resourceType: 'project',
-        details: `Deleted project "${proj.title}" from SQL`,
-      });
-    }
+  static async deleteProject(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ projects?: Project[] }>(
+      `/api/projects/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.projects)) sqlCache.projects = data.projects;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- ABOUT US DATA ---
@@ -574,12 +880,16 @@ export class StorageService {
     return sqlCache.aboutData;
   }
 
-  static updateAboutData(data: AboutData): void {
-    sqlCache.aboutData = data;
-    apiFetch('/api/settings/about_data', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+  static async updateAboutData(data: AboutData): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ aboutData?: AboutData }>(
+      '/api/settings/about_data',
+      'PUT',
+      data,
+      (payload) => {
+        sqlCache.aboutData = payload.aboutData || data;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- CATEGORIES ---
@@ -587,29 +897,44 @@ export class StorageService {
     return sqlCache.categories;
   }
 
-  static addCategory(category: Omit<Category, 'id'>): Category {
+  static async addCategory(category: Omit<Category, 'id'>): Promise<{ ok: boolean; category?: Category; error?: string }> {
     const categories = this.getCategories();
     const newId = categories.length > 0 ? Math.max(...categories.map((c) => c.id)) + 1 : 1;
     const newCat: Category = { ...category, id: newId };
-    sqlCache.categories = [...categories, newCat];
-    apiFetch('/api/categories', {
-      method: 'POST',
-      body: JSON.stringify(newCat),
-    });
-    return newCat;
+    const res = await persistToSql<{ categories?: Category[] }>(
+      '/api/categories',
+      'POST',
+      newCat,
+      (data) => {
+        if (Array.isArray(data.categories)) sqlCache.categories = data.categories;
+      }
+    );
+    if (!res.ok) return { ok: false, error: res.error };
+    return { ok: true, category: newCat };
   }
 
-  static updateCategory(category: Category): void {
-    sqlCache.categories = sqlCache.categories.map((c) => (c.id === category.id ? category : c));
-    apiFetch(`/api/categories/${category.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(category),
-    });
+  static async updateCategory(category: Category): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ categories?: Category[] }>(
+      `/api/categories/${category.id}`,
+      'PUT',
+      category,
+      (data) => {
+        if (Array.isArray(data.categories)) sqlCache.categories = data.categories;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deleteCategory(id: number): void {
-    sqlCache.categories = sqlCache.categories.filter((c) => c.id !== id);
-    apiFetch(`/api/categories/${id}`, { method: 'DELETE' });
+  static async deleteCategory(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ categories?: Category[] }>(
+      `/api/categories/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.categories)) sqlCache.categories = data.categories;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- ORDERS ---
@@ -617,9 +942,17 @@ export class StorageService {
     return sqlCache.orders;
   }
 
-  static addOrder(orderData: Omit<Order, 'id' | 'order_number' | 'created_at'>): Order {
+  static async addOrder(
+    orderData: Omit<Order, 'id' | 'order_number' | 'created_at'>
+  ): Promise<Order> {
+    if (orderData.payment_method === 'mpesa_daraja') {
+      throw new Error(
+        'M-Pesa Daraja orders must be initiated and verified via /api/payments/mpesa/stkpush.'
+      );
+    }
+
     const orders = this.getOrders();
-    const newId = orders.length > 0 ? Math.max(...orders.map((o) => o.id)) + 1 : 1043;
+    const newId = orders.length > 0 ? Math.max(...orders.map((o) => o.id)) + 1 : Date.now();
     const randomHex = Math.floor(1000 + Math.random() * 9000);
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const newOrder: Order = {
@@ -628,43 +961,44 @@ export class StorageService {
       order_number: `SHN-${dateStr}-${randomHex}`,
       created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
     };
-    sqlCache.orders = [newOrder, ...orders];
 
-    apiFetch('/api/orders', {
-      method: 'POST',
-      body: JSON.stringify(newOrder),
+    const res = await persistToSql<{
+      id?: number;
+      order_number?: string;
+      created_at?: string;
+      orders?: Order[];
+      products?: Product[];
+    }>('/api/orders', 'POST', newOrder, (data) => {
+      if (Array.isArray(data.orders)) sqlCache.orders = data.orders;
+      if (Array.isArray(data.products)) sqlCache.products = data.products;
     });
 
-    return newOrder;
+    if (!res.ok) {
+      throw new Error(res.error || 'Failed to save order to database.');
+    }
+
+    return {
+      ...newOrder,
+      id: res.data?.id ?? newOrder.id,
+      order_number: res.data?.order_number || newOrder.order_number,
+      created_at: res.data?.created_at || newOrder.created_at,
+    };
   }
 
-  static updateOrderStatus(
+  static async updateOrderStatus(
     orderId: number,
     status: Order['status'],
     mpesaReceipt?: string
-  ): void {
-    const order = sqlCache.orders.find((o) => o.id === orderId);
-    if (order) {
-      order.status = status;
-      if (mpesaReceipt) order.mpesa_receipt = mpesaReceipt;
-      sqlCache.orders = [...sqlCache.orders];
-
-      apiFetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status, mpesa_receipt: mpesaReceipt }),
-      });
-
-      this.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'UPDATE_PAYMENT_STATUS',
-        resourceType: 'payment',
-        details: `Updated order ${order.order_number} status to "${status}" (M-Pesa: ${
-          mpesaReceipt || 'N/A'
-        }) in SQL`,
-      });
-    }
+  ): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ orders?: Order[] }>(
+      `/api/orders/${orderId}`,
+      'PATCH',
+      { status, mpesa_receipt: mpesaReceipt },
+      (data) => {
+        if (Array.isArray(data.orders)) sqlCache.orders = data.orders;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   static async trackOrderSecure(
@@ -702,20 +1036,32 @@ export class StorageService {
     };
     sqlCache.leads = [newLead, ...leads];
 
-    apiFetch('/api/leads', {
-      method: 'POST',
-      body: JSON.stringify(newLead),
-    });
+    // Persist lead strictly to SQL database (public customer/visitor capture endpoint)
+    void persistToSql<{ leads?: WhatsAppLead[] }>(
+      '/api/leads',
+      'POST',
+      newLead,
+      (data) => {
+        if (Array.isArray(data.leads)) sqlCache.leads = data.leads;
+      }
+    );
 
     return newLead;
   }
 
-  static updateLeadStatus(id: number, status: WhatsAppLead['status']): void {
-    sqlCache.leads = sqlCache.leads.map((l) => (l.id === id ? { ...l, status } : l));
-    apiFetch(`/api/leads/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    });
+  static async updateLeadStatus(
+    id: number,
+    status: WhatsAppLead['status']
+  ): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ leads?: WhatsAppLead[] }>(
+      `/api/leads/${id}`,
+      'PATCH',
+      { status },
+      (data) => {
+        if (Array.isArray(data.leads)) sqlCache.leads = data.leads;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- REVIEWS (GOOGLE BUSINESS PROFILE) ---
@@ -724,46 +1070,55 @@ export class StorageService {
   }
 
   static async syncGoogleBusinessReviews(url?: string): Promise<GoogleReview[]> {
-    try {
-      const res = await apiFetch('/api/reviews/sync-google', {
-        method: 'POST',
-        body: JSON.stringify({ url }),
-      });
-      if (res && res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.reviews)) {
-          sqlCache.reviews = data.reviews;
-        }
+    const res = await persistToSql<{ reviews?: GoogleReview[] }>(
+      '/api/reviews/sync-google',
+      'POST',
+      { url },
+      (data) => {
+        if (Array.isArray(data.reviews)) sqlCache.reviews = data.reviews;
       }
-    } catch {
-      // ignore network error
-    }
+    );
+    if (!res.ok) throw new Error(res.error || 'Failed to sync reviews.');
     return sqlCache.reviews;
   }
 
-  static addReview(review: Omit<GoogleReview, 'id'>): GoogleReview {
+  static async addReview(review: Omit<GoogleReview, 'id'>): Promise<{ ok: boolean; error?: string }> {
     const reviews = this.getReviews();
     const newId = reviews.length > 0 ? Math.max(...reviews.map((r) => r.id)) + 1 : 1;
     const newReview: GoogleReview = { ...review, id: newId };
-    sqlCache.reviews = [newReview, ...reviews];
-    apiFetch('/api/reviews', {
-      method: 'POST',
-      body: JSON.stringify(newReview),
-    });
-    return newReview;
+    const res = await persistToSql<{ reviews?: GoogleReview[] }>(
+      '/api/reviews',
+      'POST',
+      newReview,
+      (data) => {
+        if (Array.isArray(data.reviews)) sqlCache.reviews = data.reviews;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static updateReview(review: GoogleReview): void {
-    sqlCache.reviews = sqlCache.reviews.map((r) => (r.id === review.id ? review : r));
-    apiFetch(`/api/reviews/${review.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(review),
-    });
+  static async updateReview(review: GoogleReview): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ reviews?: GoogleReview[] }>(
+      `/api/reviews/${review.id}`,
+      'PUT',
+      review,
+      (data) => {
+        if (Array.isArray(data.reviews)) sqlCache.reviews = data.reviews;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deleteReview(id: number): void {
-    sqlCache.reviews = sqlCache.reviews.filter((r) => r.id !== id);
-    apiFetch(`/api/reviews/${id}`, { method: 'DELETE' });
+  static async deleteReview(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ reviews?: GoogleReview[] }>(
+      `/api/reviews/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.reviews)) sqlCache.reviews = data.reviews;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- ARTICLES / INSIGHTS ---
@@ -771,7 +1126,9 @@ export class StorageService {
     return sqlCache.articles;
   }
 
-  static addArticle(article: Omit<Article, 'id' | 'published_at'>): Article {
+  static async addArticle(
+    article: Omit<Article, 'id' | 'published_at'>
+  ): Promise<{ ok: boolean; article?: Article; error?: string }> {
     const articles = this.getArticles();
     const newId = articles.length > 0 ? Math.max(...articles.map((a) => a.id)) + 1 : 1;
     const newArticle: Article = {
@@ -779,57 +1136,40 @@ export class StorageService {
       id: newId,
       published_at: new Date().toISOString().slice(0, 10),
     };
-    sqlCache.articles = [newArticle, ...articles];
-
-    apiFetch('/api/articles', {
-      method: 'POST',
-      body: JSON.stringify(newArticle),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'PUBLISH_BLOG',
-      resourceType: 'blog',
-      details: `Published blog article "${newArticle.title}" in SQL`,
-    });
-
-    return newArticle;
+    const res = await persistToSql<{ articles?: Article[] }>(
+      '/api/articles',
+      'POST',
+      newArticle,
+      (data) => {
+        if (Array.isArray(data.articles)) sqlCache.articles = data.articles;
+      }
+    );
+    if (!res.ok) return { ok: false, error: res.error };
+    return { ok: true, article: newArticle };
   }
 
-  static updateArticle(article: Article): void {
-    sqlCache.articles = sqlCache.articles.map((a) => (a.id === article.id ? article : a));
-    apiFetch(`/api/articles/${article.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(article),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'UPDATE_BLOG',
-      resourceType: 'blog',
-      details: `Updated blog article "${article.title}" in SQL`,
-    });
+  static async updateArticle(article: Article): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ articles?: Article[] }>(
+      `/api/articles/${article.id}`,
+      'PUT',
+      article,
+      (data) => {
+        if (Array.isArray(data.articles)) sqlCache.articles = data.articles;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deleteArticle(id: number): void {
-    const art = sqlCache.articles.find((a) => a.id === id);
-    sqlCache.articles = sqlCache.articles.filter((a) => a.id !== id);
-    apiFetch(`/api/articles/${id}`, { method: 'DELETE' });
-
-    if (art) {
-      this.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'DELETE_BLOG',
-        resourceType: 'blog',
-        details: `Deleted blog article "${art.title}" from SQL`,
-      });
-    }
+  static async deleteArticle(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ articles?: Article[] }>(
+      `/api/articles/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.articles)) sqlCache.articles = data.articles;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
   // --- PARTNERS ---
@@ -837,68 +1177,57 @@ export class StorageService {
     return sqlCache.partners;
   }
 
-  static savePartners(partners: Partner[]): void {
-    sqlCache.partners = partners;
-    apiFetch('/api/partners/reorder', {
-      method: 'PUT',
-      body: JSON.stringify({ partners }),
-    });
+  static async savePartners(partners: Partner[]): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ partners?: Partner[] }>(
+      '/api/partners/reorder',
+      'PUT',
+      { partners },
+      (data) => {
+        if (Array.isArray(data.partners)) sqlCache.partners = data.partners;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static addPartner(partner: Omit<Partner, 'id'>): Partner {
+  static async addPartner(
+    partner: Omit<Partner, 'id'>
+  ): Promise<{ ok: boolean; partner?: Partner; error?: string }> {
     const partners = this.getPartners();
     const newId = partners.length > 0 ? Math.max(...partners.map((p) => p.id)) + 1 : 1;
     const newPartner: Partner = { ...partner, id: newId };
-    sqlCache.partners = [...partners, newPartner];
-
-    apiFetch('/api/partners', {
-      method: 'POST',
-      body: JSON.stringify(newPartner),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'ADD_PARTNER',
-      resourceType: 'partner',
-      details: `Added partner logo "${newPartner.name}" in SQL`,
-    });
-
-    return newPartner;
+    const res = await persistToSql<{ partners?: Partner[] }>(
+      '/api/partners',
+      'POST',
+      newPartner,
+      (data) => {
+        if (Array.isArray(data.partners)) sqlCache.partners = data.partners;
+      }
+    );
+    if (!res.ok) return { ok: false, error: res.error };
+    return { ok: true, partner: newPartner };
   }
 
-  static updatePartner(partner: Partner): void {
-    sqlCache.partners = sqlCache.partners.map((p) => (p.id === partner.id ? partner : p));
-    apiFetch(`/api/partners/${partner.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(partner),
-    });
-
-    this.addAuditLog({
-      userId: 'USR-EPRA-01',
-      userName: 'Shantis Designs Admin',
-      userRole: 'admin',
-      action: 'UPDATE_PARTNER',
-      resourceType: 'partner',
-      details: `Updated partner logo "${partner.name}" in SQL`,
-    });
+  static async updatePartner(partner: Partner): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ partners?: Partner[] }>(
+      `/api/partners/${partner.id}`,
+      'PUT',
+      partner,
+      (data) => {
+        if (Array.isArray(data.partners)) sqlCache.partners = data.partners;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 
-  static deletePartner(id: number): void {
-    const part = sqlCache.partners.find((p) => p.id === id);
-    sqlCache.partners = sqlCache.partners.filter((p) => p.id !== id);
-    apiFetch(`/api/partners/${id}`, { method: 'DELETE' });
-
-    if (part) {
-      this.addAuditLog({
-        userId: 'USR-EPRA-01',
-        userName: 'Shantis Designs Admin',
-        userRole: 'admin',
-        action: 'DELETE_PARTNER',
-        resourceType: 'partner',
-        details: `Deleted partner logo "${part.name}" from SQL`,
-      });
-    }
+  static async deletePartner(id: number): Promise<{ ok: boolean; error?: string }> {
+    const res = await persistToSql<{ partners?: Partner[] }>(
+      `/api/partners/${id}`,
+      'DELETE',
+      undefined,
+      (data) => {
+        if (Array.isArray(data.partners)) sqlCache.partners = data.partners;
+      }
+    );
+    return { ok: res.ok, error: res.error };
   }
 }
